@@ -1,6 +1,10 @@
 ## A chess-aware widget
 * gtkmm chess widget (C++)
 * GTK+ widget (C)
+* High performance, highly scalable vectorized pieces.
+* Per square colorable (for analysis applications).
+* Support for drawing arrows.
+* Move indicator.
 
 ## Chess board classes (move generation, C++)
 * High performance.
