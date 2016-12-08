@@ -3,8 +3,11 @@
 * GTK+ widget (C)
 * High performance, highly scalable vectorized pieces.
 * Per square colorable (for analysis applications).
+* Support for outlining given squares.
 * Support for drawing arrows.
 * Move indicator.
+
+![Arrows and markers on the chessboard](http://carlowood.github.io/cwchessboard/arrowsandmarkers.png "Using arrows and markers to highlight moves and squares.")
 
 ## Chess board classes (move generation, C++)
 * High performance.
