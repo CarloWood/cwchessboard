@@ -1,0 +1,3 @@
+# Required automake version.
+required_automake_version="1.7"
+

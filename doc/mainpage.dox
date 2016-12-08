@@ -1,0 +1,207 @@
+/*!
+
+\mainpage notitle
+
+<h1><code>cwchessboard</code> &mdash; A C++ chessboard tool set for gtkmm.</h1>
+
+\htmlonly
+<div id="mainindex">
+\endhtmlonly
+
+\htmlonly
+<div id="newad"><img align="left" border="0" src="images/new.png" hspace=15 alt="NEW:">
+\endhtmlonly
+A chess tool set was added to this project! In 2006 this project existed of just a widget.
+However good the widget is, it's still a lot of work to write a chess application around it.
+Therefore I added a "chess aware" class: %cwchess::%ChessPosition and a more powerful
+widget class %cwmm::%ChessPositionWidget that provides an easy to use interface: it's
+a chess board widget that is kept in sync with a %ChessPosition part of it.
+A test application (<a href="tstcpp_8cc-source.html"><code>tstcpp.cc</code></a>)
+shows how to use this class.
+You can read more about the C++ ChessPosition class at <a href="#ChessPosition">below</a>.
+\htmlonly
+</div>
+\endhtmlonly
+
+C++ programmers want to read this documentation:
+
+<ul>
+<li> \link cwmm::ChessPositionWidget A chess-aware widget \endlink, which <em>combines</em> both of:
+<ul id="baseclasslist">
+<li>\link cwmm::ChessboardWidget gtkmm widget documentation \endlink
+<li>\link cwchess::ChessPosition C++ chess position class documentation \endlink
+</ul>
+</ul>
+
+C programmers can still use the basic widget:
+
+\li \link CwChessboard.h GTK+ widget documentation \endlink
+
+And last but not least:
+
+\li \ref download
+
+\htmlonly
+</div>
+\endhtmlonly
+
+@image html withborder.png
+
+<br>
+<h2>About the chessboard widget</h2>
+
+%CwChessboard (%ChessboardWidget) is a scalable chessboard widget using <em>vector graphics</em> for the chess pieces.
+It is possible to give each square a different color,
+useful to highlight squares in for example an <em>chess analysis</em> program.
+On top of that <em>markers</em> can be used; a colored outline around the square.
+There is support for a <em>cursor</em> that marks the square that the
+pointer device is hovering over and one can draw <em>arrows</em> from any square to any square in different
+colors. Of course, it is possible to draw 'floating' pieces at any point with pixel precision
+(mostly useful for moving pieces around with a mouse).
+Finally, the widget has two <em>HUD layers</em> that can be customized.
+
+The drawing speed of the widget is extremely high, as everything is loaded into (server side) pixmap's
+and blitted into place only when an update of that area is really necessary. This means basically
+that all drawing is done with hardware acceleration on the video card. The exception here is resizing:
+when the widget is actually resized - everything has to be redrawn and sent to the server again.
+Resizing is therefore slow. It is assumed however that resizing is rarely done; as opposed to,
+for example, changing the background colors of all 64 squares as a result of moving a piece; which
+could be done almost instantly.
+
+The chessboard exists of several virtual layers.
+
+\li The bottom layer exists of 64 squares with a solid color.
+<br><br>See (GTK+)
+#cw_chessboard_set_light_square_color,
+#cw_chessboard_set_dark_square_color,
+#cw_chessboard_set_background_color and
+#cw_chessboard_set_background_colors.
+<br>See (gtkmm)
+\link #cwmm::ChessboardWidget::set_light_square_color set_light_square_color \endlink,
+\link #cwmm::ChessboardWidget::set_dark_square_color set_dark_square_color \endlink,
+\link #cwmm::ChessboardWidget::set_background_color set_background_color \endlink and
+\link #cwmm::ChessboardWidget::set_background_colors set_background_colors \endlink.
+
+\li The layer above that is HUD layer 0.
+This layer could be used to add some texture to the squares.
+It is also used for the start of arrows, so that arrows begin from underneath a piece.
+<br><br>See (GTK+)
+CwChessboardClass::draw_hud_layer.
+<br>See (gtkmm)
+\link #cwmm::ChessboardWidget::draw_hud_layer draw_hud_layer \endlink.
+
+\li Markers are drawn either below or above HUD layer 0.
+<br><br>See (GTK+)
+#cw_chessboard_set_marker_level.
+<br>See (gtkmm)
+\link #cwmm::ChessboardWidget::set_marker_level set_marker_level \endlink.
+
+\li The cursor, if any, is drawn next.
+<br><br>See (GTK+)
+#cw_chessboard_show_cursor.
+<br>See (gtkmm)
+\link #cwmm::ChessboardWidget::show_cursor show_cursor \endlink.
+
+\li The layer above that contains the chess pieces placed on the board.
+<br><br>See (GTK+)
+CwChessboardClass::draw_piece and
+#cw_chessboard_set_square.
+<br>See (gtkmm)
+\link #cwmm::ChessboardWidget::draw_pawn draw_pawn \endlink and
+\link #cwmm::ChessboardWidget::draw_rook draw_rook \endlink and
+\link #cwmm::ChessboardWidget::draw_knight draw_knight \endlink and
+\link #cwmm::ChessboardWidget::draw_bishop draw_bishop \endlink and
+\link #cwmm::ChessboardWidget::draw_queen draw_queen \endlink and
+\link #cwmm::ChessboardWidget::draw_king draw_king \endlink and
+\link #cwmm::ChessboardWidget::set_square \endlink.
+
+\li The layer above that is HUD layer 1.
+This layer contains the rest of the arrows so that they are drawn on top of the pieces.
+Note that arrows have an alpha value of 0.5, so that those pieces remain visible.
+<br><br>See (GTK+)
+#cw_chessboard_add_arrow.
+<br>See (gtkmm)
+\link #cwmm::ChessboardWidget::add_arrow add_arrow \endlink.
+
+\li Finally, on top of that are the floating pieces.
+<br><br>See (GTK+)
+#cw_chessboard_add_floating_piece.
+<br>See (gtkmm)
+\link #cwmm::ChessboardWidget::add_floating_piece add_floating_piece \endlink.
+
+<br>
+<a name="ChessPosition">
+<h2>About the chess position class</h2>
+
+ChessPosition is independent of ChessboardWidget: you can very well use it without using the widget.
+In fact, it wasn't even written with the widget in mind: it was written with a chess analysis application
+and therefore <em>speed</em> in mind.
+Looking at the source code you'd probably think "this can't be fast", but C++ code can be deceiving.
+The assembly code resulting from a compile with optimization has constantly been taken into account
+during the development of this tool set.
+
+The features of ChessPosition are therefore:
+
+\li Performance (see below).
+\li Full control over the chessboard and pieces.
+\li Ability to run over any combination of pieces on the board.
+\li Ability to generate all legal (and only legal) moves for a given piece.
+\li Possibility to check if a given move is legal.
+\li Full support for FEN codes.
+\li Allows to query whether there is a check, or double check.
+\li Keeps track of the number of times each color attacks any given square.
+
+The 'Position setup' member functions allow one to clear the board or put up
+the initial position with a single call, arbitrarily remove or add pieces,
+swap colors, skip a move, set explicitely whose turn it is, etc.
+
+<h2>Performance</h2>
+
+A test application is included that plays random games by generating
+every possible legal move, storing the moves in a static array, generating
+a random number to pick one of the moves and then executes the move, until
+it is either mate, stale mate or the 50 move rule applies (the average game
+is 200 moves that way).
+This is repeated until 10,000 games are finished. The application consistently
+produces over 1,127,000 moves per second (compiled with g++ version 4.3.1,
+using -O3 optimization, running on a single core of a QX6700 @ 2.66 GHz.
+(91,000 moves per second without optimization)). Note that those are
+<em>executed</em> moves (ply). If you count the generation of Move
+objects (all possible moves, without executing them) then it does
+22,657,000 Moves per second.
+
+Roughly one can state that executing a
+given Move takes 300 ns on average while running over all moves of a
+given position takes 20 ns per generated Move. Making a copy of a
+ChessPosition also takes roughly 20 ns.
+
+This should be significantly less than the time needed to evaluate a
+position (ie, Rybka does 75,000 nodes per second on a single core of
+my cpu).
+
+\htmlonly
+<br>
+<div align="center">
+<img src="ChessPosition_8h__incl.png">
+</div>
+\endhtmlonly
+
+Of course ChessPosition relies on several other core classes,
+the most important of which are:
+
+\li \link cwchess::Color Color \endlink The color of the pieces (black or white) (1 byte).
+\li \link cwchess::Index Index \endlink An index to a square on the board, or one-past the end (to either side) (1 byte).
+\li \link cwchess::Type Type \endlink The type of a piece (pawn, rook, etc), or 'nothing' (1 byte).
+\li \link cwchess::Code Code \endlink A colored piece: the combination of Color and Type into one (also 1 byte).
+\li \link cwchess::Flags Flags \endlink Some state information (for internal use, 1 byte).
+\li \link cwchess::Piece Piece \endlink Combination of Code and Flags (2 bytes).
+\li \link cwchess::BitBoard BitBoard \endlink A one-bit-per-square chessboard (8 bytes).
+\li \link cwchess::PieceIterator PieceIterator \endlink Iterator to iterate over pieces (or actually, bits in a BitBoard).
+\li \link cwchess::MoveIterator MoveIterator \endlink Iterator to iterate over moves.
+
+The following class is provided to write several of
+the above objects to an <code>ostream</code> (namely, Type, Piece, Index and Move):
+
+\li \link cwchess::ChessNotation ChessNotation \endlink Convert chess objects to text.
+
+*/

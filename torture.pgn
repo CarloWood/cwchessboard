@@ -1,0 +1,94 @@
+		The PGN Torture File, by Carlo Wood © 2008
+
+% This file tests about ever error a human can make in creating
+% a PGN input file. The file is NOT legal PGN, but a test case
+% that allows the parsers coders to be aware of the rubish they
+% might run into.
+
+First we start with illegal junk BEFORE the first [Tagname "value]
+pair. Note you don't want to detect the start of the tag section
+at the first '[', but you should wait till you see an empty line
+IF and ONLY IF you see junk that is NOT white space after an empty
+line.
+% The following line misses a ", but because it is not preceeded
+% by an empty line, the line should be rejected (and the string
+% terminated at the end of the line).
+[Note "this means this is not a tag pair!] If only because it's
+badly formatted (perhaps a good format, '['<tagname> <blanks> <string> ']'
+SHOULD start the tag section.
+
+Ok, lets start for real now.
+
+% Lines that start with a '%' are escaped lines and should be
+% COMPLETELY ignored. Hence, the following line should appear
+% to start after the previous empty line, and really start the
+% tag section. The '=' is illegal here, but we accept it because
+% there was an empty line before this line.
+[Event = "The PGN Torture File, by Carlo Wood (c) 2008"]
+% After the first tag pair, empty lines are just white space,
+% and you can add as many as you like:
+
+% Also, you can just leave them out:
+[Custom_tag "Custom tag"][Another_custom_tag "Another custom tag"]
+
+% Sometimes people even forget to add spaces:
+[WhiteElo"2000"]
+% Or add too many:
+[
+  BlackElo		"1850"	
+  ] ; Adding a comment here is illegal by the way.
+  [ { Adding a comment like this, here, as well }
+% Escaped lines can appear anywhere were whitespace can appear.
+tagname_should_start_with_an_upper_case_letter_but_do_not_always{
+[Now who would add a comment like that?!]}""]
+% That was an empty string; in many cases it should be translated
+% into "-"...
+% The following tests the stupidity of adding a colon or equal
+% sign after the tag-name:
+[Annotator: "Me, guess who added the colon there!"]
+[Annotator="It's not allowed to repeat the same tagname twice,
+but what would I know? After all, I appear not even to know
+that it's illegal to use new-lines inside strings!"]
+
+% PGN should be ISO-8859/1. But escaped lines can contain ANYTHING  of course.
+[Result:"1/2" {This should really be "1/2-1/2"}]
+% Actually, strings are allowed to contain high-ascii values.
+% The following is nonsense and should result in the result '*'.
+% Or better yet, be replaced with the result that is used to
+% terminate the game.
+[Result: "½-½"]
+% Actually, strings might as well contain illegal characters.
+% It's best to translate those into question marks ('?').
+[ Site "ngborg, Faraway" ]
+; Also comments, which do not nest (-:{, can contain  etc.
+{ What to do with comments in between tag pairs? Just move
+them to below the Tag Pairs 40. Qe8 ±, I guess... and also here:
+note¹ §4.3.}
+[FEN "rnbq1k1r/1p1nb3/p2pp2p/1B4PQ/4P2B/2N5/PPP3PP/R3K2R b KQ - 0 1"]
+
+{ There can be a comment before the game starts. }
+{ Multiple comments, in fact.
+
+Since we had a FEN tag, it is blacks move at this point!
+We do not start with move 1 here. }
+
+13 .. Kg7 14 O-O Ne5 15 Bg3
+{The knight on e5 keeps all of black defences together.
+Had white not played 13. Bb5 but instead to e2 or d3 then
+black could have maintained himself with 15 .. Nc6}
+% A move number can be followed by a period, or not, and
+% when it's blacks move, the ellipsis can be from two till
+% four periods, hence we can have:
+15.. Ng6 16. gh6+
+% or
+16..... Rh6: 17 Rf7+!
+% or
+17. ... Kxf7
+% of course. Note it's illegal to use colon to annotate
+% that one captured a piece... but...
+18 Qh6: ab5
+% Sometimes variations are empty, in which case they
+% should be ignored. Well, mostly they contain a comment
+% in that case.
+({The threat 19 Rf1+ is devastating})
+

@@ -1,0 +1,416 @@
+// cwchessboard -- A C++ chessboard tool set
+//
+//! @file PgnGrammar.h This file contains the declaration of class PgnGrammar.
+//
+// Copyright (C) 2010, by
+// 
+// Carlo Wood, Run on IRC <carlo@alinoe.com>
+// RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
+// Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#ifndef PGNGRAMMAR_H
+#define PGNGRAMMAR_H
+
+#ifndef USE_PCH
+#include "sys.h"
+#endif
+
+#ifndef CWCHESS_PGN_ANALYSIS
+#include <boost/spirit/include/classic_spirit.hpp>
+#include <boost/spirit/include/classic_numerics.hpp>
+#endif
+
+namespace cwchess {
+namespace pgn {
+namespace grammar {
+
+namespace imp {
+}
+
+// Define whether the rules should generate debug output.
+#define TRACE_PGN_GRAMMAR 1
+#define TRACE_PGN_WHITESPACE 0
+#define TRACE_PGN_PRINTABLE 0
+#define TRACE_PGN_ANNOTATION 0
+#define TRACE_PGN_INTEGER 0
+#define TRACE_PGN_COMMENT 0
+#define TRACE_PGN_SAN_MOVE 0
+#define TRACE_PGN_SAN_INTERNAL 0
+#define TRACE_PGN_PUNCTUATION_JUNK 0
+
+class PgnGrammar : public boost::spirit::classic::grammar<PgnGrammar> {
+  private:
+    typedef PgnGrammar grammar_t;
+
+  public:
+    PgnGrammar(void)
+    {
+      BOOST_SPIRIT_DEBUG_TRACE_GRAMMAR_NAME(*this, "PgnGrammar", 1);
+    }
+
+  public:
+    template <typename ScannerT>
+    struct definition {
+      // Non-parse_tree generating rule type.
+      typedef typename ScannerT::iteration_policy_t iteration_policy_t;
+      typedef boost::spirit::classic::match_policy match_policy_t;
+      typedef typename ScannerT::action_policy_t action_policy_t;
+      typedef boost::spirit::classic::scanner_policies<iteration_policy_t, match_policy_t, action_policy_t> policies_t;
+      typedef boost::spirit::classic::scanner<typename ScannerT::iterator_t, policies_t> non_tree_scanner_t;
+      typedef boost::spirit::classic::rule<non_tree_scanner_t> no_tree_rule_t;
+      // Normal (parse_tree generating) rule type.
+      typedef boost::spirit::classic::rule<ScannerT> rule_t;
+      // An integer parser for unsigned integers of 1 to 3 digits. 
+      boost::spirit::classic::uint_parser<unsigned, 10, 1, 3> uint3_p;
+
+      // RULE DECLARATION START
+      // RULE DECLARATION END
+
+      // Start rule of this grammar.
+      rule_t const& start(void) const { return PGN_database; }
+
+      definition(PgnGrammar const& self)
+      {
+        using namespace boost::spirit::classic;
+
+	leading_junk
+	    =
+	        *((*~ch_p('\n') >> *ch_p('\n')) - tag_pair)
+	    ;
+
+	file			// TRACE_PGN_SAN_INTERNAL
+	    =
+	        range_p('a', 'h')
+            ;
+
+        rank			// TRACE_PGN_SAN_INTERNAL
+	    =
+	        range_p('1', '8')
+            ;
+
+        piece			// TRACE_PGN_SAN_INTERNAL
+	    =
+	        ch_p('R')
+            |   ch_p('N')
+	    |   ch_p('B')
+	    |   ch_p('Q')
+	    |   ch_p('K')
+	    ;
+
+	check			// TRACE_PGN_SAN_INTERNAL
+	    =
+	        ch_p('+')
+            |   ch_p('#')
+	    ;
+
+        punctuation_junk	// TRACE_PGN_PUNCTUATION_JUNK
+	    =
+	        ch_p(',')
+	    |   ch_p(';')
+	    ;
+
+        tagname_begin
+	    =
+	        alnum_p
+	    ;
+
+	tagname_continuation
+	    =
+	        alnum_p
+	    |   ch_p('_')
+	    ;
+
+        printable		// TRACE_PGN_PRINTABLE
+	    =
+	        range_p(32, 126)
+            |   range_p(-96, -1)
+	    ;
+
+        printable_string	// TRACE_PGN_PRINTABLE
+	    =
+		(   range_p(35, 91)
+		|   ch_p(' ')
+		|   range_p(93, 126)
+		|   ch_p('!')
+		|   range_p(-96, -1)
+	        )
+	    |   (   ch_p('\\') >> (ch_p('\\') | ch_p('"')))
+	    ;
+
+        printable_comment	// TRACE_PGN_PRINTABLE
+	    =
+	        range_p(32, 124)
+	    |   ch_p('~')
+	    |   blank
+	    |   eol
+	    |   range_p(-96, -1)
+            ;
+
+	promotion		// TRACE_PGN_SAN_INTERNAL
+	    =
+	        ch_p('=') >> piece
+	    ;
+
+        blank			// TRACE_PGN_WHITESPACE
+	    =
+	        ch_p(' ')
+	    |   ch_p('\t')
+	    |   ch_p('\v')
+	    ;
+	
+	white_space		// TRACE_PGN_WHITESPACE
+	    =
+	        blank >> !white_space
+	    |   eol >> !white_space
+	    ;
+
+        escaped_data		// TRACE_PGN_WHITESPACE
+	    =
+	        ch_p('%') >> *(anychar_p - eol_p) >> eol_p
+            ;
+
+        eol			// TRACE_PGN_WHITESPACE
+	    =
+	        eol_p >> *escaped_data
+	    ;
+
+	integer			// TRACE_PGN_INTEGER
+	    =
+	        uint3_p
+	    ;
+
+	square			// TRACE_PGN_SAN_INTERNAL
+	    =
+	        file >> rank
+	    ;
+
+	disambiguation		// TRACE_PGN_SAN_INTERNAL
+	    =
+		file
+	    |   rank
+	    |   square
+	    ;
+
+	string
+	    =
+		ch_p('"') >> *printable_string >> ch_p('"')
+	    ;
+
+	tag_name
+	    =
+		tagname_begin >> *tagname_continuation
+	    ;
+
+	tag_value
+	    =
+		string
+	    ;
+
+	game_termination
+	    =
+		str_p("1-0")
+	    |   str_p("0-1")
+	    |   str_p("1/2-1/2")
+	    |   ch_p('*')
+	    ;
+
+	elipsis
+	    =
+		str_p("..") >> !ch_p('.')
+	    ;
+
+	move_number_indication
+	    =
+		integer >> (ch_p('.') |  ch_p(' '))
+	    ;
+
+	SAN_move		// TRACE_PGN_SAN_MOVE
+	    =
+		(   piece >> !ch_p('x') >> square
+		|   piece >> disambiguation >> !ch_p('x') >> square
+		|   file >> ch_p('x') >> square >> !promotion
+		|   square >> !promotion
+		|   str_p("O-O-O")
+		|   str_p("O-O")
+		|   str_p("0-0-0")
+		|   str_p("0-0")
+		)
+		>>  !check
+	    ;
+
+        annotation
+	    =
+	        !(text_annotation1_junk >> !white_space) >> *(!comment >> (numeric_annotation_glyph | text_annotation2_junk) >> !white_space)
+            ;
+
+	numeric_annotation_glyph// TRACE_PGN_ANNOTATION
+	    =
+		ch_p('$') >> uint3_p
+	    ;
+
+        text_annotation1_junk	// TRACE_PGN_ANNOTATION
+	    =
+	        (   ch_p('!')
+		|   ch_p('?')
+		) >>
+	       !(   ch_p('!')
+		|   ch_p('?')
+		)
+	    ;
+
+        text_annotation2_junk	// TRACE_PGN_ANNOTATION
+	    =
+	        ch_p('=') >> !(   ch_p('-')
+			      |   ch_p('+')
+			      )
+	    |   ch_p('-') >>  (    ch_p('=')
+			      |    (!ch_p('/') >> ch_p('+'))
+			      )
+	    |   ch_p('+') >>  (    (!ch_p('/') >> ch_p('-'))
+			      | ch_p('=')
+			      )
+	    |   ch_p('~')
+	    ;
+
+	comment			// TRACE_PGN_COMMENT
+	    =
+		ch_p('{') >> *printable_comment >> ch_p('}') >> !white_space >> !comment
+	    |   ch_p(';') >> *printable >> eol >> !white_space >> !comment
+	    |   parenthesis_junk >> !white_space >> !comment
+	    ;
+
+	// Allow '(...)' to be be empty, if it contains a brace comment.
+        parenthesis_junk	// TRACE_PGN_COMMENT
+	    =
+	        ch_p('(') >> !white_space >> ch_p('{') >> *printable_comment >> ch_p('}') >> !white_space >> ch_p(')')
+            ;
+
+	tag_pair
+	    =
+		ch_p('[') >> !white_space >> tag_name >> !white_space >> tag_value >> !white_space >> ch_p(']') >> !white_space
+	    ;
+
+	tag_section
+	    =
+		tag_pair >> !tag_section
+	    ;
+
+	// Allow a SAN move to be directly followed by some punctuation,
+	// although such punctuation should really be part of a comment.
+	// Most notably this will cause a semicolon to NOT result the
+	// rest of line to be considered as a comment if the semi colon
+	// directly follows a SAN move.
+	//
+	// For example:
+	//
+	// {At which point he did} 11. b4; {and went to the bathroom.} 11. ... Rb8
+	//
+	// will be read as:
+        //
+	// {At which point he did} 11. b4 {; and went to the bathroom.} 11. ... Rb8
+	//
+	// Rather than,
+	//
+	// {At which point he did} 11. b4 { and went to the bathroom. 11. ... Rb8}
+	move
+	    =
+		SAN_move >> !punctuation_junk >> !white_space >> !(annotation >> !white_space)
+	    ;
+
+	white_move
+	    =
+		move_number_indication >> !white_space >> move >> !comment >> *recursive_variation_white
+	    ;
+
+	last_white_move
+	    =
+	        white_move
+            |   arena_junk
+	    ;
+
+        arena_junk
+	    =
+	        move_number_indication >> !white_space >> elipsis >> !white_space >> comment
+	    ;
+
+	black_move
+	    =
+		move_number_indication >> !white_space >> elipsis >> !white_space >> move >> !comment >> *recursive_variation_black
+	    ;
+
+	movetext_section_white
+	    =
+		white_black_move >> *white_black_move >> !last_white_move
+	    |   last_white_move
+	    ;
+
+	movetext_section_black
+	    =
+		black_move >> !movetext_section_white
+	    ;
+
+	white_black_move
+	    =
+		move_number_indication >> !white_space >> move >> !comment >> move >> !comment >> *recursive_variation_black
+	    |   white_move >> black_move
+	    ;
+
+	recursive_variation_white
+	    =
+		ch_p('(') >> !white_space >> !comment >> (movetext_section_white | wrong_color_black_junk) >> ch_p(')') >> !white_space >> !comment
+	    ;
+
+	recursive_variation_black
+	    =
+		ch_p('(') >> !white_space >> !comment >> (movetext_section_black | wrong_color_white_junk) >> ch_p(')') >> !white_space >> !comment
+	    ;
+
+	wrong_color_white_junk
+	    =
+	        movetext_section_white
+            ;
+
+	wrong_color_black_junk
+	    =
+	        movetext_section_black
+            ;
+
+	movetext_section
+	    =
+		!comment >> (movetext_section_white | movetext_section_black)
+	    ;
+
+	PGN_game
+	    =
+		!tag_section >> !movetext_section >> game_termination >> !white_space >> !comment
+	    ;
+
+        PGN_database
+	    =
+	        !white_space >> leading_junk >> *PGN_game;
+	    ;
+
+	// DEBUG MACROS START
+	// DEBUG MACROS END
+      }
+    };
+};
+
+} // namespace grammar
+} // namespace pgn
+} // namespace cwchess
+
+#endif	// PGNGRAMMAR_H

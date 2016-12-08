@@ -1,0 +1,312 @@
+<PGN-database> ::= <PGN-game> <PGN-database>
+                   <empty>
+
+<PGN-game> ::= <tag-section> <movetext-section>
+
+<tag-section> ::= <tag-pair> <tag-section>
+                  <empty>
+
+<tag-pair> ::= [ <tag-name> <tag-value> ]
+
+<tag-name> ::= <identifier>
+
+<tag-value> ::= <string>
+
+<movetext-section> ::= <element-sequence> <game-termination>
+
+<element-sequence> ::= <element> <element-sequence>
+                       <recursive-variation> <element-sequence>
+                       <empty>
+
+<element> ::= <move-number-indication>
+              <SAN-move>
+              <numeric-annotation-glyph>
+
+<recursive-variation> ::= ( <element-sequence> )
+
+<game-termination> ::= 1-0
+                       0-1
+                       1/2-1/2
+                       *
+<empty> ::=
+
+===============================================================================
+
+// ** Lets start with the more trivial definitions of single characters:
+//
+// <horizontal-tab-char>       ::= ASCII 9
+// <new-line-char>             ::= ASCII 10
+// <vertical-tab-char>         ::= ASCII 11
+// <carriage-return-char>      ::= ASCII 13
+// <space-char>                ::= ASCII 32
+// <digit-char>                ::= One of the characters: 0, 1, 2, 3, 4, 5, 6, 7, 8 or 9.
+// <file-char>                 ::= One of the characters: a, b, c, d, e, f, g or h.
+// <rank-char>                 ::= One of the characters: 1, 2, 3, 4, 5, 6, 7 or 8.
+// <piece-char>                ::= One of the characters: R, N, B, Q or K.
+// <check-char>                ::= One of the characters: + or #.
+// <tagname-begin-char>        ::= One of the characters: A-Za-z0-9
+// <tagname-continuation-char> ::= One of the characters: A-Za-z0-9_
+// <printable-char>            ::= One of the characters ASCII 32...126 or 160...255.
+// <promotion-char>            ::= <piece-char>
+//
+// ** The white space definitions:
+//
+// <white-space>         ::= <non-EOL-white-space> <white-space_opt>
+//                           <EOL> <white-space_opt>
+// <non-EOL-white-space> ::= <space-char>
+//                           <horizontal-tab-char>
+//                           <vertical-tab-char>
+// <EOL>                 ::= <new-line-char>
+//                           <carriage-return-char> <new-line-char_opt>
+//
+// ** The definitions that exist of one or more characters:
+//
+// <integer-chars>        ::= <digit-char> <digit-char>*
+// <square-chars>         ::= <file-char> <rank-char>
+// <disambiguation-chars> ::= <file-char>
+//                            <rank-char>
+//                            <square-chars>
+//
+// ** The definitions of single tokens:
+//
+// <tag-name-token>                 ::= <tagname-begin-char> <tagname-continuation-char>*
+// <tag-value-token>                ::= <string-token>
+// <string-token>                   ::= "<printable-char>*"
+// <game-termination-token>         ::= 1-0
+//                                      0-1
+//                                      1/2-1/2
+//                                      *
+// <elipsis>                        ::= ..
+//                                      ...
+// <move-number-indication-token>   ::= <integer-chars> .
+//                                      <integer-chars> <white-space>
+// <SAN-move-token-token>           ::= <piece-char> <disambiguation-chars_opt> <square-chars> <check-char_opt>
+//                                      <piece-char> <disambiguation-chars_opt> x <square-chars> <check-char_opt>
+//                                      <square-chars> <promotion-char_opt> <check-char_opt>
+//                                      <file-char> x <square-chars> <promotion-char_opt> <check-char_opt>
+//                                      O-O
+//                                      O-O-O
+// <numeric-annotation-glyph-token> ::= $ <digit-char> <digit-char_opt>
+//
+// ** And finally, the definitions of one or more tokens on a row:
+//
+// <PGN-database-tokens>              ::= <white-space_opt> <PGN-game-tokens>*
+// <PGN-game-tokens>                  ::= <tag-section-tokens_opt> <movetext-section-tokens_opt> <game-termination-token> <white-space_opt> <comment-tokens_opt>
+//
+// <tag-section-tokens>               ::= <tag-pair-tokens> <tag-section-tokens_opt>
+// <tag-pair-tokens>                  ::= [ <white-space_opt> <tag-name-token> <white-space_opt> <tag-value-token> <white-space_opt> ] <white-space_opt>
+//
+// <movetext-section-tokens>          ::= <comment-tokens_opt> <movetext-section-white-tokens>
+//                                        <comment-tokens_opt> <movetext-section-black-tokens>
+// <movetext-section-white-tokens>    ::= <move-sequence-tokens>
+//                                        <move-sequence-tokens> <white-move-tokens>
+// <movetext-section-black-tokens>    ::= <black-move-tokens> <movetext-section-white-tokens>
+// <move-sequence-tokens>             ::= <white-black-move-tokens>*
+// <white-black-move-tokens>          ::= <move-number-indication-token> <white-space_opt> <move-tokens> <move-tokens> <comment-tokens_opt> <recursive-variation-black-tokens_opt>
+//                                        <white-move-tokens> <black-move-tokens>
+// <black-move-tokens>                ::= <move-number-indication-token> <white-space_opt> <elipsis-token> <white-space_opt> <move-tokens> <comment-tokens_opt> <recursive-variation-black-tokens_opt>
+// <white-move-tokens>                ::= <move-number-indication-token> <white-space_opt> <move-tokens> <comment-tokens_opt> <recursive-variation-white-tokens_opt>
+// <recursive-variation-white-tokens> ::= ( <white-space_opt> <comment-tokens_opt> <movetext-section-white-tokens> ) <white-space_opt> <comment-tokens_opt>
+// <recursive-variation-black-tokens> ::= ( <white-space_opt> <comment-tokens_opt> <movetext-section-black-tokens> ) <white-space_opt> <comment-tokens_opt>
+// <move-tokens>                      ::= <SAN-move-token> <white-space_opt> <numeric-annotation-glyph-token_opt> <white-space_opt>
+// <comment-tokens>                   ::= { <printable-char>* } <white-space_opt> <comment-tokens_opt>
+//                                        : <printable-char>* <EOL> <white-space_opt> <comment-tokens_opt>
+//
+
+===============================================================================
+
+INTERNAL Game Representation
+----------------------------
+
+<game>			::= <meta-data> <game-data> <comment>
+
+<meta-data>		::= <Event-meta-data> <Site-meta-data> <Date-meta-data>
+                                <Round-meta-data> <White-meta-data>
+				<Black-meta-data> <Result-meta-data>
+				<SetUp-meta-data> <Optional-meta-data>
+
+<Event-meta-data>	::= <non-empty-string>
+                            <unknown>
+
+<Site-meta-data>	::= <non-empty-string>
+                            <unknown>
+
+<Date-meta-data>	::= <date>
+
+<date>                  ::= <year> <month> <day>
+                            <year> <month> <unknown-day>
+		            <year> <unknown-month> <unknown-day>
+
+<Round-meta-data>	::= <integer-sequence>
+
+<White-meta-data>	::= <non-empty-string>
+                            <unknown>
+
+<Black-meta-data>	::= <non-empty-string>
+                            <unknown>
+
+<Result-meta-data>	::= <result>
+
+<SetUp-meta-data>	::= <FEN-code>
+                            <empty>
+
+<Optional-meta-data>	::= <WhiteTitle-meta-data> <BlackTitle-meta-data>
+                                <WhiteElo-meta-data> <BlackElo-meta-data>
+				<WhiteUSCF-meta-data> <BlackUSCF-meta-data>
+				<WhiteNA-meta-data> <BlackNA-meta-data>
+				<WhiteType-meta-data> <BlackType-meta-data>
+				<EventDate-meta-data> <EventSponsor-meta-data>
+				<Section-meta-data> <Stage-meta-data>
+				<Board-meta-data> <Opening-meta-data>
+				<Variation-meta-data> <SubVariation-meta-data>
+				<ECO-meta-data> <NIC-meta-data>
+				<Time-meta-data> <UTCTime-meta-data>
+				<UTCDate-meta-data> <TimeControl-meta-data>
+				<Termination-meta-data> <Annotator-meta-data>
+				<Mode-meta-data> <PlyCount-meta-data>
+				<tag-pair-sequence>
+
+<WhiteTitle-meta-data>	::= <non-empty-string>
+                            <empty>
+
+<BlackTitle-meta-data>	::= <non-empty-string>
+                            <empty>
+
+<WhiteElo-meta-data>	::= <positive-non-zero-integer>
+                            <unrated>
+                            <empty>
+
+<BlackElo-meta-data>	::= <positive-non-zero-integer>
+                            <unrated>
+                            <empty>
+
+<WhiteUSCF-meta-data>	::= <positive-non-zero-integer>
+                            <unrated>
+                            <empty>
+
+<BlackUSCF-meta-data>	::= <positive-non-zero-integer>
+                            <unrated>
+                            <empty>
+
+<WhiteNA-meta-data>	::= <non-empty-string>
+                            <empty>
+
+<BlackNA-meta-data>	::= <non-empty-string>
+                            <empty>
+
+<WhiteType-meta-data>	::= "human"
+                            "program"
+                            <empty>
+
+<BlackType-meta-data>	::= "human"
+                            "program"
+                            <empty>
+
+<EventDate-meta-data>	::= <date>
+			    <empty>
+
+<EventSponsor-meta-data>::= <non-empty-string>
+			    <empty>
+
+<Section-meta-data>	::= <non-empty-string>
+			    <empty>
+
+<Stage-meta-data>	::= <non-empty-string>
+			    <empty>
+
+<Board-meta-data>	::= <8-bit-integer>
+			    <empty>
+
+<Opening-meta-data>	::= <non-empty-string>
+			    <empty>
+
+<Variation-meta-data>	::= <non-empty-string>
+			    <empty>
+
+<SubVariation-meta-data>::= <non-empty-string>
+			    <empty>
+
+<ECO-meta-data>		::= <16-bit-integer>
+
+<NIC-meta-data>		::= <string>
+			    <empty>
+
+<Time-meta-data>	::= <hours> <minutes> <seconds>
+			    <empty>
+
+<UTCTime-meta-data>	::= <hours> <minutes> <seconds>
+			    <empty>
+
+<UTCDate-meta-data>	::= <year> <month> <day>
+			    <empty>
+
+<TimeControl-meta-data>	::= <TimeControl>
+			    <empty>
+
+<Termination-meta-data>	::= <8-bit-integer>
+			    <empty>
+
+<Annotator-meta-data>	::= <non-empty-string>
+			    <empty>
+
+<Mode-meta-data>	::= <non-empty-string>
+			    <empty>
+
+<PlyCount-meta-data>	::= <16-bit-integer>
+			    <empty>
+
+<tag-pair-sequence>	::= <tag-pair> <tag-pair-sequence>
+                            <empty>
+
+<tag-pair>		::= <identifier> <string>
+
+<game-data>		::= <game-node> <game-data>
+                            <empty>
+
+<game-node>		::= <comment> <move> <variation-sequence>
+
+<variation-sequence>	::= <variation> <variation-sequence>
+			    <empty>
+
+<variation>		::= <move> <game-data>
+
+<comment>		::= <non-empty-string>
+                            <empty>
+
+<move>			::= <Move> <numeric-annotation-glyph> <time>
+
+<Move> : A cwchess::Move object (<from-square> <to-square> <promotion-type>).
+
+<time> : Optional time, for local use only.
+
+<numeric-annotation-glyph> : An integer in the range 0 to 139.
+
+<identifier> : A string existing of one or more alpha numeric characters and underscores.
+
+<non-empty-string> : A <string> with a size of 1 or larger. The empty string can be overloaded to be <unknown>.
+
+<FEN-code> : A string representing a chess position
+
+<unknown> : This means that the data exist and could be added later, but is currently not known. See also <non-empty-string>.
+
+<year> : A positive integer.
+
+<month> : An integer in the range 1 ... 12. The value 0 can be overloaded to be <unknown-month>.
+
+<day> : An integer in the range 1 ... 31. The value 0 can be overloaded to be <unknown-day>.
+        Note that a game that spans more than one day is not supported. Hence the date has
+	to be interpreted as the date that the game started.
+
+<unknown-month> : This means that the month in which the game started is not known. See also <month>.
+
+<unknown-day> : This means that the exact day at which the game started is not known. See also <day>.
+
+<integer-sequence> : A sequence of positive integers.
+
+<result> : An enum with four possible values: white won, black won, it ended in a draw, or none of these.
+
+<string> : An UTF-8 encoded string containing zero or more printable characters. If upon initialization
+           non-printable characters are given, then those have to be converted to a question mark (ASCII 63).
+	   Note that the printable characters have ISO-8859-1 encodings 32 to 126 and 160 to 255.
+
+<empty> : Containing no data at all.
