@@ -24,8 +24,6 @@ maintainer-clean-local:
 
 all-local: doxygen.config html.header html.footer @REAL_MAINTAINER_TRUE@$(top_builddir)/cwchessboard-@VERSION@.tar.gz
 	@REAL_MAINTAINER_TRUE@rm -rf $(HTMLDIR)
-	test -L $(top_srcdir)/CwChessboard.c || \
-	    (chmod u+w $(top_srcdir) && cd $(top_srcdir) && rm -f CwChessboard.c && ln -s CwChessboard.cc CwChessboard.c)
 	doxygen doxygen.config 2>&1 | egrep -v '^$$|Pango-WARNING \*\*: Error loading GPOS table 5503' || true
 	sed -i -re 's%<h[[:digit:]] .*[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+ *</h[[:digit:]]>%%' $(HTMLDIR)/index.html
 	@REAL_MAINTAINER_TRUE@sed -i -e 's%@''VERSION@%@VERSION@%g' $(HTMLDIR)/download.html

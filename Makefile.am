@@ -91,9 +91,6 @@ table_gen_SOURCES = table_gen.cc
 table_gen_CXXFLAGS =
 table_gen_LDFLAGS =
 
-CwChessboard.c:
-	ln -sf $(srcdir)/CwChessboard.cc CwChessboard.c
-
 $(srcdir)/gen.cc: $(srcdir)/gen.sh $(srcdir)/CwChessboard.cc
 	(cd $(srcdir) && ./gen.sh CwChessboard.cc)
 
