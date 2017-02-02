@@ -1,9 +1,10 @@
 # See LICENSE.WTFPL
+#
+include $(srcdir)/cwm4/root_makefile_top.am
 
-SUBDIRS = doc
+SUBDIRS = @CW_SUBDIRS@ doc
 
-ACLOCAL_AMFLAGS = @ACLOCAL_CWFLAGS@
-EXTRA_DIST = sys.h CwChessboard-CONST.h CwChessboard.h CwChessboardCodes.h debug.h debug_ostream_operators.h ChessboardWidget.h \
+EXTRA_DIST += sys.h CwChessboard-CONST.h CwChessboard.h CwChessboardCodes.h debug.h debug_ostream_operators.h ChessboardWidget.h \
 	     Array.h Code.h Move.h BitBoard.h ChessNotation.h MoveIterator.h ChessPosition.h Color.h Index.h \
 	     Piece.h Type.h Flags.h PieceIterator.h EnPassant.h CastleFlags.h Direction.h BitBoardTest.h \
 	     ChessPositionTest.h CodeTest.h ColorTest.h FlagsTest.h IndexTest.h PieceTest.h TypeTest.h CountBoard.h \
@@ -91,7 +92,7 @@ table_gen_CXXFLAGS =
 table_gen_LDFLAGS =
 
 CwChessboard.c:
-	ln -sf CwChessboard.cc CwChessboard.c
+	ln -sf $(srcdir)/CwChessboard.cc CwChessboard.c
 
 $(srcdir)/gen.cc: $(srcdir)/gen.sh $(srcdir)/CwChessboard.cc
 	(cd $(srcdir) && ./gen.sh CwChessboard.cc)
@@ -160,19 +161,6 @@ clean-local:
 
 distclean-local:
 	rm -f $(srcdir)/config.h.in~ sys.h
+	@MAINTAINER_MODE_TRUE@rm -f CwChessboard.c
 
-MAINTAINERCLEANFILES = \
-	$(srcdir)/aclocal.m4 \
-	$(srcdir)/configure \
-	$(srcdir)/Makefile.in \
-	$(srcdir)/install-sh \
-	$(srcdir)/config.h.in \
-	$(srcdir)/compile \
-	$(srcdir)/depcomp \
-	$(srcdir)/missing \
-	$(srcdir)/config.guess \
-	$(srcdir)/config.sub \
-	$(srcdir)/CwChessboard.c \
-	stamp-h1 \
-	config.status \
-	config.log
+include $(srcdir)/cwm4/root_makefile_bottom.am
