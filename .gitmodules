@@ -2,3 +2,7 @@
 	path = cwm4
 	url = https://github.com/CarloWood/cwm4.git
 	branch = master
+[submodule "cwd"]
+	path = cwd
+	url = https://github.com/CarloWood/cwd.git
+	branch = master
