@@ -748,7 +748,7 @@ int main(int argc, char* argv[])
 {
   using namespace cwchess;
 
-  Debug(debug::init());
+  Debug(NAMESPACE_DEBUG::init());
   Dout(dc::notice, "Entered main()");
 
   Gtk::Main kit(argc, argv);

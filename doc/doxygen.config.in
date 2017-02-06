@@ -833,9 +833,8 @@ EXCLUDE_SYMLINKS       = YES
 # exclude all test directories for example use the pattern */test/*
 
 EXCLUDE_PATTERNS       = CwChessboard-CONST.h \
-                         debug.cc \
-                         debug.h \
                          sys.h \
+                         debug.h \
                          debug_ostream_operators.cc \
                          debug_ostream_operators.h \
                          gen.cc \

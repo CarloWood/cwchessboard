@@ -39,7 +39,7 @@
 
 int main()
 {
-  Debug(debug::init());
+  Debug(NAMESPACE_DEBUG::init());
 
   // Get the top level suite from the registry
   CppUnit::Test* suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();

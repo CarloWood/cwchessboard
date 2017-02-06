@@ -53,8 +53,8 @@ void print_move(ChessPosition const& chess_position, Move const& move)
 
 int main()
 {
+  Debug(NAMESPACE_DEBUG::init());
   Debug(libcw_do.off());
-  Debug(debug::init());
 
   time_t seed = 1220638382; // Use fixed seed for reproducibility. time(NULL);
   //std::cout << "seed = " << seed << std::endl;

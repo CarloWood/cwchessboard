@@ -2,6 +2,8 @@
 #
 include $(srcdir)/cwm4/root_makefile_top.am
 
+AM_CPPFLAGS = -iquote $(top_builddir) -iquote $(top_srcdir) -iquote $(top_srcdir)/cwds
+
 SUBDIRS = @CW_SUBDIRS@ doc
 
 EXTRA_DIST += sys.h CwChessboard-CONST.h CwChessboard.h CwChessboardCodes.h debug.h debug_ostream_operators.h ChessboardWidget.h \
@@ -39,7 +41,6 @@ TESTSUITE_SRC = testsuite.cc $(CPPSOURCES)
 
 if LIBCWD_USED
 CPPSOURCES += debug.cc debug_ostream_operators.cc
-TSTSPIRIT_SRC += debug.cc
 endif
 if REAL_MAINTAINER
 GUISOURCES += gtk_debug_ostream_operators.cc
@@ -52,36 +53,36 @@ tstc_CFLAGS = -std=c99 @GTK2_FLAGS@
 tstc_LDADD = @GTK2_LIBS@ -lm
 
 tstcpp_SOURCES = $(TSTCPP_SRC)
-tstcpp_CXXFLAGS = @CWD_FLAGS@ @gtkmm_CFLAGS@ -DGTKMM -DLIBCWD_THREAD_SAFE=0
-tstcpp_LDADD = @CWD_LIBS@ @gtkmm_LIBS@ -lm
+tstcpp_CXXFLAGS = @LIBCWD_R_FLAGS@ @gtkmm_CFLAGS@ -DGTKMM
+tstcpp_LDADD = cwds/libcwds_r.la @gtkmm_LIBS@ -lm
 
 tstchessposition_SOURCES = $(TSTCHESSPOSITION_SRC)
-tstchessposition_CXXFLAGS = @CWD_FLAGS@ @gtkmm_CFLAGS@ -DGTKMM -DLIBCWD_THREAD_SAFE=0
-tstchessposition_LDADD = @CWD_LIBS@ @gtkmm_LIBS@ -lm
+tstchessposition_CXXFLAGS = @LIBCWD_R_FLAGS@ @gtkmm_CFLAGS@ -DGTKMM
+tstchessposition_LDADD = cwds/libcwds_r.la @gtkmm_LIBS@ -lm
 
 testsuite_SOURCES = $(TESTSUITE_SRC)
-testsuite_CXXFLAGS = @CWD_FLAGS@ @gtkmm_CFLAGS@ -DGTKMM $(CPPUNIT_CFLAGS) -DLIBCWD_THREAD_SAFE=0
-testsuite_LDADD = @CWD_LIBS@ @gtkmm_LIBS@ -lm $(CPPUNIT_LIBS)
+testsuite_CXXFLAGS = @LIBCWD_FLAGS@ @gtkmm_CFLAGS@ -DGTKMM $(CPPUNIT_CFLAGS)
+testsuite_LDADD = cwds/libcwds.la @gtkmm_LIBS@ -lm $(CPPUNIT_LIBS)
 
 tstbenchmark_SOURCES = $(TSTBENCHMARK_SRC)
-tstbenchmark_CXXFLAGS = -std=c++11 @CWD_FLAGS@
-tstbenchmark_LDADD = @CWD_LIBS@ -lm
+tstbenchmark_CXXFLAGS = -std=c++11 @LIBCWD_FLAGS@
+tstbenchmark_LDADD = cwds/libcwds.la -lm
 
 tstpgnread_SOURCES = $(TSTPGNREAD_SRC)
-tstpgnread_CXXFLAGS = @CWD_R_FLAGS@ @giomm_CFLAGS@ @gthread_CFLAGS@
-tstpgnread_LDADD = @CWD_R_LIBS@ -lm @giomm_LIBS@ @gthread_LIBS@
+tstpgnread_CXXFLAGS = @LIBCWD_R_FLAGS@ @giomm_CFLAGS@ @gthread_CFLAGS@
+tstpgnread_LDADD = cwds/libcwds_r.la -lm @giomm_LIBS@ @gthread_LIBS@
 
 tsticonv_SOURCES = $(TSTICONV_SRC)
-tsticonv_CXXFLAGS = @CWD_FLAGS@ @glibmm_CFLAGS@
-tsticonv_LDADD = @CWD_LIBS@ -lm @glibmm_LIBS@
+tsticonv_CXXFLAGS = @LIBCWD_R_FLAGS@ @glibmm_CFLAGS@
+tsticonv_LDADD = cwds/libcwds_r.la -lm @glibmm_LIBS@
 
 tstpgn_SOURCES = $(TSTPGN_SRC)
-tstpgn_CXXFLAGS = @CWD_R_FLAGS@ @giomm_CFLAGS@ @gthread_CFLAGS@ --param large-function-growth=500
-tstpgn_LDADD = @CWD_R_LIBS@ -lm @giomm_LIBS@ @gthread_LIBS@
+tstpgn_CXXFLAGS = @LIBCWD_R_FLAGS@ @giomm_CFLAGS@ @gthread_CFLAGS@ --param large-function-growth=500
+tstpgn_LDADD = cwds/libcwds_r.la -lm @giomm_LIBS@ @gthread_LIBS@
 
 tstspirit_SOURCES = $(TSTSPIRIT_SRC)
-tstspirit_CXXFLAGS = @CWD_FLAGS@
-tstspirit_LDADD = @CWD_LIBS@ -lm
+tstspirit_CXXFLAGS = @LIBCWD_FLAGS@
+tstspirit_LDADD = cwds/libcwds.la -lm
 
 if MAINTAINER_MODE
 BUILT_SOURCES = $(srcdir)/gen.cc $(srcdir)/CwChessboard-CONST.h $(srcdir)/PgnGrammar.h chattr.tab.cc sys.h

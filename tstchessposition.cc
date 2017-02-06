@@ -59,7 +59,7 @@ namespace test {
 
 int main(int argc, char* argv[])
 {
-  Debug(debug::init());
+  Debug(NAMESPACE_DEBUG::init());
 
   using namespace cwchess;
 

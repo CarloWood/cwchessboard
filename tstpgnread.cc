@@ -255,7 +255,7 @@ int main()
 {
   if (!Glib::thread_supported())
       Glib::thread_init();
-  Debug(debug::init());
+  Debug(NAMESPACE_DEBUG::init());
 
 #ifdef REFERENCE_IMPLEMENTATION
   clear_disk_cache();

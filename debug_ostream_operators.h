@@ -21,10 +21,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef DEBUG_OSTREAM_OPERATORS_H
-#define DEBUG_OSTREAM_OPERATORS_H
+#pragma once
 
 #ifdef CWDEBUG
+
+#include "cwds/debug_ostream_operators.h"
 
 namespace cwchess {
 
@@ -43,5 +44,3 @@ extern std::ostream& operator<<(std::ostream& os, BitBoard const& bit_board);	//
 } // namespace cwchess
 
 #endif // CWDEBUG
-#endif // DEBUG_OSTREAM_OPERATORS_H
-

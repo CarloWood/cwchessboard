@@ -70,7 +70,7 @@ scanner_policies_t policies(iter_policy);
 
 int main(int argc, char* argv[])
 {
-  Debug(debug::init());
+  Debug(NAMESPACE_DEBUG::init());
 
   for (int i = 1; i < argc; ++i)
   {

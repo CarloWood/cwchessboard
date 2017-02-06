@@ -45,7 +45,7 @@ void open_finished(size_t len)
 
 int main(int argc, char* argv[])
 {
-  Debug(debug::init());
+  Debug(NAMESPACE_DEBUG::init());
   if (!Glib::thread_supported())
     Glib::thread_init();
   Gio::init();
