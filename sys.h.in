@@ -6,9 +6,9 @@
 #endif
 
 #ifdef __cplusplus
-#define UNUSED(x)
+#define UNUSED_ARG(x)
 #else
-#define UNUSED(x) x
+#define UNUSED_ARG(x) x
 #endif
 
 #ifndef CWDEBUG

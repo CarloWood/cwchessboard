@@ -368,19 +368,19 @@ bool MyChessboardWidget::on_button_release(gint col, gint row, GdkEventButton co
   return false;
 }
 
-void MyChessboardWidget::moved(cwchess::Move const& move, cwchess::ChessPosition const& previous_position, cwchess::ChessPosition const& UNUSED(current_position))
+void MyChessboardWidget::moved(cwchess::Move const& move, cwchess::ChessPosition const& previous_position, cwchess::ChessPosition const& UNUSED_ARG(current_position))
 {
   DoutEntering(dc::notice, "MyChessboardWidget::moved(" << cwchess::ChessNotation(previous_position, move) << ", ...)");
   // Having executed a move, we might need to draw or erase the en passant arrow.
   update_en_passant_arrow();
 }
 
-void MyChessboardWidget::illegal(cwchess::Move const& move, cwchess::ChessPosition const& UNUSED(chess_position))
+void MyChessboardWidget::illegal(cwchess::Move const& move, cwchess::ChessPosition const& UNUSED_ARG(chess_position))
 {
   DoutEntering(dc::notice, "MyChessboardWidget::illegal(" << cwchess::ChessNotation(*this, move) << ", ...)");
 }
 
-void MyChessboardWidget::picked_up(cwchess::Index const& index, cwchess::ChessPosition const& UNUSED(chess_position))
+void MyChessboardWidget::picked_up(cwchess::Index const& index, cwchess::ChessPosition const& UNUSED_ARG(chess_position))
 {
   DoutEntering(dc::notice, "MyChessboardWidget::picked_up(" << cwchess::ChessNotation(*this, index) << ", ...)");
   if (get_widget_mode() == mode_edit_game)
@@ -394,7 +394,7 @@ void MyChessboardWidget::picked_up(cwchess::Index const& index, cwchess::ChessPo
     show_pinning();
 }
 
-void MyChessboardWidget::dropped(gint col, gint row, cwchess::ChessPosition const& UNUSED(chess_position))
+void MyChessboardWidget::dropped(gint col, gint row, cwchess::ChessPosition const& UNUSED_ARG(chess_position))
 {
   DoutEntering(dc::notice, "MyChessboardWidget::dropped(" << col << ", " << row << ", ...)");
   // The piece that was picked up is dropped again. Return to regular standing.
@@ -479,7 +479,7 @@ class GtkTest : public Gtk::Window {
     std::stack<cwchess::ChessPosition> M_history;
 };
 
-void GtkTest::moved(cwchess::Move const& move, cwchess::ChessPosition const& previous_position, cwchess::ChessPosition const& UNUSED(current_position))
+void GtkTest::moved(cwchess::Move const& move, cwchess::ChessPosition const& previous_position, cwchess::ChessPosition const& UNUSED_ARG(current_position))
 {
   DoutEntering(dc::notice, "GtkTest::moved(" << cwchess::ChessNotation(previous_position, move) << ", ...)");
   M_history.push(previous_position);

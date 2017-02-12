@@ -37,7 +37,7 @@ class ChessPosition;
 
 class Promotion : public util::Referenceable {
   public:
-    virtual Type type(ChessPosition const* UNUSED(chess_position), Move const& UNUSED(move)) const { return cwchess::queen; }
+    virtual Type type(ChessPosition const* UNUSED_ARG(chess_position), Move const& UNUSED_ARG(move)) const { return cwchess::queen; }
 };
 
 } // namespace cwchess

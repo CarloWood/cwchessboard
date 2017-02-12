@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cwds/debug.h"
+#include "debug_ostream_operators.h"
 
 NAMESPACE_DEBUG_CHANNELS_START
 

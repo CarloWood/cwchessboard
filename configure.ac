@@ -1,16 +1,25 @@
 # Define package version here.
+#
+# CW_VERSION_MAJOR               : Increment when the whole library was rewritten; or some VERY MAJOR change was made.
+# CW_VERSION_MINOR               : Increment when major changes have occured, like removing interfaces.
+# CW_VERSION_REVISION            : Increment every public release; or set to 0 when CW_VERSION_MINOR was incremented.
+
 define(CW_VERSION_MAJOR, 2)
 define(CW_VERSION_MINOR, 0)
 define(CW_VERSION_REVISION, 10)
-define(CW_PACKAGE_NAME, [cwchessboard])
 
-# Other configuration.
+# Package name and bug reporting.
+define(CW_PACKAGE_NAME, [cwchessboard])
 define(CW_BUGREPORT, [carlo@alinoe.com])
+
+# CW_COMPILE_FLAGS may contain warning flags, but also default debug flags (-g*)
+# and optimization flags (-O*) that which will be stripped when not required.
+define(CW_COMPILE_FLAGS, [-W -Wall -Woverloaded-virtual -Wundef -Wpointer-arith -Wwrite-strings -Winline])
+# CW_THREADS can be [no] (single-threaded), [yes] (multi-threaded) or [both] (single and multi-threaded applications).
+define(CW_THREADS, [both])
 
 # Include cwm4 header.
 m4_include([cwm4/configure_ac_top.m4])
-
-CW_OPG_CXXFLAGS([-std=c++11 -W -Wall -Woverloaded-virtual -Wundef -Wpointer-arith -Wwrite-strings -Winline], [both])
 
 # Set GLOBAL_TAGS_FILES.
 if test -z "$CTAGS_ROOT_SRCDIRS"; then
@@ -24,10 +33,6 @@ else
        done`"
 fi
 AC_SUBST(GLOBAL_TAGS_FILES)
-
-if test -z "$REAL_MAINTAINER_TRUE"; then
-AC_DEFINE(HAVE_GTK_DEBUG_OSTREAM_OPERATORS_H, [], [Only set if you are the real maintainer])
-fi
 
 # CppUnit testsuite (if you get an error here: apt-get install libcppunit-dev)
 AM_PATH_CPPUNIT(1.12.0)

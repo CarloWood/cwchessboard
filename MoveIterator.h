@@ -31,13 +31,8 @@
 #include "Move.h"
 #include "BitBoard.h"
 #include "Piece.h"
-#ifdef GTKMM
-#include <glib.h>
-#endif
 
-#ifndef G_LIKELY
-#define G_LIKELY(condition) __builtin_expect(condition, true)
-#endif
+#define CWCHESSBOARD_LIKELY(condition) __builtin_expect(condition, true)
 
 namespace cwchess {
 
@@ -126,7 +121,7 @@ class MoveIterator : public std::iterator<std::bidirectional_iterator_tag, Move>
     // Bi-directional iterator.
     MoveIterator& operator++()
 	{
-	  if (G_LIKELY(!M_current_move.is_promotion()) || next_promotion())
+	  if (CWCHESSBOARD_LIKELY(!M_current_move.is_promotion()) || next_promotion())
 	  {
 	    Index current_index(M_current_move.to());
 	    current_index.next_bit_in(M_targets());
@@ -139,7 +134,7 @@ class MoveIterator : public std::iterator<std::bidirectional_iterator_tag, Move>
 
     MoveIterator& operator--()
 	{
-	  if (G_LIKELY(!M_current_move.is_promotion()) || prev_promotion())
+	  if (CWCHESSBOARD_LIKELY(!M_current_move.is_promotion()) || prev_promotion())
 	  {
 	    Index current_index(M_current_move.to());
 	    current_index.prev_bit_in(M_targets());
