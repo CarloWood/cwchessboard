@@ -42,4 +42,3 @@ channel_ct parser("PARSER");
 NAMESPACE_DEBUG_CHANNELS_END
 
 #endif // CWDEBUG
-

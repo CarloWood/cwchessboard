@@ -1,1 +1,0 @@
-CwChessboard.cc

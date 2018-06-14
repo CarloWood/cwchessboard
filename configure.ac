@@ -38,7 +38,7 @@ AC_SUBST(GLOBAL_TAGS_FILES)
 AM_PATH_CPPUNIT(1.12.0)
 
 # We use doxygen for documentation.
-CW_DOXYGEN
+CW_DOXYGEN([])
 
 # Detect libgtkmm et al.
 PKG_CHECK_MODULES([gtkmm], [gtkmm-2.4 >= 2.8.0])
