@@ -4,5 +4,5 @@
 	branch = master
 [submodule "cwds"]
 	path = cwds
-	url = github-carlo:/CarloWood/cwds.git
+	url = https://github.com/CarloWood/cwds.git
 	branch = master
