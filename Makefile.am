@@ -46,8 +46,8 @@ endif
 noinst_PROGRAMS = testsuite tstchessposition tstc tstcpp tstbenchmark tstpgnread tsticonv tstpgn tstspirit
 
 tstc_SOURCES = $(TSTC_SRC)
-tstc_CFLAGS = -std=c99 @GTK2_FLAGS@
-tstc_LDADD = @GTK2_LIBS@ -lm
+tstc_CFLAGS = -std=c99 @GTK2_FLAGS@ @GLIB2_CFLAGS@
+tstc_LDADD = @GTK2_LIBS@ @GLIB2_LIBS@ -lm
 
 tstcpp_SOURCES = $(TSTCPP_SRC)
 tstcpp_CXXFLAGS = @LIBCWD_R_FLAGS@ @gtkmm_CFLAGS@
@@ -67,7 +67,7 @@ tstbenchmark_LDADD = cwds/libcwds.la @gtkmm_LIBS@
 
 tstpgnread_SOURCES = $(TSTPGNREAD_SRC)
 tstpgnread_CXXFLAGS = -DLIBCWD_THREAD_SAFE=0 @LIBCWD_FLAGS@ @gtkmm_CFLAGS@
-tstpgnread_LDADD = cwds/libcwds.la @gtkmm_LIBS@
+tstpgnread_LDADD = cwds/libcwds.la @gtkmm_LIBS@ -lboost_system
 
 tsticonv_SOURCES = $(TSTICONV_SRC)
 tsticonv_CXXFLAGS = @LIBCWD_R_FLAGS@ @glibmm_CFLAGS@
@@ -75,19 +75,22 @@ tsticonv_LDADD = cwds/libcwds_r.la @glibmm_LIBS@
 
 tstpgn_SOURCES = $(TSTPGN_SRC)
 tstpgn_CXXFLAGS = @LIBCWD_R_FLAGS@ @gtkmm_CFLAGS@ --param large-function-growth=500
-tstpgn_LDADD = cwds/libcwds_r.la @gtkmm_LIBS@
+tstpgn_LDADD = cwds/libcwds_r.la @gtkmm_LIBS@ -lboost_system
 
 tstspirit_SOURCES = $(TSTSPIRIT_SRC)
 tstspirit_CXXFLAGS = -DLIBCWD_THREAD_SAFE=0 @LIBCWD_FLAGS@ @gtkmm_CFLAGS@
-tstspirit_LDADD = cwds/libcwds.la @gtkmm_LIBS@
+tstspirit_LDADD = cwds/libcwds.la @gtkmm_LIBS@ -lboost_system
 
 if MAINTAINER_MODE
-BUILT_SOURCES = $(srcdir)/gen.cc $(srcdir)/CwChessboard-CONST.h $(srcdir)/PgnGrammar.h chattr.tab.cc sys.h
+BUILT_SOURCES = $(srcdir)/gen.cc $(srcdir)/CwChessboard-CONST.h $(srcdir)/PgnGrammar.h chattr.tab.cc CwChessboard.c sys.h
 noinst_PROGRAMS += table_gen
 
 table_gen_SOURCES = table_gen.cc
 table_gen_CXXFLAGS =
 table_gen_LDFLAGS =
+
+CwChessboard.c:
+	ln -sf $(srcdir)/CwChessboard.cc CwChessboard.c
 
 $(srcdir)/gen.cc: $(srcdir)/gen.sh $(srcdir)/CwChessboard.cc
 	(cd $(srcdir) && ./gen.sh CwChessboard.cc)

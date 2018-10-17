@@ -50,7 +50,7 @@
 
 static void zeroTables(void);
 static void markString(attr_t macro, char const* s);
-static void unMarkString(attr_t macro, char const* s);
+//static void unMarkString(attr_t macro, char const* s);
 static void markRange(attr_t macro, char from, char to);
 static void moveMacro(attr_t from, attr_t to);
 static void setLowHi(char const firstlow, char const lastlow, char const firsthi);
@@ -202,11 +202,13 @@ static void markString(attr_t macro, char const* s)
     NTL_char_attrib[*(s++) - CHAR_MIN] |= macro;
 }
 
+#if 0
 static void unMarkString(attr_t macro, char const* s)
 {
   while (*s)
     NTL_char_attrib[*(s++) - CHAR_MIN] &= ~macro;
 }
+#endif
 
 static void markRange(attr_t macro, char from, char to)
 {

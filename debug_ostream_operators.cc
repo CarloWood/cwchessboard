@@ -162,6 +162,9 @@ char const* GdkEventType_name(GdkEventType event_type)
     CASERETURNSTR(GDK_SETTING);
     CASERETURNSTR(GDK_OWNER_CHANGE);
     CASERETURNSTR(GDK_GRAB_BROKEN);
+    CASERETURNSTR(GDK_DAMAGE);
+    case GDK_EVENT_LAST:
+      break;
   }
   DoutFatal(dc::fatal, "Unhandled GdkEventType in GdkEventType_name");
 }

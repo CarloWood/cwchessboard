@@ -820,6 +820,7 @@ bool ChessPosition::load_FEN(std::string const& FEN)
       case 'q':
       case 'k':
         color = black;
+        /* FALL-THROUGH */
       case 'P':
       case 'R':
       case 'N':

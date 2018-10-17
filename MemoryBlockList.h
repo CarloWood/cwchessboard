@@ -3,21 +3,21 @@
 //! @file MemoryBlockList.h This file contains the declaration of class MemoryBlockList.
 //
 // Copyright (C) 2010, by
-// 
+//
 // Carlo Wood, Run on IRC <carlo@alinoe.com>
 // RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
 // Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 2 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -60,6 +60,7 @@ struct MemoryBlock : public Referenceable {
      * Construct object (derived from MemoryBlock) with:
      * \code
      * Object* obj = new (block_size) Object(params);
+     * \endcode
      */
     void* operator new(size_t object_size, size_t block_size)
     {
@@ -91,7 +92,7 @@ struct MemoryBlockNode : public MemoryBlock {
 
   private:
     // Constructor. See MemoryBlockNode::create.
-    MemoryBlockNode(void) : M_valid_bytes(0) { }
+    MemoryBlockNode() : M_valid_bytes(0) { }
 
   /** @name Creation and destruction */
   //@{
@@ -127,22 +128,22 @@ struct MemoryBlockNode : public MemoryBlock {
   //@{
 
     //! Return a pointer to the first data byte.
-    char* block_begin(void) { return reinterpret_cast<char*>(this) + S_data_offset; }
+    char* block_begin() { return reinterpret_cast<char*>(this) + S_data_offset; }
 
     //! Return a const pointer to the first data byte.
-    char const* block_begin(void) const { return reinterpret_cast<char const*>(this) + S_data_offset; }
+    char const* block_begin() const { return reinterpret_cast<char const*>(this) + S_data_offset; }
 
     //! Return a pointer to one byte past the last valid byte in this block.
-    char const* block_end(void) const { return reinterpret_cast<char const*>(this) + S_data_offset + M_valid_bytes; }
+    char const* block_end() const { return reinterpret_cast<char const*>(this) + S_data_offset + M_valid_bytes; }
 
     //! Return the number of valid bytes in this block.
-    size_t valid_bytes(void) const { return M_valid_bytes; }
+    size_t valid_bytes() const { return M_valid_bytes; }
 
     //! Return true if this is the last block in the chain.
-    bool is_last_block(void) const { return !M_next; }
+    bool is_last_block() const { return !M_next; }
 
     //! Return a reference to the next block.
-    Glib::RefPtr<MemoryBlockNode> const& next(void) const { return M_next; }
+    Glib::RefPtr<MemoryBlockNode> const& next() const { return M_next; }
 
   //@}
 };
@@ -232,7 +233,7 @@ class MemoryBlockListIterator {
   /** @name Dereferenceable */
   //@{
 
-    value_type const& operator*(void) const { return *M_ptr; }
+    value_type const& operator*() const { return *M_ptr; }
 
   //@}
 
@@ -241,7 +242,7 @@ class MemoryBlockListIterator {
 
     //! Pre-increment operator.
     // This function is only called from the DatabaseSeekable::read_thread thread.
-    MemoryBlockListIterator& operator++(void)
+    MemoryBlockListIterator& operator++()
     {
       if (G_UNLIKELY(M_ptr == M_block_end))
 	advance_to_next_block();
@@ -268,14 +269,14 @@ class MemoryBlockListIterator {
   /** @name Accessors */
   //@{
 
-    int processed_blocks(void) const { return M_processed_blocks; }
+    int processed_blocks() const { return M_processed_blocks; }
 
-    MemoryBlockList* buffer(void) { return M_buffer; }
+    MemoryBlockList* buffer() { return M_buffer; }
 
   //@}
 
   private:
-    void advance_to_next_block(void);
+    void advance_to_next_block();
 };
 
 /** A linked list of MemoryBlockNode objects.
@@ -357,7 +358,7 @@ class MemoryBlockList {
       }
     }
 
-    void close(void)
+    void close()
     {
       M_more_data.mutex.lock();
       M_closed = true;
@@ -366,20 +367,20 @@ class MemoryBlockList {
       M_more_data.mutex.unlock();
     }
 
-    bool closed(void) const { return M_closed; }
-    bool full(void) const { return M_buffer_full; }
+    bool closed() const { return M_closed; }
+    bool full() const { return M_buffer_full; }
 
-    iterator& begin(void)
+    iterator& begin()
     {
       // Wait until there is another block, so we can start to process the first block.
       while (!can_process_next_block(M_begin))
         wait_for_more_data(M_begin);
       return M_begin;
     }
-    iterator end(void) const { return iterator(const_cast<MemoryBlockList*>(this)); }
+    iterator end() const { return iterator(const_cast<MemoryBlockList*>(this)); }
 
     //! @brief Return the number of blocks that were appended to the linked list.
-    int appended_blocks(void) const { return M_appended_blocks; }
+    int appended_blocks() const { return M_appended_blocks; }
 
     //! Returns ok if the read_thread is allowed to process the block that M_begin is pointing at.
     // This function is only called from DatabaseSeekable::read_thread.
@@ -392,11 +393,11 @@ class MemoryBlockList {
       return M_closed || M_appended_blocks - iter.processed_blocks() >= 2;
     }
 
-    MutexCondPair& more_data(void) { return M_more_data; }
+    MutexCondPair& more_data() { return M_more_data; }
 
-    Glib::Dispatcher& need_more_data(void) { return M_need_more_data; }
+    Glib::Dispatcher& need_more_data() { return M_need_more_data; }
 
-    void need_more_data_callback(void);
+    void need_more_data_callback();
 
     void wait_for_more_data(iterator const& iter)
     {
