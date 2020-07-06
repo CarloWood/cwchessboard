@@ -3,6 +3,7 @@
 #include "cwds/debug.h"
 #include "debug_ostream_operators.h"
 
+#ifdef CWDEBUG
 NAMESPACE_DEBUG_CHANNELS_START
 
 extern channel_ct event;
@@ -14,3 +15,4 @@ extern channel_ct clipboard;
 extern channel_ct parser;
 
 NAMESPACE_DEBUG_CHANNELS_END
+#endif
