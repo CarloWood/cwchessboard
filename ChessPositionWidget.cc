@@ -21,14 +21,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef USE_PCH
 #include "sys.h"
-#include <gtkmm/radioaction.h>
-#include <gtkmm/stock.h>
-#endif
-
 #include "ChessPositionWidget.h"
 #include "CwChessboardCodes.h"
+
+#ifndef USE_PCH
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#include <gtkmm/radioaction.h>
+#include <gtkmm/stock.h>
+#pragma GCC diagnostic pop
+#endif
 
 using namespace cwchess;
 
@@ -392,7 +395,7 @@ void ChessPositionWidget::initialize_menus(void)
     while (type() != 8);
   }
 
-  M_refActionGroup = Gtk::ActionGroup::create();
+  M_refActionGroup = Gio::SimpleActionGroup::create();
   M_refActionGroup->add(Gtk::Action::create("PlacepieceMenu", "Placepiece Menu"));
   M_refActionGroup->add(Gtk::Action::create("PlacepieceBlackPawn", Gtk::StockID("black_pawn_icon"), "Black Pawn"),
       sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_pawn));

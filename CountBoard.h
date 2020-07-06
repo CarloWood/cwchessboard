@@ -41,9 +41,7 @@ class CountBoard {
     BitBoard M_any;
 
   public:
-    CountBoard(void) { }
-    CountBoard(CountBoard const& count_board) { std::memcpy(this, &count_board, sizeof(CountBoard)); }
-    CountBoard& operator=(CountBoard const& count_board) { std::memcpy(this, &count_board, sizeof(CountBoard)); return *this; }
+    CountBoard() { }
 
     void add(BitBoard const& bit_board)
     {
@@ -121,14 +119,9 @@ class CountBoard {
 
     void reset(void)
     {
-      std::memset(this, 0, sizeof(CountBoard));
-#if DEBUG_BITBOARD_INITIALIZATION
-      M_bits[0].reset();
-      M_bits[1].reset();
-      M_bits[2].reset();
-      M_bits[3].reset();
+      for (auto& bits : M_bits)
+        bits.reset();
       M_any.reset();
-#endif
     }
 
     BitBoard any(void) const { return M_any; }

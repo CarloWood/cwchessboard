@@ -24,7 +24,12 @@
 //
 
 #include "sys.h"
-#include <iomanip>
+#include "ChessPositionWidget.h"
+#include "ChessNotation.h"
+#include "debug.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic ignored "-Wparentheses"
 #include <gtk/gtk.h>
 #include <gtkmm/box.h>
 #include <gtkmm/main.h>
@@ -34,12 +39,11 @@
 #include <gtkmm/radioaction.h>
 #include <gtkmm/menu.h>
 #include <gtkmm/iconfactory.h>
+#pragma GCC diagnostic pop
+#include <iomanip>
 #include <cstring>
 #include <stack>
 #include <fstream>
-#include "ChessPositionWidget.h"
-#include "debug.h"
-#include "ChessNotation.h"
 
 enum mode_type {
   mode_show_candidates,
@@ -472,7 +476,7 @@ class GtkTest : public Gtk::Window {
 
     // Menu and tool bar stuff.
     Glib::RefPtr<Gtk::UIManager> m_refUIManager;
-    Glib::RefPtr<Gtk::ActionGroup> m_refActionGroup;
+    Glib::RefPtr<Gio::SimpleActionGroup> m_refActionGroup;
     Glib::RefPtr<Gtk::RadioAction> M_ModePlacePieces_action;
     Glib::RefPtr<Gtk::RadioAction> M_ModeEditPosition_action;
 
@@ -597,7 +601,7 @@ void GtkTest::on_menu_file_open(void)
 void GtkTest::setup_menu(void)
 {
   // Create the action group.
-  m_refActionGroup = Gtk::ActionGroup::create();
+  m_refActionGroup = Gio::SimpleActionGroup::create();
 
   // File menu:
   m_refActionGroup->add(Gtk::Action::create("FileMenu", "File"));

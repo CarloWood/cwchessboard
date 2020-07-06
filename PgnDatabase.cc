@@ -214,7 +214,7 @@ class Scanner {
 
     int push_position(void)
     {
-      size_t size = M_stack.size();
+      int size = M_stack.size();
       if (G_UNLIKELY(size <= M_stack_index))
 	M_stack.push_back(M_current_position);
       else

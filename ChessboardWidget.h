@@ -28,7 +28,11 @@
 #include "debug.h"
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic ignored "-Wparentheses"
 #include <gtkmm/drawingarea.h>
+#pragma GCC diagnostic pop
 #include "CwChessboard.h"
 
 /** @namespace cwmm

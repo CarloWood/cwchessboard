@@ -62,8 +62,9 @@ class Database : public util::Referenceable {
     MemoryBlockList* M_buffer;				//!< Linked list of blocks with valid data.
     Glib::RefPtr<MemoryBlockNode> M_new_block;		//!< Temporary storage for new block that is being read and not linked yet.
     //! Constructor.
-    Database(void) : M_buffer(NULL), M_saw_carriage_return(false), M_line_wrapped(0),
-        M_number_of_lines(0), M_number_of_characters(0), M_state(white_space) { }
+    Database(void) : M_saw_carriage_return(false), M_line_wrapped(0),
+        M_number_of_lines(0), M_number_of_characters(0), M_state(white_space),
+        M_buffer(NULL) { }
 
     /** @brief Process next data block.
      *
@@ -111,7 +112,7 @@ class DatabaseSeekable : public Database {
     void processing_finished(void);
 
     //! @brief Return the path name of the database.
-    virtual std::string get_path(void) const { M_file->get_path(); }
+    virtual std::string get_path(void) const { return M_file->get_path(); }
 
   private:
     void read_thread(void);

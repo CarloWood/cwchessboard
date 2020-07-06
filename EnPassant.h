@@ -66,7 +66,7 @@ class EnPassant {
     EnPassant(Index const& index) : M_bits(index()) { }
 
     //! @brief Assignment operator.
-    EnPassant& operator=(EnPassant const& en_passant) { M_bits = en_passant.M_bits; return *this; }
+//    EnPassant& operator=(EnPassant const& en_passant) { M_bits = en_passant.M_bits; return *this; }
 
     //! @brief Clear the EnPassant object.
     void clear(void) { M_bits = index_end.M_bits; }

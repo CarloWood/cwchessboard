@@ -159,7 +159,7 @@ class MemoryBlockList;
  *
  * However, this class is <em>not</em> Default Constructible.
  *
- * Also, this class also has no postincrement operator.
+ * Also, this class has no postincrement operator.
  * This is a deliberate choice; a good algorithm should use preincrement only for efficiency reasons.
  *
  * It is
@@ -218,6 +218,7 @@ class MemoryBlockListIterator {
 	  M_ptr = iter.M_ptr;
 	  M_block_end = iter.M_block_end;
 	  M_processed_blocks = iter.M_processed_blocks;
+          return *this;
 	}
 
   //@}
@@ -264,6 +265,7 @@ class MemoryBlockListIterator {
 	  M_ptr = node->block_begin();
 	  M_block_end = node->block_end() - 1;
 	  M_processed_blocks = 0;
+          return *this;
 	}
 
   /** @name Accessors */

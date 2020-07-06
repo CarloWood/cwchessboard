@@ -48,9 +48,12 @@ extern std::ostream& operator<<(std::ostream& os, BitBoard const& bit_board);	//
 
 #include <iosfwd>			// std::ostream&
 #include <gdk/gdkevents.h>		// GdkEventType, GdkEvent
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <gtk/gtkstyle.h>		// GtkWidget
 #include <gtk/gtkwidget.h>		// GtkAllocation
 #include <gtk/gtkaction.h>		// GtkAction
+#pragma GCC diagnostic pop
 #include <glib.h>			// GIOCondition
 
 std::ostream& operator<<(std::ostream& os, GdkEventType event_type);

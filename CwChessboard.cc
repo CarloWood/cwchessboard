@@ -83,10 +83,6 @@
 #define CW_CHESSBOARD_EXPOSE_ALWAYS_CLEAR_BACKGROUND 1		// Needed to erase things like menu's.
 #define CW_CHESSBOARD_EXPOSE_DEBUG 0
 
-#define CW_CHESSBOARD_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), CW_TYPE_CHESSBOARD, CwChessboardPrivate))
-
-G_DEFINE_TYPE(CwChessboard, cw_chessboard, GTK_TYPE_DRAWING_AREA);
-
 static void cw_chessboard_destroy(GtkObject* object);
 static void cw_chessboard_finalize(GObject* object);
 static void cw_chessboard_realize(GtkWidget* widget);
@@ -285,6 +281,8 @@ struct _CwChessboardPrivate
   GPtrArray* arrows;			// Array with pointers to Arrow objects.
 };
 
+G_DEFINE_TYPE_WITH_PRIVATE(CwChessboard, cw_chessboard, GTK_TYPE_DRAWING_AREA);
+
 static CwChessboardCode const color_mask = 0x0001;
 static CwChessboardCode const piece_mask = 0x000e;
 static CwChessboardCode const piece_color_mask = 0x000f;
@@ -353,8 +351,6 @@ static void cw_chessboard_class_init(CwChessboardClass* chessboard_class)
   GtkObjectClass *object_class = GTK_OBJECT_CLASS(widget_class);
   GObjectClass* gobject_class = G_OBJECT_CLASS(object_class);
 
-  g_type_class_add_private(object_class, sizeof(CwChessboardPrivate));
-
   gobject_class->finalize = cw_chessboard_finalize;
 
   object_class->destroy = cw_chessboard_destroy;
@@ -393,7 +389,7 @@ static void cw_chessboard_init(CwChessboard* chessboard)
 {
   Dout(dc::cwchessboardwidget, "Calling cw_chessboard_init(" << chessboard << ")");
 
-  CwChessboardPrivate* priv = CW_CHESSBOARD_GET_PRIVATE(chessboard);
+  CwChessboardPrivate* priv = (CwChessboardPrivate*)cw_chessboard_get_instance_private(chessboard);
   GdkColormap* colormap = gtk_widget_get_colormap(GTK_WIDGET(chessboard));
 
   // Initialize local pointer to private struct for faster access.
@@ -1398,7 +1394,7 @@ static gboolean cw_chessboard_expose(GtkWidget* widget, GdkEventExpose* event)
   return TRUE;
 }
 
-gint cw_chessboard_default_calc_board_border_width(CwChessboard const* chessboard, gint sside)
+gint cw_chessboard_default_calc_board_border_width(G_GNUC_UNUSED CwChessboard const* chessboard, gint sside)
 {
   // Make line width run from 1.0 (at sside == 12) to 4.0 (at sside == 87)).
   // Round to nearest even integer. Then add sside / 3. Return at least 8.

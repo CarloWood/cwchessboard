@@ -222,7 +222,7 @@ void clear_disk_cache(void)
   system("sudo sh -c \"sync; echo 1 > /proc/sys/vm/drop_caches\"");
   // Warm up (read libraries etc).
   start_timer();
-  uint64_t microseconds = stop_timer();
+  stop_timer();
   std::ofstream dump("/dev/null");
   //std::ostream& dump(std::cout);
 #ifdef REFERENCE_IMPLEMENTATION

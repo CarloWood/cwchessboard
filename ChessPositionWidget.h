@@ -24,17 +24,21 @@
 #ifndef CHESSPOSITIONWIDGET_H
 #define CHESSPOSITIONWIDGET_H
 
+#include "ChessboardWidget.h"
+#include "ChessPosition.h"
+#include "Promotion.h"
+
 #ifndef USE_PCH
-#include <boost/shared_ptr.hpp>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#include <giomm/simpleactiongroup.h>
 #include <gtkmm/menu.h>
 #include <gtkmm/uimanager.h>
 #include <gtkmm/iconfactory.h>
 #include <gtkmm/window.h>
+#pragma GCC diagnostic pop
+#include <boost/shared_ptr.hpp>
 #endif
-
-#include "ChessboardWidget.h"
-#include "ChessPosition.h"
-#include "Promotion.h"
 
 namespace cwmm {
 
@@ -148,7 +152,7 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
     //! Reference to a UIManager.
     Glib::RefPtr<Gtk::UIManager> M_refUIManager;
     //! Reference to a ActionGroup.
-    Glib::RefPtr<Gtk::ActionGroup> M_refActionGroup;
+    Glib::RefPtr<Gio::SimpleActionGroup> M_refActionGroup;
     //! Reference to a IconFactory.
     Glib::RefPtr<Gtk::IconFactory> M_refIconFactory;
     //! Reference to RadioAction for ToMoveWhite.

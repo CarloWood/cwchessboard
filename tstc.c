@@ -22,8 +22,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // CwChessboard usage example in C code.
 
-#include <gtk/gtk.h>
 #include "CwChessboard.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#include <gtk/gtk.h>
+#pragma GCC diagnostic pop
 
 static void destroy_event(gchar* response)
 {

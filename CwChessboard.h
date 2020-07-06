@@ -29,7 +29,10 @@
 
 #include <math.h>
 #include <glib.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <gtk/gtkdrawingarea.h>
+#pragma GCC diagnostic pop
 
 #ifdef __cplusplus
 #define CWCHESSBOARD_INLINE inline
