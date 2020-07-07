@@ -22,7 +22,7 @@ GUISOURCES = $(CPPSOURCES) ChessPositionWidget.cc CwChessboard.cc ChessboardWidg
 # The source code needed for a C application.
 TSTC_SRC = tstc.c CwChessboard.c
 # The source code needed for a C++ application.
-TSTCPP_SRC = tstcpp.cc $(GUISOURCES)
+#TSTCPP_SRC = tstcpp.cc $(GUISOURCES)
 # The source code needed for tstchessposition.
 TSTCHESSPOSITION_SRC = tstchessposition.cc $(CPPSOURCES)
 # The source code needed for tstbenchmark
@@ -43,15 +43,16 @@ if LIBCWD_USED
 CPPSOURCES += debug.cc debug_ostream_operators.cc
 endif
 
-noinst_PROGRAMS = testsuite tstchessposition tstc tstcpp tstbenchmark tstpgnread tsticonv tstpgn tstspirit
+#noinst_PROGRAMS = testsuite tstchessposition tstc tstcpp tstbenchmark tstpgnread tsticonv tstpgn tstspirit
+noinst_PROGRAMS = testsuite tstchessposition tstc tstbenchmark tstpgnread tsticonv tstpgn tstspirit
 
 tstc_SOURCES = $(TSTC_SRC)
 tstc_CFLAGS = -std=c99 @GTK2_FLAGS@ @GLIB2_CFLAGS@
 tstc_LDADD = @GTK2_LIBS@ @GLIB2_LIBS@ -lm
 
-tstcpp_SOURCES = $(TSTCPP_SRC)
-tstcpp_CXXFLAGS = @LIBCWD_R_FLAGS@ @gtkmm_CFLAGS@
-tstcpp_LDADD = cwds/libcwds_r.la @gtkmm_LIBS@ -lm
+#tstcpp_SOURCES = $(TSTCPP_SRC)
+#tstcpp_CXXFLAGS = @LIBCWD_R_FLAGS@ @gtkmm_CFLAGS@
+#tstcpp_LDADD = cwds/libcwds_r.la @gtkmm_LIBS@ -lm
 
 tstchessposition_SOURCES = $(TSTCHESSPOSITION_SRC)
 tstchessposition_CXXFLAGS = @LIBCWD_R_FLAGS@ @gtkmm_CFLAGS@
