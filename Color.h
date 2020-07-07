@@ -3,21 +3,21 @@
 //! @file Color.h This file contains the declaration of class Color.
 //
 // Copyright (C) 2008, by
-// 
+//
 // Carlo Wood, Run on IRC <carlo@alinoe.com>
 // RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
 // Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 2 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -40,14 +40,14 @@ class Code;
  * If the bit is set then the object represents the color white.
  *
  * @sa Color, black, white
- */ 
+ */
 struct ColorData {
   uint8_t M_bits;		//!< 0000C000, where C=0 means black and C=1 means white.
 };
 
 uint8_t const black_bits = 0;	//!< The underlaying integral value of color 'black'.
 uint8_t const white_bits = 8;	//!< The underlaying integral value of color 'white'.
-uint8_t const color_mask = 8;	//!< A mask for the bits used for the color of a piece. 
+uint8_t const color_mask = 8;	//!< A mask for the bits used for the color of a piece.
 
 //! A constant representing the color black.
 ColorData const black = { black_bits };
@@ -103,7 +103,7 @@ class Color : protected ColorData {
     friend bool operator!=(ColorData c1, Color const& c2) { return c1.M_bits != c2.M_bits; }
 
   //@}
-    
+
   /** @name Accessors */
   //@{
 
@@ -137,7 +137,7 @@ class Color : protected ColorData {
 
     //! Return the index offset that advances one square in the direction of the pawns of this color.
     uint8_t forward_index_offset() const { return (M_bits << 1) - 8; }
-    
+
   //@}
 
 #ifndef DOXYGEN

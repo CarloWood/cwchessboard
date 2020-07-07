@@ -3,21 +3,21 @@
 //! @file Index.h This file contains the declaration of class Index.
 //
 // Copyright (C) 2008, by
-// 
+//
 // Carlo Wood, Run on IRC <carlo@alinoe.com>
 // RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
 // Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 2 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -41,7 +41,7 @@ namespace cwchess {
  * The index of square a1 is \link cwchess::ia1 ia1 \endlink, and so on till \link cwchess::ih8 ih8 \endlink.
  *
  * @sa Index, index_pre_begin, index_begin, index_end
- */ 
+ */
 struct IndexData {
   uint8_t M_bits;  	//!< 00RRRCCC, where RRR is the row and CCC the column.
 };
@@ -365,7 +365,7 @@ class Index : protected IndexData {
 #endif
       if (__builtin_expect(++M_bits == 64, 0))
         return;
-      mask >>= M_bits; 
+      mask >>= M_bits;
 #ifdef __x86_64
       uint64_t indx = 64 - M_bits;
       __asm__ __volatile__(

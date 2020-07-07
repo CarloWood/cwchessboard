@@ -3,21 +3,21 @@
 //! @file ChessboardWidget.h This file contains the declaration of the gtkmm class ChessboardWidget.
 //
 // Copyright (C) 2008, by
-// 
+//
 // Carlo Wood, Run on IRC <carlo@alinoe.com>
 // RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
 // Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 2 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -171,14 +171,14 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      * This is a layer in between the background (existing of the 64 squares with
      * a single color) and the layer with the pieces. It can be used to add some
      * texture to the background.
-     * 
+     *
      * If the HUD layer is active, then this function is called
      * whenever the widget is resized.
      *
      * @param cr    : A cairo drawing context.
      * @param sside : The size of one side of a square, in pixels.
      * @param hud   : The HUD index number, see the detailed documentation on the \ref index "main page" for more info.
-     * 
+     *
      * The default calls #cw_chessboard_default_draw_hud_layer.
      *
      * @sa enable_hud_layer, disable_hud_layer
@@ -753,7 +753,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      */
     void disable_hud_layer(guint hud)
         { cw_chessboard_disable_hud_layer(M_chessboard, hud); }
-    
+
   //@}
 
   /** @name Markers */

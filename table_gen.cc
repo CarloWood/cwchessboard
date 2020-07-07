@@ -60,7 +60,7 @@ char NTL_toupper_tab[1 + CHAR_MAX - CHAR_MIN];		/* 256 bytes */
 attr_t NTL_char_attrib[1 + CHAR_MAX - CHAR_MIN];	/* 256 attr_t = 512 bytes */
 
 /*
- * makeTables() 
+ * makeTables()
  * Where we make the tables, edit ONLY this to change the tables.
  */
 
@@ -116,7 +116,7 @@ static void makeTables()
   setLowHi('\xf8', '\xfe', '\xd8');
 }
 
-/* 
+/*
  * main()
  * This is the main program to be executed for -DMAKETABLES
  */

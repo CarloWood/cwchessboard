@@ -62,7 +62,7 @@ char buf[4096 * 50];
 #ifdef REFERENCE_IMPLEMENTATION
 void benchmark_reference(std::ostream& os, char const* filename)
 {
-  int fd = open(filename, O_RDONLY);  
+  int fd = open(filename, O_RDONLY);
   size_t len = 0;
   start_timer();
   while(len < 945950820)
@@ -87,7 +87,7 @@ void benchmark_reference(std::ostream& os, char const* filename)
 void benchmark_buffersize(std::ostream& os, char const* filename)
 {
   size_t const bufsize = 4096;
-  int fd = open(filename, O_RDONLY);  
+  int fd = open(filename, O_RDONLY);
   size_t len = 0;
   start_timer();
   while(len < 945950820)

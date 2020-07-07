@@ -3,21 +3,21 @@
 //! @file tstcpp.cc A full-blown test application used for debugging %cwchess::%ChessPosition.
 //
 // Copyright (C) 2008 - 2010, by
-// 
+//
 // Carlo Wood, Run on IRC <carlo@alinoe.com>
 // RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
 // Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 2 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // cwmm::ChessboardWidget usage example in C++ code.
@@ -510,7 +510,7 @@ GtkTest::GtkTest(int width, int height) : m_vbox(FALSE, 0), m_chessboard_widget(
   m_vbox.add(m_chessboard_widget);
 
   // Show everything.
-  show_all_children(); 
+  show_all_children();
 
   // Record moves.
   m_chessboard_widget.signal_moved().connect(sigc::mem_fun(this, &GtkTest::moved));
@@ -556,7 +556,7 @@ void GtkTest::on_menu_file_clear()
 {
   chessboard_widget().clear();
   Dout(dc::notice, "Calling M_ModeEditPosition_action->set_active(true)");
-  M_ModeEditPosition_action->set_active(true); 
+  M_ModeEditPosition_action->set_active(true);
 }
 
 void GtkTest::on_menu_file_flip()
@@ -673,7 +673,7 @@ void GtkTest::setup_menu()
   ModeShowMoves_action->set_active(true);
 #else
   Dout(dc::notice, "Calling M_ModeEditPosition_action->set_active(true)");
-  M_ModeEditPosition_action->set_active(true); 
+  M_ModeEditPosition_action->set_active(true);
   Dout(dc::notice, "Calling M_ModePlacePieces_action->set_active(true)");
   M_ModePlacePieces_action->set_active(true);
 #endif
@@ -686,7 +686,7 @@ void GtkTest::setup_menu()
   add_accel_group(m_refUIManager->get_accel_group());
 
   // Layout the actions in a menubar and toolbar.
-  Glib::ustring ui_info = 
+  Glib::ustring ui_info =
         "<ui>"
         "  <menubar name='MenuBar'>"
         "    <menu action='FileMenu'>"

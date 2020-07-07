@@ -545,7 +545,7 @@ static void cw_chessboard_init(CwChessboard* chessboard)
 static void cw_chessboard_finalize(GObject* object)
 {
   Dout(dc::cwchessboardwidget, "Calling cw_chessboard_finalize(" << object << ")");
-  CwChessboard* chessboard = CW_CHESSBOARD(object);  
+  CwChessboard* chessboard = CW_CHESSBOARD(object);
   g_ptr_array_free(chessboard->priv->arrows, TRUE);
   G_OBJECT_CLASS(cw_chessboard_parent_class)->finalize(object);
 }
@@ -2291,7 +2291,7 @@ static guint64 invalidate_arrow(CwChessboard* chessboard, gint col1, gint row1, 
   guint64 bit = 1;
   for (gint row = 0; row < squares; ++row)
     for (gint col = 0; col < squares; ++col, bit <<= 1)
-      if ((result & bit))  
+      if ((result & bit))
         invalidate_square(chessboard, col, row);
   return result;
 }
@@ -2306,7 +2306,7 @@ gpointer cw_chessboard_add_arrow(CwChessboard* chessboard,
   g_return_val_if_fail(is_inside_board(begin_col, begin_row) && is_inside_board(end_col, end_row), NULL);
 
   Arrow* arrow = (Arrow*)g_malloc(sizeof(Arrow));
-  g_ptr_array_add(chessboard->priv->arrows, arrow);  
+  g_ptr_array_add(chessboard->priv->arrows, arrow);
   arrow->begin_col = begin_col;
   arrow->begin_row = begin_row;
   arrow->end_col = end_col;
@@ -2415,7 +2415,7 @@ void cw_chessboard_draw_pawn(CwChessboard* chessboard, cairo_t* cr, gdouble x, g
   static double const mid_angle2 = CONST(mid_angle2, asin(head_radius * sin(head_angle) / mid_radius));
 
   double const base_y_sn = snap_bottom(base_y, y, scale, black_line_width);
-  
+
   CwChessboardPrivate* priv = chessboard->priv;
 
   cairo_save(cr);
@@ -2573,9 +2573,9 @@ void cw_chessboard_draw_king(CwChessboard* chessboard, cairo_t* cr, gdouble x, g
 
   // Draw cross.
   cairo_move_to(cr, 0.0, center_blob_y - adjusted_center_blob_radius);
-  cairo_line_to(cr, 0.0, cross_top); 
+  cairo_line_to(cr, 0.0, cross_top);
   cairo_move_to(cr, cross_left, cross_y_king);
-  cairo_line_to(cr, -cross_left, cross_y_king); 
+  cairo_line_to(cr, -cross_left, cross_y_king);
   cairo_stroke(cr);
 
   // Draw half ellipse just below the blobs.
@@ -2679,7 +2679,7 @@ void cw_chessboard_draw_king(CwChessboard* chessboard, cairo_t* cr, gdouble x, g
 
     cairo_line_to(cr, av_line_width, center_y + dy);
     cairo_line_to(cr, x_king, y_king);
-    
+
     cairo_arc(cr, -blob_x, blob_y, blob_radius - av_line_width, -0.75 * M_PI, 0.25 * M_PI);
 
     cairo_close_path(cr);
@@ -2823,7 +2823,7 @@ void cw_chessboard_draw_queen(CwChessboard* chessboard, cairo_t* cr, gdouble x, 
       cairo_new_sub_path(cr);
       cairo_move_to(cr, tooth2_x, tooth2_top);
     }
-    
+
     // Draw right-side of second tooth.
     cairo_line_to(cr, tooth3_x, tooth_inside2);
 

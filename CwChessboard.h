@@ -46,7 +46,7 @@
 
 G_BEGIN_DECLS
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 #include <stdint.h>
 typedef uint16_t CwChessboardCode;
 #else
@@ -208,7 +208,7 @@ struct _CwChessboardClass
    * (existing of the 64 squares with a single color) and the layer
    * with the pieces. It can be used to add some texture to the
    * background.
-   * 
+   *
    * If the HUD layer is active, then this function is called
    * whenever the widget is resized.
    *
@@ -216,7 +216,7 @@ struct _CwChessboardClass
    * @param cr			A cairo drawing context.
    * @param sside		The size of one side of a square, in pixels.
    * @param hud			The HUD index number, see the detailed documentation on the \ref index "main page" for more info.
-   * 
+   *
    * Default value: #cw_chessboard_default_draw_hud_layer
    *
    * @sa cw_chessboard_enable_hud_layer,
