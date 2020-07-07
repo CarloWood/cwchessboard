@@ -71,7 +71,7 @@ namespace cwmm {
  * on the board, clear a square, select which color is to move,
  * copy and paste to/from the clipboard, swap colors, clear the
  * board, set up the initial position, mark a pawn as being allowed
- * to taken en passant and mark rooks or kings has having moved.
+ * to be taken en passant and mark rooks or kings has having moved.
  *
  * Finally, the 'disable widget' mode just means that the user is
  * not allowed to pick up or place pieces. This would be the typical
