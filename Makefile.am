@@ -55,32 +55,32 @@ tstc_LDADD = @GTK2_LIBS@ @GLIB2_LIBS@ -lm
 #tstcpp_LDADD = cwds/libcwds_r.la @gtkmm_LIBS@ -lm
 
 tstchessposition_SOURCES = $(TSTCHESSPOSITION_SRC)
-tstchessposition_CXXFLAGS = @LIBCWD_R_FLAGS@ @gtkmm_CFLAGS@
-tstchessposition_LDADD = cwds/libcwds_r.la @gtkmm_LIBS@
+tstchessposition_CXXFLAGS = @LIBCWD_R_FLAGS@
+tstchessposition_LDADD = cwds/libcwds_r.la
 
 testsuite_SOURCES = $(TESTSUITE_SRC)
-testsuite_CXXFLAGS = @LIBCWD_R_FLAGS@ @gtkmm_CFLAGS@ $(CPPUNIT_CFLAGS)
-testsuite_LDADD = cwds/libcwds_r.la @gtkmm_LIBS@ $(CPPUNIT_LIBS)
+testsuite_CXXFLAGS = @LIBCWD_R_FLAGS@ $(CPPUNIT_CFLAGS)
+testsuite_LDADD = cwds/libcwds_r.la $(CPPUNIT_LIBS)
 
 tstbenchmark_SOURCES = $(TSTBENCHMARK_SRC)
-tstbenchmark_CXXFLAGS = -std=c++11 -DLIBCWD_THREAD_SAFE=0 @LIBCWD_FLAGS@ @gtkmm_CFLAGS@
-tstbenchmark_LDADD = cwds/libcwds.la @gtkmm_LIBS@
+tstbenchmark_CXXFLAGS = -std=c++11 -DLIBCWD_THREAD_SAFE=0 @LIBCWD_FLAGS@
+tstbenchmark_LDADD = cwds/libcwds.la
 
 tstpgnread_SOURCES = $(TSTPGNREAD_SRC)
-tstpgnread_CXXFLAGS = -DLIBCWD_THREAD_SAFE=0 @LIBCWD_FLAGS@ @gtkmm_CFLAGS@
-tstpgnread_LDADD = cwds/libcwds.la @gtkmm_LIBS@ -lboost_system
+tstpgnread_CXXFLAGS = -DLIBCWD_THREAD_SAFE=0 @LIBCWD_FLAGS@ @giomm_CFLAGS@
+tstpgnread_LDADD = cwds/libcwds.la -lboost_system @giomm_LIBS@
 
 tsticonv_SOURCES = $(TSTICONV_SRC)
 tsticonv_CXXFLAGS = @LIBCWD_R_FLAGS@ @glibmm_CFLAGS@
 tsticonv_LDADD = cwds/libcwds_r.la @glibmm_LIBS@
 
 tstpgn_SOURCES = $(TSTPGN_SRC)
-tstpgn_CXXFLAGS = @LIBCWD_R_FLAGS@ @gtkmm_CFLAGS@ --param large-function-growth=500
-tstpgn_LDADD = cwds/libcwds_r.la @gtkmm_LIBS@ -lboost_system
+tstpgn_CXXFLAGS = @LIBCWD_R_FLAGS@ --param large-function-growth=500 @giomm_CFLAGS@
+tstpgn_LDADD = cwds/libcwds_r.la -lboost_system @giomm_LIBS@
 
 tstspirit_SOURCES = $(TSTSPIRIT_SRC)
-tstspirit_CXXFLAGS = -DLIBCWD_THREAD_SAFE=0 @LIBCWD_FLAGS@ @gtkmm_CFLAGS@
-tstspirit_LDADD = cwds/libcwds.la @gtkmm_LIBS@ -lboost_system
+tstspirit_CXXFLAGS = -DLIBCWD_THREAD_SAFE=0 @LIBCWD_FLAGS@
+tstspirit_LDADD = cwds/libcwds.la -lboost_system
 
 if MAINTAINER_MODE
 BUILT_SOURCES = $(srcdir)/gen.cc $(srcdir)/CwChessboard-CONST.h $(srcdir)/PgnGrammar.h chattr.tab.cc CwChessboard.c sys.h

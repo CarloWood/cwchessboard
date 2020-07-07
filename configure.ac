@@ -46,7 +46,7 @@ AC_SUBST(GLIB2_CFLAGS)
 AC_SUBST(GLIB2_LIBS)
 
 # Detect libgtkmm et al.
-PKG_CHECK_MODULES([gtkmm], [gtkmm-2.4 >= 2.8.0])
+PKG_CHECK_MODULES([gtkmm], [gtkmm-3.0 >= 3.24])
 PKG_CHECK_MODULES([gdk_pixbuf], [gdk-pixbuf-xlib-2.0])
 PKG_CHECK_MODULES([giomm], [giomm-2.4])
 PKG_CHECK_MODULES([glibmm], [glibmm-2.4])
