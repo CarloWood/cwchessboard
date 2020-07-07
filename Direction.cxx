@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file Direction.cc This file contains the implementation of class Direction.
+//! @file Direction.cxx This file contains the implementation of class Direction.
 //
 // Copyright (C) 2008, by
 //

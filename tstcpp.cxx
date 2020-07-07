@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set for gtkmm
 //
-//! @file tstcpp.cc A full-blown test application used for debugging %cwchess::%ChessPosition.
+//! @file tstcpp.cxx A full-blown test application used for debugging %cwchess::%ChessPosition.
 //
 // Copyright (C) 2008 - 2010, by
 //

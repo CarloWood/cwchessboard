@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file ChessNotation.cc This file contains the implementation of class ChessNotation.
+//! @file ChessNotation.cxx This file contains the implementation of class ChessNotation.
 //
 // Copyright (C) 2008, by
 //

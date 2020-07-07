@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file MoveIterator.cc This file contains the implementation of class MoveIterator.
+//! @file MoveIterator.cxx This file contains the implementation of class MoveIterator.
 //
 // Copyright (C) 2008, by
 //

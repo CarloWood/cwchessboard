@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file MemoryBlockList.cc This file contains the implementation of class MemoryBlockList.
+//! @file MemoryBlockList.cxx This file contains the implementation of class MemoryBlockList.
 //
 // Copyright (C) 2010, by
 //

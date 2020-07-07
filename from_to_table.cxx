@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set for gtkmm
 //
-//! @file from_to_table.cc Program used to generate cwchess::from_to_table[].
+//! @file from_to_table.cxx Program used to generate cwchess::from_to_table[].
 //
 // Copyright (C) 2008, by
 //

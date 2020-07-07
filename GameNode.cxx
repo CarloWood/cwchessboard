@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file MetaData.cc This file contains the implementation of class MetaData.
+//! @file GameNode.cxx This file contains the implementation of class GameNode.
 //
 // Copyright (C) 2008, by
 //
@@ -25,5 +25,5 @@
 #include "sys.h"
 #endif
 
-#include "MetaData.h"
+#include "GameNode.h"
 

@@ -10,37 +10,37 @@ EXTRA_DIST += sys.h CwChessboard-CONST.h CwChessboard.h CwChessboardCodes.h debu
 	     Array.h Code.h Move.h BitBoard.h ChessNotation.h MoveIterator.h ChessPosition.h Color.h Index.h \
 	     Piece.h Type.h Flags.h PieceIterator.h EnPassant.h CastleFlags.h Direction.h BitBoardTest.h \
 	     ChessPositionTest.h CodeTest.h ColorTest.h FlagsTest.h IndexTest.h PieceTest.h TypeTest.h CountBoard.h \
-	     MoveIterator.inl  PieceIterator.inl candidates_table.cc direction_table.cc ChessPositionWidget.h Promotion.h \
+	     MoveIterator.inl  PieceIterator.inl candidates_table.cxx direction_table.cxx ChessPositionWidget.h Promotion.h \
 	     ChessGame.h MetaData.h GameNode.h PgnGame.h PgnGrammar.h chattr.h \
 	     PgnDatabase.h PgnGame.h GameNode.h Referenceable.h ChessGame.h MetaData.h MemoryBlockList.h \
 	     LICENSE.GPL LICENSE.WTFPL autogen_versions autogen.sh gen.sh
 TAGS_FILES = @GLOBAL_TAGS_FILES@
 
-CPPSOURCES = Direction.cc ChessNotation.cc MoveIterator.cc ChessPosition.cc Code.cc CastleFlags.cc
-GUISOURCES = $(CPPSOURCES) ChessPositionWidget.cc CwChessboard.cc ChessboardWidget.cc Referenceable.cc MemoryBlockList.cc
+CPPSOURCES = Direction.cxx ChessNotation.cxx MoveIterator.cxx ChessPosition.cxx Code.cxx CastleFlags.cxx
+GUISOURCES = $(CPPSOURCES) ChessPositionWidget.cxx CwChessboard.cxx ChessboardWidget.cxx Referenceable.cxx MemoryBlockList.cxx
 
 # The source code needed for a C application.
 TSTC_SRC = tstc.c CwChessboard.c
 # The source code needed for a C++ application.
-#TSTCPP_SRC = tstcpp.cc $(GUISOURCES)
+#TSTCPP_SRC = tstcpp.cxx $(GUISOURCES)
 # The source code needed for tstchessposition.
-TSTCHESSPOSITION_SRC = tstchessposition.cc $(CPPSOURCES)
+TSTCHESSPOSITION_SRC = tstchessposition.cxx $(CPPSOURCES)
 # The source code needed for tstbenchmark
-TSTBENCHMARK_SRC = tstbenchmark.cc $(CPPSOURCES)
+TSTBENCHMARK_SRC = tstbenchmark.cxx $(CPPSOURCES)
 # The source code needed for tstpgnread
-TSTPGNREAD_SRC = tstpgnread.cc PgnDatabase.cc chattr.tab.cc MemoryBlockList.cc $(CPPSOURCES)
+TSTPGNREAD_SRC = tstpgnread.cxx PgnDatabase.cxx chattr.tab.cpp MemoryBlockList.cxx $(CPPSOURCES)
 # The source code needed for tsticonv
-TSTICONV_SRC = tsticonv.cc
+TSTICONV_SRC = tsticonv.cxx
 # The source code needed for tstpgn
-TSTPGN_SRC = tstpgn.cc PgnDatabase.cc chattr.tab.cc MemoryBlockList.cc $(CPPSOURCES)
+TSTPGN_SRC = tstpgn.cxx PgnDatabase.cxx chattr.tab.cpp MemoryBlockList.cxx $(CPPSOURCES)
 # The source code needed for tstspirit
-TSTSPIRIT_SRC = tstspirit.cc
+TSTSPIRIT_SRC = tstspirit.cxx
 
 # CppUnit testsuite.
-TESTSUITE_SRC = testsuite.cc $(CPPSOURCES)
+TESTSUITE_SRC = testsuite.cxx $(CPPSOURCES)
 
 if LIBCWD_USED
-CPPSOURCES += debug.cc debug_ostream_operators.cc
+CPPSOURCES += debug.cxx debug_ostream_operators.cxx
 endif
 
 #noinst_PROGRAMS = testsuite tstchessposition tstc tstcpp tstbenchmark tstpgnread tsticonv tstpgn tstspirit
@@ -83,21 +83,21 @@ tstspirit_CXXFLAGS = -DLIBCWD_THREAD_SAFE=0 @LIBCWD_FLAGS@
 tstspirit_LDADD = cwds/libcwds.la -lboost_system
 
 if MAINTAINER_MODE
-BUILT_SOURCES = $(srcdir)/gen.cc $(srcdir)/CwChessboard-CONST.h $(srcdir)/PgnGrammar.h chattr.tab.cc CwChessboard.c sys.h
+BUILT_SOURCES = $(srcdir)/gen.cpp $(srcdir)/CwChessboard-CONST.h $(srcdir)/PgnGrammar.h chattr.tab.cpp CwChessboard.c sys.h
 noinst_PROGRAMS += table_gen
 
-table_gen_SOURCES = table_gen.cc
+table_gen_SOURCES = table_gen.cxx
 table_gen_CXXFLAGS =
 table_gen_LDFLAGS =
 
 CwChessboard.c:
-	ln -sf $(srcdir)/CwChessboard.cc CwChessboard.c
+	ln -sf $(srcdir)/CwChessboard.cxx CwChessboard.c
 
-$(srcdir)/gen.cc: $(srcdir)/gen.sh $(srcdir)/CwChessboard.cc
-	(cd $(srcdir) && ./gen.sh CwChessboard.cc)
+$(srcdir)/gen.cpp: $(srcdir)/gen.sh $(srcdir)/CwChessboard.cxx
+	(cd $(srcdir) && ./gen.sh CwChessboard.cxx)
 
-$(srcdir)/CwChessboard-CONST.h: $(srcdir)/gen.cc
-	$(CXX) -o $(srcdir)/gen $(srcdir)/gen.cc \
+$(srcdir)/CwChessboard-CONST.h: $(srcdir)/gen.cpp
+	$(CXX) -o $(srcdir)/gen $(srcdir)/gen.cpp \
 	  && $(srcdir)/gen > $(srcdir)/CwChessboard-CONST.h
 	rm -f $(srcdir)/gen
 
@@ -122,8 +122,8 @@ $(srcdir)/PgnGrammar.h: $(srcdir)/PgnGrammar.h.in
 	      if (length(a[2]) > 0) a[2] = sprintf(" & %s", a[2]); } }' $< >> $(srcdir)/PgnGrammar.h
 	grep -A 1000 'DEBUG MACROS END' $< >> $(srcdir)/PgnGrammar.h
 
-chattr.tab.cc: table_gen
-	./table_gen > chattr.tab.cc
+chattr.tab.cpp: table_gen
+	./table_gen > chattr.tab.cpp
 
 if REAL_MAINTAINER
 bumpversion:

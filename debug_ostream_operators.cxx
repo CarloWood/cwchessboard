@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set for gtkmm
 //
-//! @file debug_ostream_operators.cc Debug ostream inserter functions.
+//! @file debug_ostream_operators.cxx Debug ostream inserter functions.
 //
 // Copyright (C) 2008, by
 //

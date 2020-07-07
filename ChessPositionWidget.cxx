@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set for gtkmm
 //
-//! @file ChessPositionWidget.cc This file contains the implementation of class ChessPositionWidget.
+//! @file ChessPositionWidget.cxx This file contains the implementation of class ChessPositionWidget.
 //
 // Copyright (C) 2008, by
 //

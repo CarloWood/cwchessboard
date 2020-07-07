@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set for gtkmm
 //
-//! @file direction_table.cc Program used to generate cwchess::direction_table[].
+//! @file direction_table.cxx Program used to generate cwchess::direction_table[].
 //
 // Copyright (C) 2008, by
 //

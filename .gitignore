@@ -13,5 +13,5 @@ install-sh
 ltmain.sh
 missing
 CwChessboard-CONST.h
-gen.cc
+gen.cpp
 PgnGrammar.h

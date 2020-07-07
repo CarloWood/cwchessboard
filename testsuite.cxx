@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set for gtkmm
 //
-//! @file testsuite.cc A testsuite for the %cwchess classes.
+//! @file testsuite.cxx A testsuite for the %cwchess classes.
 //
 // Copyright (C) 2008, by
 //

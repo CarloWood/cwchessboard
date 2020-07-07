@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file PgnDatabase.cc This file contains the implementation of class pgn::Database.
+//! @file PgnDatabase.cxx This file contains the implementation of class pgn::Database.
 //
 // Copyright (C) 2010, by
 //

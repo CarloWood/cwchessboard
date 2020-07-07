@@ -91,13 +91,13 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
   protected:
     /** @brief Called when the mouse button is pressed while on the chessboard widget.
      *
-     * This function should be overridden. See the example tstcpp.cc in the source code for an example.
+     * This function should be overridden. See the example tstcpp.cxx in the source code for an example.
      */
     virtual bool on_button_press_event(GdkEventButton* event) { return Gtk::DrawingArea::on_button_press_event(event); }
 
     /** @brief Called when the mouse button is released again.
      *
-     * This function should be overridden. See the example tstcpp.cc in the source code for an example.
+     * This function should be overridden. See the example tstcpp.cxx in the source code for an example.
      */
     virtual bool on_button_release_event(GdkEventButton* event) { return Gtk::DrawingArea::on_button_release_event(event); }
 

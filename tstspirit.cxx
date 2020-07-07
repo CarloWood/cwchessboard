@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file tstspirit.cc A test application to test using boost::spirit::classic.
+//! @file tstspirit.cxx A test application to test using boost::spirit::classic.
 //
 // Copyright (C) 2010, by
 //

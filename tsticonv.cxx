@@ -1,7 +1,7 @@
 /*
  * Compile as:
  *
- * g++ tsticonv.cc `pkg-config --cflags --libs glibmm-2.4`
+ * g++ tsticonv.cxx `pkg-config --cflags --libs glibmm-2.4`
  *
  */
 

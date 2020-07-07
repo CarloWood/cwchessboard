@@ -1,8 +1,8 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file Referenceable.cc This file contains the implementation of class Referenceable.
+//! @file MetaData.cxx This file contains the implementation of class MetaData.
 //
-// Copyright (C) 2010, by
+// Copyright (C) 2008, by
 //
 // Carlo Wood, Run on IRC <carlo@alinoe.com>
 // RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
@@ -25,5 +25,5 @@
 #include "sys.h"
 #endif
 
-#include "Referenceable.h"
+#include "MetaData.h"
 

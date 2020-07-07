@@ -20,30 +20,30 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
-/*! \file CwChessboard.cc
+/*! @file CwChessboard.cxx
 
   \brief This file contains the implementation of the GTK+ widget %CwChessboard.
 
   You can compile this file with C or C++ compiler (just renaming
-  it to .c or .cc should do the trick with most build systems).
+  it to .c or .cxx should do the trick with most build systems).
   If you compile it as C source, then you need to generate a
   file CwChessboard-CONST.h from this file with the following
-  commands: <tt>./gen.sh CwChessboard.c; g++ -o gen gen.cc; ./gen > %CwChessboard-CONST.h</tt>
+  commands: <tt>./gen.sh CwChessboard.c; g++ -o gen gen.cpp; ./gen > %CwChessboard-CONST.h</tt>
   where the contents of the script 'gen.sh' is:
   \code
-  echo "#include <iostream>" > gen.cc
-  echo "#include <cmath>" >> gen.cc
-  echo >> gen.cc
+  echo "#include <iostream>" > gen.cpp
+  echo "#include <cmath>" >> gen.cpp
+  echo >> gen.cpp
   echo "#define CWCHESSBOARD_CONST_(name, expr) expr; \\"
-  echo "    std::cout << \"#define CWCHESSBOARD_CONST_\" << #name << \" \" << name << std::endl;" >> gen.cc
-  echo "int main()" >> gen.cc
-  echo "{" >> gen.cc
+  echo "    std::cout << \"#define CWCHESSBOARD_CONST_\" << #name << \" \" << name << std::endl;" >> gen.cpp
+  echo "int main()" >> gen.cpp
+  echo "{" >> gen.cpp
   mawk 'BEGIN                     { inl=0; } \
       /static .*= CWCHESSBOARD_CONST_\(.*;/    { sub(/^[ \t]+/, ""); printf("  %s\n", $0); inl=0; } \
       //                         { if (inl) { sub(/^[ \t]+/, ""); printf("    %s\n", $0); inl=0; } } \
       /static .*= CWCHESSBOARD_CONST_\([^;]*$/ { sub(/^[ \t]+/, ""); printf("  %s\n", $0); inl=1; }' \
-      $1 >> gen.cc
-  echo "}" >> gen.cc
+      $1 >> gen.cpp
+  echo "}" >> gen.cpp
   \endcode
 
 */

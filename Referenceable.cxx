@@ -1,8 +1,8 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file Promotion.cc This file contains the implementation of class Promotion.
+//! @file Referenceable.cxx This file contains the implementation of class Referenceable.
 //
-// Copyright (C) 2008, by
+// Copyright (C) 2010, by
 //
 // Carlo Wood, Run on IRC <carlo@alinoe.com>
 // RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
@@ -25,5 +25,5 @@
 #include "sys.h"
 #endif
 
-#include "Promotion.h"
+#include "Referenceable.h"
 

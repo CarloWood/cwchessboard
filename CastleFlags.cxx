@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file CastleFlags.cc This file contains the implementation of class CastleFlags.
+//! @file CastleFlags.cxx This file contains the implementation of class CastleFlags.
 //
 // Copyright (C) 2008, by
 //

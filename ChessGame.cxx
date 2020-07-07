@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file GameNode.cc This file contains the implementation of class GameNode.
+//! @file ChessGame.cxx This file contains the implementation of class ChessGame.
 //
 // Copyright (C) 2008, by
 //
@@ -25,5 +25,5 @@
 #include "sys.h"
 #endif
 
-#include "GameNode.h"
+#include "ChessGame.h"
 

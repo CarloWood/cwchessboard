@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file ChessGame.cc This file contains the implementation of class ChessGame.
+//! @file Promotion.cxx This file contains the implementation of class Promotion.
 //
 // Copyright (C) 2008, by
 //
@@ -25,5 +25,5 @@
 #include "sys.h"
 #endif
 
-#include "ChessGame.h"
+#include "Promotion.h"
 

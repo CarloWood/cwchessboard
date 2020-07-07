@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set for gtkmm
 //
-//! @file tstbenchmark.cc A program to measure the move generation speed.
+//! @file tstbenchmark.cxx A program to measure the move generation speed.
 //
 // Copyright (C) 2008, by
 //

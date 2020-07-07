@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set for gtkmm
 //
-//! @file tstchessposition.cc A test application that prints all legal moves of a given position.
+//! @file tstchessposition.cxx A test application that prints all legal moves of a given position.
 //
 // Copyright (C) 2008, by
 //

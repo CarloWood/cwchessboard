@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set for gtkmm
 //
-//! @file ChessboardWidget.cc This file contains the implementation of the gtkmm class ChessboardWidget.
+//! @file ChessboardWidget.cxx This file contains the implementation of the gtkmm class ChessboardWidget.
 //
 // Copyright (C) 2008, by
 //

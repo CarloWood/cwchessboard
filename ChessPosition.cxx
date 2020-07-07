@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file ChessPosition.cc This file contains the implementation of class ChessPosition.
+//! @file ChessPosition.cxx This file contains the implementation of class ChessPosition.
 //
 // Copyright (C) 2008, by
 //

@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file Code.cc This file contains the implementation of class Code.
+//! @file Code.cxx This file contains the implementation of class Code.
 //
 // Copyright (C) 2008, by
 //

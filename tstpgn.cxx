@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file tstpgn.cc A test application to test reading PGN files.
+//! @file tstpgn.cxx A test application to test reading PGN files.
 //
 // Copyright (C) 2010, by
 //

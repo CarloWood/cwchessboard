@@ -1,6 +1,6 @@
 // cwchessboard -- A C++ chessboard tool set
 //
-//! @file PgnGrammar.cc This file contains the implementation of class PgnGrammar.
+//! @file PgnGame.cxx This file contains the implementation of class PgnGame.
 //
 // Copyright (C) 2008, by
 //
@@ -23,8 +23,7 @@
 
 #ifndef USE_PCH
 #include "sys.h"
-#include <boost/spirit/include/classic.hpp>
 #endif
 
-#include "PgnGrammar.h"
+#include "PgnGame.h"
 
