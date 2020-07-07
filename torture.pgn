@@ -38,7 +38,7 @@ Ok, lets start for real now.
   BlackElo		"1850"	
   ] ; Adding a comment here is illegal by the way.
   [ { Adding a comment like this, here, as well }
-% Escaped lines can appear anywhere were whitespace can appear.
+% Escaped lines can appear anywhere where whitespace can appear.
 tagname_should_start_with_an_upper_case_letter_but_do_not_always{
 [Now who would add a comment like that?!]}""]
 % That was an empty string; in many cases it should be translated
