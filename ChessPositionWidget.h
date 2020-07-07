@@ -105,7 +105,7 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
     static widget_mode_type const mode_disabled = 2;
 
     //! Return the current widget mode.
-    widget_mode_type get_widget_mode(void) const { return M_widget_mode; }
+    widget_mode_type get_widget_mode() const { return M_widget_mode; }
     //! Set the widget mode.
     void set_widget_mode(widget_mode_type widget_mode) { M_widget_mode = widget_mode; }
 
@@ -189,36 +189,36 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
   //@}
 
   private:
-    void initialize_menus(void);
+    void initialize_menus();
     bool popup_menu(GdkEventButton* event, int col, int row);
-    void popup_deactivated(void);
-    void update_paste_status(void);
+    void popup_deactivated();
+    void update_paste_status();
 
   protected:
-    virtual void on_menu_placepiece_black_pawn(void);
-    virtual void on_menu_placepiece_black_rook(void);
-    virtual void on_menu_placepiece_black_knight(void);
-    virtual void on_menu_placepiece_black_bishop(void);
-    virtual void on_menu_placepiece_black_queen(void);
-    virtual void on_menu_placepiece_black_king(void);
-    virtual void on_menu_placepiece_white_pawn(void);
-    virtual void on_menu_placepiece_white_rook(void);
-    virtual void on_menu_placepiece_white_knight(void);
-    virtual void on_menu_placepiece_white_bishop(void);
-    virtual void on_menu_placepiece_white_queen(void);
-    virtual void on_menu_placepiece_white_king(void);
-    virtual void on_menu_placepiece_nothing(void);
-    virtual void on_menu_allow_en_passant_capture(void);
-    virtual void on_menu_piece_has_moved(void);
-    virtual void on_menu_copy_FEN(void);
-    virtual void on_menu_paste_FEN(void);
-    virtual void on_menu_swap_colors(void);
-    virtual void on_menu_initial_position(void);
-    virtual void on_menu_clear_board(void);
-    virtual void on_menu_to_move_white(void);
-    virtual void on_menu_to_move_black(void);
+    virtual void on_menu_placepiece_black_pawn();
+    virtual void on_menu_placepiece_black_rook();
+    virtual void on_menu_placepiece_black_knight();
+    virtual void on_menu_placepiece_black_bishop();
+    virtual void on_menu_placepiece_black_queen();
+    virtual void on_menu_placepiece_black_king();
+    virtual void on_menu_placepiece_white_pawn();
+    virtual void on_menu_placepiece_white_rook();
+    virtual void on_menu_placepiece_white_knight();
+    virtual void on_menu_placepiece_white_bishop();
+    virtual void on_menu_placepiece_white_queen();
+    virtual void on_menu_placepiece_white_king();
+    virtual void on_menu_placepiece_nothing();
+    virtual void on_menu_allow_en_passant_capture();
+    virtual void on_menu_piece_has_moved();
+    virtual void on_menu_copy_FEN();
+    virtual void on_menu_paste_FEN();
+    virtual void on_menu_swap_colors();
+    virtual void on_menu_initial_position();
+    virtual void on_menu_clear_board();
+    virtual void on_menu_to_move_white();
+    virtual void on_menu_to_move_black();
     virtual void on_clipboard_get(Gtk::SelectionData& selection_data, guint info);
-    virtual void on_clipboard_clear(void);
+    virtual void on_clipboard_clear();
     virtual void on_clipboard_received(Glib::ustring const& text);
     virtual void on_clipboard_received_targets(Glib::StringArrayHandle const& targets_array);
 
@@ -261,17 +261,17 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
     using ChessPosition::clear_has_moved;
 
     //! See cwchess::ChessPosition::clear.
-    void clear(void) { ChessPosition::clear(); sync(); }
+    void clear() { ChessPosition::clear(); sync(); }
     //! See cwchess::ChessPosition::initial_position.
-    void initial_position(void) { ChessPosition::initial_position(); sync(); }
+    void initial_position() { ChessPosition::initial_position(); sync(); }
     //! See cwchess::ChessPosition::skip_move.
-    bool skip_move(void) { bool result = ChessPosition::skip_move(); set_active_turn_indicator(to_move().is_white()); return result; }
+    bool skip_move() { bool result = ChessPosition::skip_move(); set_active_turn_indicator(to_move().is_white()); return result; }
     //! See cwchess::ChessPosition::to_move.
     void to_move(cwchess::Color const& color) { ChessPosition::to_move(color); set_active_turn_indicator(to_move().is_white()); }
     //! See cwchess::ChessPosition::set_en_passant.
     bool set_en_passant(cwchess::Index const& index) { ChessPosition::set_en_passant(index); set_active_turn_indicator(to_move().is_white()); }
     //! See cwchess::ChessPosition::swap_colors.
-    void swap_colors(void) { ChessPosition::swap_colors(); sync(); }
+    void swap_colors() { ChessPosition::swap_colors(); sync(); }
     //! See cwchess::ChessPosition::place.
     bool place(cwchess::Code const& code, cwchess::Index const& index) { if (ChessPosition::place(code, index)) set_square(index.col(), index.row(), code); }
     //! See cwchess::ChessPosition::load_FEN.
@@ -493,7 +493,7 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
     void set_position(cwchess::ChessPosition const& chess_position) { *static_cast<cwchess::ChessPosition*>(this) = chess_position; sync(); }
 
     //! Paste a position from the clipboard.
-    void clipboard_paste(void);
+    void clipboard_paste();
 
   //@}
 
@@ -501,10 +501,10 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
   //@{
 
     //! Return a const reference to the current position.
-    ChessPosition const& get_position(void) const { return *this; }
+    ChessPosition const& get_position() const { return *this; }
 
     //! Copy a position to the clipboard.
-    void clipboard_copy(void) const;
+    void clipboard_copy() const;
 
   //@}
 
@@ -583,14 +583,14 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
      * piece will be dropped again. You have to take into account that this
      * happens when dealing with double clicks.
      */
-    sigc::signal<void, cwchess::Index const&, cwchess::ChessPosition const&>& signal_picked_up(void) { return M_signal_picked_up; }
+    sigc::signal<void, cwchess::Index const&, cwchess::ChessPosition const&>& signal_picked_up() { return M_signal_picked_up; }
 
     /** @brief Return handler for events signaling that the user dropped a piece.
      *
      * This signal is generated whenever the mouse button is released after
      * picking up a piece.
      */
-    sigc::signal<void, gint, gint, cwchess::ChessPosition const&>& signal_dropped(void) { return M_signal_dropped; }
+    sigc::signal<void, gint, gint, cwchess::ChessPosition const&>& signal_dropped() { return M_signal_dropped; }
 
     /** @brief Return handler for events signaling that the user did a (legal) chess move.
      *
@@ -605,7 +605,7 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
      * a flag that it is the turn of the computer and return immediately.
      * In general, calculating a reply move would be done in a seperate thread.
      */
-    sigc::signal<void, cwchess::Move const&, cwchess::ChessPosition const&, cwchess::ChessPosition const&>& signal_moved(void) { return M_signal_moved; }
+    sigc::signal<void, cwchess::Move const&, cwchess::ChessPosition const&, cwchess::ChessPosition const&>& signal_moved() { return M_signal_moved; }
 
     /** @brief Return handler for events signaling that the user attempted an illegal move.
      *
@@ -614,7 +614,7 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
      * dropping it outside the board is <em>not</em> an illegal move, but
      * is considered to be an abort of 'pick up and move' action.
      */
-    sigc::signal<void, cwchess::Move const&, cwchess::ChessPosition const&>& signal_illegal(void) { return M_signal_illegal; }
+    sigc::signal<void, cwchess::Move const&, cwchess::ChessPosition const&>& signal_illegal() { return M_signal_illegal; }
 
   //@}
 
@@ -623,7 +623,7 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
     virtual bool on_button_release_event(GdkEventButton* event);
 
   private:
-    void sync(void);
+    void sync();
 };
 
 } // namespace cwmm

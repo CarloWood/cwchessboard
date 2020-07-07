@@ -1632,7 +1632,7 @@ static void recreate_hud_layers(CwChessboard* chessboard)
 // CwChessboard API
 
 // Create and return a new chessboard widget.
-GtkWidget* cw_chessboard_new(void)
+GtkWidget* cw_chessboard_new()
 {
   return (GtkWidget*)g_object_new(CW_TYPE_CHESSBOARD, NULL);
 }

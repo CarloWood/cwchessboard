@@ -53,7 +53,7 @@ typedef uint16_t CwChessboardCode;
 #include "CwChessboardCodes.h"
 #endif
 
-GType cw_chessboard_get_type(void) G_GNUC_CONST;
+GType cw_chessboard_get_type() G_GNUC_CONST;
 
 #define CW_TYPE_CHESSBOARD             (cw_chessboard_get_type())
 #define CW_CHESSBOARD(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), CW_TYPE_CHESSBOARD, CwChessboard))
@@ -89,7 +89,7 @@ typedef unsigned char CwChessboardColorHandle;
  *
  * @returns Newly created CwChessboard.
  */
-GtkWidget* cw_chessboard_new(void);
+GtkWidget* cw_chessboard_new();
 
 //@} Creation
 

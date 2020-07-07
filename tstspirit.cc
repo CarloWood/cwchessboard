@@ -45,11 +45,11 @@ struct MY_ITERATOR {
 
     friend bool operator==(MY_ITERATOR const& a, MY_ITERATOR const& b) { return false; }
     friend bool operator!=(MY_ITERATOR const& a, MY_ITERATOR const& b) { return true; }
-    value_type& operator*(void) { return M_dummy; }
-    value_type const& operator*(void) const { return M_dummy; }
-    MY_ITERATOR& operator++(void) { return *this; }
+    value_type& operator*() { return M_dummy; }
+    value_type const& operator*() const { return M_dummy; }
+    MY_ITERATOR& operator++() { return *this; }
 
-    MY_ITERATOR(void) : M_dummy('?') { }
+    MY_ITERATOR() : M_dummy('?') { }
     MY_ITERATOR(MY_ITERATOR const& iter) : M_dummy(iter.M_dummy) { }
     MY_ITERATOR& operator=(MY_ITERATOR const& iter) { M_dummy = iter.M_dummy; }
 

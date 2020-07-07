@@ -66,11 +66,11 @@ class CastleFlags {
 
     friend class ChessPosition;
 
-    CastleFlags(void) : M_bits(0) { }
+    CastleFlags() : M_bits(0) { }
     CastleFlags& operator=(uint8_t bits) { M_bits = bits; return *this; }
 
     // Called when all pieces are removed from the board.
-    void clear(void) { M_bits = 231; }
+    void clear() { M_bits = 231; }
 
     // Called if \a code was removed from \a index.
     void update_removed(Code const& code, Index const& index)

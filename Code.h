@@ -96,7 +96,7 @@ class Code : protected CodeData {
   //@{
 
     //! Construct a Code object initialized as 'nothing'.
-    Code(void) { M_bits = 0; }
+    Code() { M_bits = 0; }
 
     //! Copy-constructor.
     Code(Code const& code) { M_bits = code.M_bits; }
@@ -128,7 +128,7 @@ class Code : protected CodeData {
     Code& operator=(Color const& color) { M_bits &= ~color_mask; M_bits |= color.M_bits; return *this; }
 
     //! Set the type to nothing.
-    void clear(void) { M_bits = 0; }
+    void clear() { M_bits = 0; }
 
   //@}
 
@@ -148,16 +148,16 @@ class Code : protected CodeData {
   //@{
 
     //! Returns TRUE if the type is a bishop, rook or queen.
-    bool is_a_slider(void) const { return (M_bits & type_mask) > 4; }
+    bool is_a_slider() const { return (M_bits & type_mask) > 4; }
 
     //! Returns TRUE if the type is a rook or queen.
-    bool is_a_rookmover(void) const { return (M_bits & rook_bits) == rook_bits; }
+    bool is_a_rookmover() const { return (M_bits & rook_bits) == rook_bits; }
 
     //! Returns TRUE if the type is a bishop or queen.
-    bool is_a_bishopmover(void) const { return (M_bits & bishop_bits) == bishop_bits; }
+    bool is_a_bishopmover() const { return (M_bits & bishop_bits) == bishop_bits; }
 
     //! Returns TRUE if the code represents 'nothing'.
-    bool is_nothing(void) const { return M_bits == 0; }
+    bool is_nothing() const { return M_bits == 0; }
 
     //! Returns TRUE if the type is equal.
     bool is_a(Type const& type) const { return (M_bits & type_mask) == type.M_bits; }
@@ -178,13 +178,13 @@ class Code : protected CodeData {
     bool moves_along(Direction const& direction) { return (M_bits & direction.mover_flags().M_bits) == direction.mover_flags().M_bits; }
 
     //! Return the Type of this Code.
-    Type type(void) const { return Type(M_bits & type_mask); }
+    Type type() const { return Type(M_bits & type_mask); }
 
     //! Return the Color of this Code.
-    Color color(void) const { return Color(M_bits & color_mask); }
+    Color color() const { return Color(M_bits & color_mask); }
 
     //! Return the unlaying integral value.
-    uint8_t operator()(void) const { return M_bits; }
+    uint8_t operator()() const { return M_bits; }
 
   //@}
 
@@ -192,10 +192,10 @@ class Code : protected CodeData {
   //@{
 
     //! Toggle the color. May not be used on type 'nothing'.
-    void toggle_color(void) { M_bits ^= color_mask; }
+    void toggle_color() { M_bits ^= color_mask; }
 
     //! Casting operator.
-    operator CwChessboardCode(void) const { return Code_to_CwChessboardCode[M_bits]; }
+    operator CwChessboardCode() const { return Code_to_CwChessboardCode[M_bits]; }
   
   //@}
 

@@ -226,7 +226,7 @@ void CodeTest::testConstruction()
 
 class CodeWithAccess : public Code {
   public:
-    CodeData const& code_data(void) const { return *static_cast<CodeData const*>(this); }
+    CodeData const& code_data() const { return *static_cast<CodeData const*>(this); }
 };
 
 void CodeTest::testEquality()
@@ -324,12 +324,12 @@ void CodeTest::testManipulation()
 
 class ColorWithAccess : public Color {
   public:
-    ColorData const& color_data(void) const { return *static_cast<ColorData const*>(this); }
+    ColorData const& color_data() const { return *static_cast<ColorData const*>(this); }
 };
 
 class TypeWithAccess : public Type {
   public:
-    TypeData const& type_data(void) const { return *static_cast<TypeData const*>(this); }
+    TypeData const& type_data() const { return *static_cast<TypeData const*>(this); }
 };
 
 void CodeTest::testTests()

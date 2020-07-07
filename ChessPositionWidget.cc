@@ -64,7 +64,7 @@ bool ChessPositionWidget::execute(Move const& move)
   set_active_turn_indicator(to_move().is_white());
 }
 
-void ChessPositionWidget::sync(void)
+void ChessPositionWidget::sync()
 {
   // Clear the board.
   for (Index index = index_begin; index != index_end; ++index)
@@ -136,72 +136,72 @@ bool ChessPositionWidget::popup_menu(GdkEventButton* event, int col, int row)
   return false;
 }
 
-void ChessPositionWidget::on_menu_placepiece_black_pawn(void)
+void ChessPositionWidget::on_menu_placepiece_black_pawn()
 {
   place(cwchess::black_pawn, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_black_rook(void)
+void ChessPositionWidget::on_menu_placepiece_black_rook()
 {
   place(cwchess::black_rook, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_black_knight(void)
+void ChessPositionWidget::on_menu_placepiece_black_knight()
 {
   place(cwchess::black_knight, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_black_bishop(void)
+void ChessPositionWidget::on_menu_placepiece_black_bishop()
 {
   place(cwchess::black_bishop, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_black_queen(void)
+void ChessPositionWidget::on_menu_placepiece_black_queen()
 {
   place(cwchess::black_queen, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_black_king(void)
+void ChessPositionWidget::on_menu_placepiece_black_king()
 {
   place(cwchess::black_king, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_white_pawn(void)
+void ChessPositionWidget::on_menu_placepiece_white_pawn()
 {
   place(cwchess::white_pawn, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_white_rook(void)
+void ChessPositionWidget::on_menu_placepiece_white_rook()
 {
   place(cwchess::white_rook, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_white_knight(void)
+void ChessPositionWidget::on_menu_placepiece_white_knight()
 {
   place(cwchess::white_knight, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_white_bishop(void)
+void ChessPositionWidget::on_menu_placepiece_white_bishop()
 {
   place(cwchess::white_bishop, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_white_queen(void)
+void ChessPositionWidget::on_menu_placepiece_white_queen()
 {
   place(cwchess::white_queen, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_white_king(void)
+void ChessPositionWidget::on_menu_placepiece_white_king()
 {
   place(cwchess::white_king, M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_placepiece_nothing(void)
+void ChessPositionWidget::on_menu_placepiece_nothing()
 {
   place(cwchess::Code(), M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_allow_en_passant_capture(void)
+void ChessPositionWidget::on_menu_allow_en_passant_capture()
 {
   bool en_passant_allowed = en_passant().exists() && en_passant().pawn_index() == M_placepiece_index;
   reset_en_passant();
@@ -216,7 +216,7 @@ void ChessPositionWidget::on_menu_allow_en_passant_capture(void)
   }
 }
 
-void ChessPositionWidget::on_menu_piece_has_moved(void)
+void ChessPositionWidget::on_menu_piece_has_moved()
 {
   if (has_moved(M_placepiece_index))
     clear_has_moved(M_placepiece_index);
@@ -224,7 +224,7 @@ void ChessPositionWidget::on_menu_piece_has_moved(void)
     set_has_moved(M_placepiece_index);
 }
 
-void ChessPositionWidget::on_menu_copy_FEN(void)
+void ChessPositionWidget::on_menu_copy_FEN()
 {
   DoutEntering(dc::clipboard, "ChessPositionWidget::on_menu_copy_FEN");
   Glib::RefPtr<Gtk::Clipboard> refClipboard = Gtk::Clipboard::get();
@@ -243,7 +243,7 @@ void ChessPositionWidget::on_menu_copy_FEN(void)
   Dout(dc::clipboard, "Storing \"" << M_clipboard_content << "\".");
 }
 
-void ChessPositionWidget::on_menu_paste_FEN(void)
+void ChessPositionWidget::on_menu_paste_FEN()
 {
   DoutEntering(dc::clipboard, "ChessPositionWidget::on_menu_paste_FEN");
   Glib::RefPtr<Gtk::Clipboard> refClipboard = Gtk::Clipboard::get();
@@ -265,7 +265,7 @@ void ChessPositionWidget::on_clipboard_get(Gtk::SelectionData& selection_data, g
     g_warning("ChessPositionWidget::on_clipboard_get(): Unexpected clipboard target format.");
 }
 
-void ChessPositionWidget::on_clipboard_clear(void)
+void ChessPositionWidget::on_clipboard_clear()
 {
   DoutEntering(dc::clipboard, "ChessPositionWidget::on_clipboard_clear()");
   M_clipboard_content.clear();
@@ -286,7 +286,7 @@ void ChessPositionWidget::on_clipboard_received(Glib::ustring const& text)
     M_trying_primary = false;
 }
 
-void ChessPositionWidget::update_paste_status(void)
+void ChessPositionWidget::update_paste_status()
 {
   DoutEntering(dc::clipboard, "ChessPositionWidget::update_paste_status()");
   M_refActionGroup->get_action("PasteFEN")->set_sensitive(false);
@@ -308,32 +308,32 @@ void ChessPositionWidget::on_clipboard_received_targets(Glib::StringArrayHandle 
   }
 }
 
-void ChessPositionWidget::on_menu_swap_colors(void)
+void ChessPositionWidget::on_menu_swap_colors()
 {
   swap_colors();
 }
 
-void ChessPositionWidget::on_menu_initial_position(void)
+void ChessPositionWidget::on_menu_initial_position()
 {
   initial_position();
 }
 
-void ChessPositionWidget::on_menu_clear_board(void)
+void ChessPositionWidget::on_menu_clear_board()
 {
   clear();
 }
 
-void ChessPositionWidget::on_menu_to_move_white(void)
+void ChessPositionWidget::on_menu_to_move_white()
 {
   to_move(white);
 }
 
-void ChessPositionWidget::on_menu_to_move_black(void)
+void ChessPositionWidget::on_menu_to_move_black()
 {
   to_move(black);
 }
 
-void ChessPositionWidget::initialize_menus(void)
+void ChessPositionWidget::initialize_menus()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::initialize_menus");
 
@@ -512,7 +512,7 @@ void ChessPositionWidget::initialize_menus(void)
     M_MenuPopup->signal_deactivate().connect(sigc::mem_fun(this, &ChessPositionWidget::popup_deactivated));
 }
 
-void ChessPositionWidget::popup_deactivated(void)
+void ChessPositionWidget::popup_deactivated()
 {
   Dout(dc::notice, "Calling ChessPositionWidget::popup_deactivated()");
   hide_cursor();

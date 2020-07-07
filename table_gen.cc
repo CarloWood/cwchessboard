@@ -48,7 +48,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
-static void zeroTables(void);
+static void zeroTables();
 static void markString(attr_t macro, char const* s);
 //static void unMarkString(attr_t macro, char const* s);
 static void markRange(attr_t macro, char from, char to);
@@ -64,7 +64,7 @@ attr_t NTL_char_attrib[1 + CHAR_MAX - CHAR_MIN];	/* 256 attr_t = 512 bytes */
  * Where we make the tables, edit ONLY this to change the tables.
  */
 
-static void makeTables(void)
+static void makeTables()
 {
   zeroTables();
 
@@ -124,7 +124,7 @@ static void makeTables(void)
 static void dumphw(attr_t* p, int beg);
 static void dumphb(char* p, int beg);
 
-int main(void)
+int main()
 {
   int i;
 
@@ -186,7 +186,7 @@ int main(void)
 
 /* A few utility functions for makeTables() */
 
-static void zeroTables(void)
+static void zeroTables()
 {
   for (int i = CHAR_MIN; i <= CHAR_MAX; ++i)
   {

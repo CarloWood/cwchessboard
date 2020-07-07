@@ -47,9 +47,9 @@ struct Direction {
   int8_t const index;
   uint8_t const flags;
 
-  FlagsData mover_flags(void) const { FlagsData result; result.M_bits = flags & type_mask; return result; }
-  FlagsData pinning_flags(void) const { FlagsData result; result.M_bits = flags >> 3; return result; }
-  bool is_horizontal(void) const { return shift == 1; }
+  FlagsData mover_flags() const { FlagsData result; result.M_bits = flags & type_mask; return result; }
+  FlagsData pinning_flags() const { FlagsData result; result.M_bits = flags >> 3; return result; }
+  bool is_horizontal() const { return shift == 1; }
   bool matches(Type const& type) const { return (type() & flags) == (type_mask & flags); }
 
   //! @brief Return a BitBoard with all squares in this direction.

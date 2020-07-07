@@ -49,7 +49,7 @@ void Database::process_next_data_block(char const* data, size_t size)
 {
 }
 
-void DatabaseSeekable::load(void)
+void DatabaseSeekable::load()
 {
   if (!Glib::thread_supported())
     DoutFatal(dc::fatal, "DatabaseSeekable::load: Threading not initialized. Call Glib::init_thread() at the start of main().");
@@ -69,7 +69,7 @@ void DatabaseSeekable::read_async_open_ready(Glib::RefPtr<Gio::AsyncResult>& res
   M_processing_finished.connect(sigc::mem_fun(*this, &DatabaseSeekable::processing_finished));
 }
 
-void DatabaseSeekable::need_more_data(void)
+void DatabaseSeekable::need_more_data()
 {
   M_new_block = MemoryBlockNode::create(S_buffer_size);
   g_input_stream_read_async(M_file_input_stream->InputStream::gobj(), M_new_block->block_begin(), S_buffer_size,
@@ -212,7 +212,7 @@ class Scanner {
         { M_current_position.init(&iter); }
 #endif
 
-    int push_position(void)
+    int push_position()
     {
       int size = M_stack.size();
       if (G_UNLIKELY(size <= M_stack_index))
@@ -233,7 +233,7 @@ class Scanner {
     //
     // This function is intended for debugging only.
     // It writes to debug channel dc::parser and escapes non-printable characters.
-    void print_line(void)
+    void print_line()
     {
       std::string s(M_current_position.M_line_start, *M_current_position.M_iter);
       Dout(dc::parser, "Parsed: \"" << buf2str(s.data(), s.length()) << "\".");
@@ -247,7 +247,7 @@ class Scanner {
     // once.
     //
     // @returns The first character.
-    typename ForwardIterator::value_type first_character(void) throw(EndOfFileReached)
+    typename ForwardIterator::value_type first_character() throw(EndOfFileReached)
     {
       if (G_UNLIKELY(*M_current_position.M_iter == M_end))
 	throw end_of_file_reached;
@@ -261,7 +261,7 @@ class Scanner {
     //! @brief Make the next character the current character.
     //
     // @returns The new current character.
-    typename ForwardIterator::value_type next_character(void) //throw(EndOfFileReached)
+    typename ForwardIterator::value_type next_character() //throw(EndOfFileReached)
     {
       if (G_UNLIKELY(++*M_current_position.M_iter == M_end))
       {
@@ -411,19 +411,19 @@ class Scanner {
     }
 
     //! @brief Return the current line number.
-    unsigned int line(void) const { return M_current_position.M_line; }
+    unsigned int line() const { return M_current_position.M_line; }
     //! @brief Return the column.
-    unsigned int column(void) const { return M_current_position.M_column + 1; }
+    unsigned int column() const { return M_current_position.M_column + 1; }
     //! @brief Return the total number of characters parsed thus far.
     //
     // The current character is not counted.
-    unsigned int number_of_characters(void) const { return M_current_position.M_number_of_characters + M_current_position.M_column; }
+    unsigned int number_of_characters() const { return M_current_position.M_number_of_characters + M_current_position.M_column; }
 
     //! @brief Return who is expected to move at this moment.
-    Color to_move(void) const { return M_current_position.M_to_move; }
+    Color to_move() const { return M_current_position.M_to_move; }
 
     //! @brief Reset the game state.
-    void reset_game_state(void)
+    void reset_game_state()
     {
       M_current_position.M_to_move = white;
     }
@@ -587,7 +587,7 @@ bool decode_game_termination(char& c, scanner_t& scanner)
 
 } // namespace
 
-void DatabaseSeekable::read_thread(void)
+void DatabaseSeekable::read_thread()
 {
   Debug(debug::init_thread());
   Dout(dc::notice, "DatabaseSeekable::read_thread started.");
@@ -734,7 +734,7 @@ void DatabaseSeekable::read_thread(void)
   M_processing_finished.emit();
 }
 
-void DatabaseSeekable::processing_finished(void)
+void DatabaseSeekable::processing_finished()
 {
   assert(M_buffer->closed());
   delete M_buffer;

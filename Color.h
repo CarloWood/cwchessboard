@@ -71,7 +71,7 @@ class Color : protected ColorData {
   //@{
 
     //! Construct an uninitialized Color object.
-    Color(void) { }
+    Color() { }
 
     //! Copy-constructor.
     Color(Color const& color) { M_bits = color.M_bits; }
@@ -108,13 +108,13 @@ class Color : protected ColorData {
   //@{
 
     //! Return TRUE if this color is white.
-    bool is_white(void) const { return M_bits; }
+    bool is_white() const { return M_bits; }
 
     //! Return TRUE if this color is black.
-    bool is_black(void) const { return !M_bits; }
+    bool is_black() const { return !M_bits; }
 
     //! Return the underlaying integral value.
-    uint8_t operator()(void) const { return M_bits; }
+    uint8_t operator()() const { return M_bits; }
 
   //@}
 
@@ -122,7 +122,7 @@ class Color : protected ColorData {
   //@{
 
     //! Change the color from black to white or vica versa.
-    void toggle(void) { M_bits ^= color_mask; }
+    void toggle() { M_bits ^= color_mask; }
 
   //@}
 
@@ -130,13 +130,13 @@ class Color : protected ColorData {
   //@{
 
     //! Return a Color object with the opposite color of this object.
-    Color opposite(void) const { ColorData data; data.M_bits = M_bits ^ color_mask; return Color(data); }
+    Color opposite() const { ColorData data; data.M_bits = M_bits ^ color_mask; return Color(data); }
 
     //! Return a number that can be used as array index.
-    uint8_t index(void) const { return M_bits >> 3; }
+    uint8_t index() const { return M_bits >> 3; }
 
     //! Return the index offset that advances one square in the direction of the pawns of this color.
-    uint8_t forward_index_offset(void) const { return (M_bits << 1) - 8; }
+    uint8_t forward_index_offset() const { return (M_bits << 1) - 8; }
     
   //@}
 

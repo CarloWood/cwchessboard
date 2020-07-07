@@ -47,7 +47,7 @@ namespace cwmm {
 class CwChessboardPtr {
   protected:
     CwChessboard* M_chessboard;
-    CwChessboardPtr(void) : M_chessboard(CW_CHESSBOARD(cw_chessboard_new())) { }
+    CwChessboardPtr() : M_chessboard(CW_CHESSBOARD(cw_chessboard_new())) { }
 };
 
 /** @class ChessboardWidget
@@ -65,7 +65,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
   //@{
 
     //! @brief Create a ChessboardWidget object.
-    ChessboardWidget(void);
+    ChessboardWidget();
     //! @brief Destructor.
     virtual ~ChessboardWidget();
 
@@ -213,7 +213,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_draw_border
      */
-    virtual void draw_border(void)
+    virtual void draw_border()
         { return cw_chessboard_default_draw_border(M_chessboard); }
 
     /** @brief Draw the indicator that indicates whose turn it is.
@@ -266,19 +266,19 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
   //@{
 
     //! @brief The side of a square in pixels.
-    gint sside(void) const { return M_chessboard->sside; }
+    gint sside() const { return M_chessboard->sside; }
     /** @brief The x coordinate of the top-left pixel of square a1.
      *
      * If the board is flipped, then the x coordinate of the top-left pixel of square h8 is returned.
      * In other words, this value is not depending on whether or not the board is flipped.
      */
-    gint top_left_a1_x(void) const { return M_chessboard->top_left_a1_x; }
+    gint top_left_a1_x() const { return M_chessboard->top_left_a1_x; }
     /** @brief The y coordinate of the top-left pixel of square a1.
      *
      * If the board is flipped, then the y coordinate of the top-left pixel of square h8 is returned.
      * In other words, this value is not depending on whether or not the board is flipped.
      */
-    gint top_left_a1_y(void) const { return M_chessboard->top_left_a1_y; }
+    gint top_left_a1_y() const { return M_chessboard->top_left_a1_y; }
 
   //@}
 
@@ -377,7 +377,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_draw_border
      */
-    gboolean get_draw_border(void) const
+    gboolean get_draw_border() const
         { return cw_chessboard_get_draw_border(M_chessboard); }
 
     /** @brief Set the boolean which determines whether or not to draw turn indicators.
@@ -396,7 +396,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_draw_turn_indicators
      */
-    gboolean get_draw_turn_indicators(void) const
+    gboolean get_draw_turn_indicators() const
         { return cw_chessboard_get_draw_turn_indicators(M_chessboard); }
 
     /** @brief Set the color of the active turn indicator.
@@ -414,7 +414,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_active_turn_indicator
      */
-    gboolean get_active_turn_indicator(void) const
+    gboolean get_active_turn_indicator() const
         { return cw_chessboard_get_active_turn_indicator(M_chessboard); }
 
     /** @brief Set the boolean which determines whether white is playing bottom up or top down.
@@ -430,7 +430,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_flip_board
      */
-    gboolean get_flip_board(void) const
+    gboolean get_flip_board() const
         { return cw_chessboard_get_flip_board(M_chessboard); }
 
     /** @brief Set the calc_board_border_width function.
@@ -799,7 +799,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_marker_thickness
      */
-    gdouble get_marker_thickness(void) const
+    gdouble get_marker_thickness() const
         { return cw_chessboard_get_marker_thickness(M_chessboard); }
 
     /** @brief Choose whether markers should be drawn below or above HUD layer 0.
@@ -823,14 +823,14 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_cursor_thickness, get_cursor_thickness
      */
-    void show_cursor(void)
+    void show_cursor()
         { cw_chessboard_show_cursor(M_chessboard); }
 
     /** @brief Hide the cursor.
      *
      * @sa show_cursor
      */
-    void hide_cursor(void)
+    void hide_cursor()
         { cw_chessboard_hide_cursor(M_chessboard); }
 
     /** @brief Set the thickness of the cursor.
@@ -848,7 +848,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_cursor_thickness
      */
-    gdouble get_cursor_thickness(void) const
+    gdouble get_cursor_thickness() const
         { return cw_chessboard_get_cursor_thickness(M_chessboard); }
 
     /** @brief Set the color of the cursor.

@@ -33,7 +33,7 @@ namespace util {
 // Let the data start at the first multiple of sizeof(size_t) after the MemoryBlockNode object.
 size_t const MemoryBlockNode::S_data_offset = (sizeof(MemoryBlockNode) + sizeof(size_t) - 1) & ~(sizeof(size_t) - 1);
 
-void MemoryBlockList::need_more_data_callback(void)
+void MemoryBlockList::need_more_data_callback()
 {
   // Create and read at most one new block per 'buffer full' incident.
   // If multiple new blocks have been processed in the mean time,
@@ -44,7 +44,7 @@ void MemoryBlockList::need_more_data_callback(void)
   M_slot_need_more_data();
 }
 
-void MemoryBlockListIterator::advance_to_next_block(void)
+void MemoryBlockListIterator::advance_to_next_block()
 {
   // Count the number of fully processed blocks.
   ++M_processed_blocks;

@@ -42,12 +42,12 @@ std::ostream* global_os;
 
 struct timeval before, after;
 
-inline void start_timer(void)
+inline void start_timer()
 {
   gettimeofday(&before, NULL);
 }
 
-uint64_t stop_timer(void)
+uint64_t stop_timer()
 {
   gettimeofday(&after, NULL);
   timersub(&after, &before, &after);
@@ -216,7 +216,7 @@ void benchmark_cwchess_pgn(std::ostream& os, char const* filename)
 }
 #endif
 
-void clear_disk_cache(void)
+void clear_disk_cache()
 {
   // Free pagecache.
   system("sudo sh -c \"sync; echo 1 > /proc/sys/vm/drop_caches\"");

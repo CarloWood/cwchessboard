@@ -117,14 +117,14 @@ class CountBoard {
       M_any = collect;
     }
 
-    void reset(void)
+    void reset()
     {
       for (auto& bits : M_bits)
         bits.reset();
       M_any.reset();
     }
 
-    BitBoard any(void) const { return M_any; }
+    BitBoard any() const { return M_any; }
 
     int count(BitBoard const& pos) const
     {

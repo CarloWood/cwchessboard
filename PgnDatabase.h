@@ -62,7 +62,7 @@ class Database : public util::Referenceable {
     MemoryBlockList* M_buffer;				//!< Linked list of blocks with valid data.
     Glib::RefPtr<MemoryBlockNode> M_new_block;		//!< Temporary storage for new block that is being read and not linked yet.
     //! Constructor.
-    Database(void) : M_saw_carriage_return(false), M_line_wrapped(0),
+    Database() : M_saw_carriage_return(false), M_line_wrapped(0),
         M_number_of_lines(0), M_number_of_characters(0), M_state(white_space),
         M_buffer(NULL) { }
 
@@ -73,10 +73,10 @@ class Database : public util::Referenceable {
     void process_next_data_block(char const* data, size_t size);
   public:
     //! @brief Return the path name of the database.
-    virtual std::string get_path(void) const = 0;
+    virtual std::string get_path() const = 0;
 
-    int number_of_lines(void) const { return M_number_of_lines; }
-    size_t number_of_characters(void) const { return M_number_of_characters; }
+    int number_of_lines() const { return M_number_of_lines; }
+    size_t number_of_characters() const { return M_number_of_characters; }
 };
 
 class DatabaseSeekable : public Database {
@@ -104,18 +104,18 @@ class DatabaseSeekable : public Database {
 	M_bytes_read(0), M_slot_open_finished(slot_open_finished) { load(); }
     virtual ~DatabaseSeekable();
   private:
-    void load(void);
+    void load();
     void read_async_open_ready(Glib::RefPtr<Gio::AsyncResult>& result);
     static void read_async_ready(GObject* source_object, GAsyncResult* async_res, gpointer user_data);
     void read_async_ready(GObject* source_object, GAsyncResult* async_res);
-    void need_more_data(void);
-    void processing_finished(void);
+    void need_more_data();
+    void processing_finished();
 
     //! @brief Return the path name of the database.
-    virtual std::string get_path(void) const { return M_file->get_path(); }
+    virtual std::string get_path() const { return M_file->get_path(); }
 
   private:
-    void read_thread(void);
+    void read_thread();
 };
 
 } // namespace pgn

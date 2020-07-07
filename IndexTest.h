@@ -256,7 +256,7 @@ void IndexTest::testConstants()
 
 class IndexWithAccess : public Index {
   public:
-    IndexData const& index_data(void) const { return *static_cast<IndexData const*>(this); }
+    IndexData const& index_data() const { return *static_cast<IndexData const*>(this); }
 };
 
 void IndexTest::testEquality()

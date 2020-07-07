@@ -88,7 +88,7 @@ class Flags : protected FlagsData {
   //@{
 
     //! Construct an uninitialized Flags object.
-    Flags(void) { }
+    Flags() { }
 
     //! Copy-constructor.
     Flags(Flags const& flags) { M_bits = flags.M_bits; }
@@ -108,7 +108,7 @@ class Flags : protected FlagsData {
     Flags& operator=(FlagsData flags) { M_bits = flags.M_bits; return *this; }
 
     //! Set all flags to 0.
-    void clear(void) { M_bits = 0; }
+    void clear() { M_bits = 0; }
 
   //@}
 
@@ -157,7 +157,7 @@ class Flags : protected FlagsData {
   //@{
 
     //! Set the fl_pawn_can_move_two_squares bit iff fl_pawn_is_not_blocked bit is already set.
-    void set_can_move_two_squares_if_not_blocked(void) { M_bits |= (M_bits & 16) << 2; }
+    void set_can_move_two_squares_if_not_blocked() { M_bits |= (M_bits & 16) << 2; }
 
   //@}
 
@@ -165,7 +165,7 @@ class Flags : protected FlagsData {
   //@{
 
     //! Return the underlaying integral value.
-    uint8_t operator()(void) const { return M_bits; }
+    uint8_t operator()() const { return M_bits; }
 
   //@}
 

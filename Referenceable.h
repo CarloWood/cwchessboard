@@ -34,11 +34,11 @@ class Referenceable {
   private:
     mutable volatile gint M_ref_count;
   protected:
-    Referenceable(void) : M_ref_count(1) { }
+    Referenceable() : M_ref_count(1) { }
     virtual ~Referenceable() { }
   public:
-    void reference(void) const { g_atomic_int_inc(&M_ref_count); }
-    void unreference(void) const { if (g_atomic_int_dec_and_test(&M_ref_count)) delete const_cast<Referenceable*>(this); }
+    void reference() const { g_atomic_int_inc(&M_ref_count); }
+    void unreference() const { if (g_atomic_int_dec_and_test(&M_ref_count)) delete const_cast<Referenceable*>(this); }
 };
 
 } // namespace util

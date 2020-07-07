@@ -35,7 +35,7 @@
 namespace cwchess {
 
 #ifndef DOXYGEN
-std::string EnPassant::FEN4(void) const
+std::string EnPassant::FEN4() const
 {
   if (!exists())
     return "-";
@@ -46,7 +46,7 @@ std::string EnPassant::FEN4(void) const
 }
 #endif
 
-void ChessPosition::clear_en_passant(void)
+void ChessPosition::clear_en_passant()
 {
   Index index = M_en_passant.pawn_index();
   if (index > ih1 && piece_at(index - 1) == pawn)
@@ -56,7 +56,7 @@ void ChessPosition::clear_en_passant(void)
   M_en_passant.clear();
 }
 
-void ChessPosition::clear(void)
+void ChessPosition::clear()
 {
   for (Index index = index_begin; index != index_end; ++index)
     M_pieces[index].set_type(nothing);
@@ -80,7 +80,7 @@ void ChessPosition::clear(void)
   M_double_check = false;
 }
 
-void ChessPosition::initial_position(void)
+void ChessPosition::initial_position()
 {
   clear();
   // It's white's turn.
@@ -120,7 +120,7 @@ bool ChessPosition::increment_counters(bool pawn_advance_or_capture)
   return M_half_move_clock == 100;
 }
 
-bool ChessPosition::skip_move(void)
+bool ChessPosition::skip_move()
 {
   reset_en_passant();
   M_to_move.toggle();
@@ -134,7 +134,7 @@ void ChessPosition::to_move(Color const& color)
   M_double_check = M_castle_flags.in_check(M_to_move) ? double_check(M_to_move) : false;
 }
 
-void ChessPosition::swap_colors(void)
+void ChessPosition::swap_colors()
 {
   ChessPosition new_chess_position;
   new_chess_position.clear();
@@ -967,7 +967,7 @@ bool ChessPosition::load_FEN(std::string const& FEN)
   return true;
 }
 
-std::string ChessPosition::FEN(void) const
+std::string ChessPosition::FEN() const
 {
   std::ostringstream fen;
   for (int row = 7; row >= 0; --row)

@@ -90,7 +90,7 @@ class Type : protected TypeData {
   //@{
 
     //! Construct an uninitialized Type.
-    Type(void) { }
+    Type() { }
 
     //! Copy-constructor.
     Type(Type const& type) { M_bits = type.M_bits; }
@@ -127,16 +127,16 @@ class Type : protected TypeData {
   //@{
 
     //! Returns TRUE if the type is a bishop, rook or queen.
-    bool is_a_slider(void) const { return M_bits > 4; }
+    bool is_a_slider() const { return M_bits > 4; }
 
     //! Returns TRUE if the type is a rook or queen.
-    bool is_a_rookmover(void) const { return (M_bits & rook_bits) == rook_bits; }
+    bool is_a_rookmover() const { return (M_bits & rook_bits) == rook_bits; }
 
     //! Returns TRUE if the type is a bishop or queen.
-    bool is_a_bishopmover(void) const { return (M_bits & bishop_bits) == bishop_bits; }
+    bool is_a_bishopmover() const { return (M_bits & bishop_bits) == bishop_bits; }
     
     //! Return the underlaying integral value.
-    uint8_t operator()(void) const { return M_bits; }
+    uint8_t operator()() const { return M_bits; }
 
   //@}
 

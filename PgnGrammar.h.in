@@ -56,7 +56,7 @@ class PgnGrammar : public boost::spirit::classic::grammar<PgnGrammar> {
     typedef PgnGrammar grammar_t;
 
   public:
-    PgnGrammar(void)
+    PgnGrammar()
     {
       BOOST_SPIRIT_DEBUG_TRACE_GRAMMAR_NAME(*this, "PgnGrammar", 1);
     }
@@ -80,7 +80,7 @@ class PgnGrammar : public boost::spirit::classic::grammar<PgnGrammar> {
       // RULE DECLARATION END
 
       // Start rule of this grammar.
-      rule_t const& start(void) const { return PGN_database; }
+      rule_t const& start() const { return PGN_database; }
 
       definition(PgnGrammar const& self)
       {

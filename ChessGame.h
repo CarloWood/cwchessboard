@@ -41,13 +41,13 @@ class ChessGame {
 
   public:
     //! @brief Construct an uninitialized ChessGame object.
-    ChessGame(void) { }
+    ChessGame() { }
 
     //! @brief Access the meta data of the game.
-    MetaData const& meta_data(void) const { return M_meta_data; }
+    MetaData const& meta_data() const { return M_meta_data; }
 
     //! @brief Access the game nodes of the game.
-    std::vector<GameNode> const& nodes(void) const { M_nodes; }
+    std::vector<GameNode> const& nodes() const { M_nodes; }
 
     //! @brief Read a game from a PGN file.
     void read(pgn::Game const& pgn_game);

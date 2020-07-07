@@ -72,24 +72,24 @@ class MyChessboardWidget : public cwmm::ChessPositionWidget {
     virtual bool on_button_release(gint col, gint row, GdkEventButton const* event);
 
   public:
-    void on_menu_mode_editposition(void)
+    void on_menu_mode_editposition()
     {
       if (get_widget_mode() != mode_edit_position)
 	set_widget_mode(mode_edit_position);
     }
-    void on_menu_mode_editgame(void)
+    void on_menu_mode_editgame()
     {
       if (get_widget_mode() != mode_edit_game)
 	set_widget_mode(mode_edit_game);
     }
-    void on_menu_mode_showcandidates(void) { M_mode = mode_show_candidates; }
-    void on_menu_mode_showreachables(void) { M_mode = mode_show_reachables; }
-    void on_menu_mode_showattacked(void) { M_mode = mode_show_attacked; }
-    void on_menu_mode_showdefendables(void) { M_mode = mode_show_defendables; }
-    void on_menu_mode_showdefended_black(void) { M_mode = mode_show_defended_black; }
-    void on_menu_mode_showdefended_white(void) { M_mode = mode_show_defended_white; }
-    void on_menu_mode_showmoves(void) { M_mode = mode_show_moves; }
-    void on_menu_mode_placepieces(void) { M_mode = mode_popup_menu; }
+    void on_menu_mode_showcandidates() { M_mode = mode_show_candidates; }
+    void on_menu_mode_showreachables() { M_mode = mode_show_reachables; }
+    void on_menu_mode_showattacked() { M_mode = mode_show_attacked; }
+    void on_menu_mode_showdefendables() { M_mode = mode_show_defendables; }
+    void on_menu_mode_showdefended_black() { M_mode = mode_show_defended_black; }
+    void on_menu_mode_showdefended_white() { M_mode = mode_show_defended_white; }
+    void on_menu_mode_showmoves() { M_mode = mode_show_moves; }
+    void on_menu_mode_placepieces() { M_mode = mode_popup_menu; }
 
     void picked_up(cwchess::Index const& index, cwchess::ChessPosition const& chess_position);
     void dropped(gint col, gint row, cwchess::ChessPosition const& chess_position);
@@ -101,7 +101,7 @@ class MyChessboardWidget : public cwmm::ChessPositionWidget {
 
   private:
     void show_reachables(int col, int row, mode_type mode);
-    void update_en_passant_arrow(void);
+    void update_en_passant_arrow();
     void show_pinning();
 
   private:
@@ -114,7 +114,7 @@ class MyChessboardWidget : public cwmm::ChessPositionWidget {
     };
 
   private:
-    void init_colors(void);
+    void init_colors();
     ColorHandle get_color_handle(int index, colors_t color);
 };
 
@@ -134,7 +134,7 @@ rgb_t mix(rgb_t col1, gdouble alpha1, rgb_t col2, gdouble alpha2)
   return result;
 }
 
-void MyChessboardWidget::init_colors(void)
+void MyChessboardWidget::init_colors()
 {
   gdouble alpha = 0.5;
 
@@ -184,7 +184,7 @@ MyChessboardWidget::ColorHandle MyChessboardWidget::get_color_handle(int index, 
   return M_colors[2 * color + offset];
 }
 
-void MyChessboardWidget::show_pinning(void)
+void MyChessboardWidget::show_pinning()
 {
   using namespace cwchess;
   BitBoard bb1 = attackers(black) | attackers(white);
@@ -280,7 +280,7 @@ void MyChessboardWidget::show_reachables(int col, int row, mode_type mode)
   update_en_passant_arrow();
 }
 
-void MyChessboardWidget::update_en_passant_arrow(void)
+void MyChessboardWidget::update_en_passant_arrow()
 {
   cwchess::EnPassant const& en_passant(this->en_passant());
   if (en_passant.exists())
@@ -439,11 +439,11 @@ class GtkTest : public Gtk::Window {
     virtual ~GtkTest() { }
 
     // Accessors for the chessboard widget.
-    MyChessboardWidget& chessboard_widget(void) { return m_chessboard_widget; }
-    MyChessboardWidget const& chessboard_widget(void) const { return m_chessboard_widget; }
+    MyChessboardWidget& chessboard_widget() { return m_chessboard_widget; }
+    MyChessboardWidget const& chessboard_widget() const { return m_chessboard_widget; }
 
   private:
-    void setup_menu(void);
+    void setup_menu();
 
   protected:
     //Signal handlers:
@@ -455,14 +455,14 @@ class GtkTest : public Gtk::Window {
     virtual void on_menu_file_export();
     virtual void on_menu_file_undo();
     virtual void on_menu_file_flip();
-    virtual void on_menu_mode_editposition(void)
+    virtual void on_menu_mode_editposition()
     {
       m_chessboard_widget.on_menu_mode_editposition();
       if (m_chessboard_widget.get_widget_mode() == cwmm::ChessPositionWidget::mode_edit_game)
 	M_ModePlacePieces_action->set_active(true);
       m_chessboard_widget.set_widget_mode(cwmm::ChessPositionWidget::mode_edit_position);
     }
-    virtual void on_menu_mode_editgame(void)
+    virtual void on_menu_mode_editgame()
     {
       m_chessboard_widget.on_menu_mode_editgame();
       m_chessboard_widget.set_widget_mode(cwmm::ChessPositionWidget::mode_edit_game);
@@ -526,12 +526,12 @@ GtkTest::GtkTest(int width, int height) : m_vbox(FALSE, 0), m_chessboard_widget(
   m_chessboard_widget.signal_dropped().connect(sigc::mem_fun(m_chessboard_widget, &MyChessboardWidget::dropped));
 }
 
-void GtkTest::on_menu_file_quit(void)
+void GtkTest::on_menu_file_quit()
 {
   hide();
 }
 
-void GtkTest::on_menu_file_save(void)
+void GtkTest::on_menu_file_save()
 {
   std::ofstream file;
   file.open("FEN.out");
@@ -539,7 +539,7 @@ void GtkTest::on_menu_file_save(void)
   file.close();
 }
 
-void GtkTest::on_menu_file_undo(void)
+void GtkTest::on_menu_file_undo()
 {
   if (M_history.empty())
     return;
@@ -547,24 +547,24 @@ void GtkTest::on_menu_file_undo(void)
   M_history.pop();
 }
 
-void GtkTest::on_menu_file_new(void)
+void GtkTest::on_menu_file_new()
 {
   chessboard_widget().initial_position();
 }
 
-void GtkTest::on_menu_file_clear(void)
+void GtkTest::on_menu_file_clear()
 {
   chessboard_widget().clear();
   Dout(dc::notice, "Calling M_ModeEditPosition_action->set_active(true)");
   M_ModeEditPosition_action->set_active(true); 
 }
 
-void GtkTest::on_menu_file_flip(void)
+void GtkTest::on_menu_file_flip()
 {
   chessboard_widget().set_flip_board(!chessboard_widget().get_flip_board());
 }
 
-void GtkTest::on_menu_file_export(void)
+void GtkTest::on_menu_file_export()
 {
   using namespace cwchess;
   std::cout << "  chess_position.load_FEN(\"" << chessboard_widget().FEN() << "\");\n";
@@ -588,7 +588,7 @@ void GtkTest::on_menu_file_export(void)
   std::cout << "\n  };" << std::endl;
 }
 
-void GtkTest::on_menu_file_open(void)
+void GtkTest::on_menu_file_open()
 {
   std::ifstream file;
   file.open("FEN.out");
@@ -598,7 +598,7 @@ void GtkTest::on_menu_file_open(void)
   chessboard_widget().load_FEN(fen);
 }
 
-void GtkTest::setup_menu(void)
+void GtkTest::setup_menu()
 {
   // Create the action group.
   m_refActionGroup = Gio::SimpleActionGroup::create();

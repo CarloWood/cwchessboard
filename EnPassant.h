@@ -60,7 +60,7 @@ class EnPassant {
   public:
 #ifndef DOXYGEN
     //! @brief Construct an uninitialized EnPassant object.
-    EnPassant(void) { }
+    EnPassant() { }
 
     //! @brief Construct EnPassant object with index \a index.
     EnPassant(Index const& index) : M_bits(index()) { }
@@ -69,20 +69,20 @@ class EnPassant {
 //    EnPassant& operator=(EnPassant const& en_passant) { M_bits = en_passant.M_bits; return *this; }
 
     //! @brief Clear the EnPassant object.
-    void clear(void) { M_bits = index_end.M_bits; }
+    void clear() { M_bits = index_end.M_bits; }
 
     //! @brief Return the FEN field with en passant information.
-    std::string FEN4(void) const;
+    std::string FEN4() const;
 #endif
 
     //! @brief Return TRUE if the last move was a pawn advancing two squares.
-    bool exists(void) const { return M_bits != index_end.M_bits; }
+    bool exists() const { return M_bits != index_end.M_bits; }
 
   /** @name Accessors */
   //@{
 
     //! @brief Return the index of the square that was passed.
-    Index index(void) const
+    Index index() const
     {
 #if DEBUG_ENPASSANT_EXISTS
       assert(exists());
@@ -92,7 +92,7 @@ class EnPassant {
     }
 
     //! @brief Return the index of the pawn that just advanced two squares.
-    Index pawn_index(void) const
+    Index pawn_index() const
     {
 #if DEBUG_ENPASSANT_EXISTS
       assert(exists());
@@ -102,7 +102,7 @@ class EnPassant {
     }
 
     //! @brief Return the index of the square that pawn came from.
-    Index from_index(void) const
+    Index from_index() const
     {
 #if DEBUG_ENPASSANT_EXISTS
       assert(exists());
@@ -112,7 +112,7 @@ class EnPassant {
     }
 
     //! @brief Return TRUE if taking en passant is not allowed due to <em>horizontal</em> pinning.
-    bool pinned(void) const
+    bool pinned() const
     {
 #if DEBUG_ENPASSANT_EXISTS
       assert(exists());
@@ -124,7 +124,7 @@ class EnPassant {
 
 #ifndef DOXYGEN
     //! @brief Taking en passant is not allowed because it is pinned.
-    void pinned_set(void)
+    void pinned_set()
     {
 #if DEBUG_ENPASSANT_EXISTS
       assert(exists());
@@ -133,7 +133,7 @@ class EnPassant {
     }
 
     //! @brief Taking en passant is allowed again, because it is unpinned.
-    void pinned_reset(void) { M_bits &= 0x7f; }
+    void pinned_reset() { M_bits &= 0x7f; }
 #endif
 
 };

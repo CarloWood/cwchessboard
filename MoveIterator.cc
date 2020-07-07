@@ -29,7 +29,7 @@
 
 namespace cwchess {
 
-bool MoveIterator::next_promotion(void)
+bool MoveIterator::next_promotion()
 {
   Type type = rook;
   Type promotion_type = M_current_move.promotion_type();
@@ -45,7 +45,7 @@ bool MoveIterator::next_promotion(void)
   return false;
 }
 
-bool MoveIterator::prev_promotion(void)
+bool MoveIterator::prev_promotion()
 {
   Type type = queen;
   Type promotion_type = M_current_move.promotion_type();

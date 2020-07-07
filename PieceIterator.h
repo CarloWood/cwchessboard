@@ -52,9 +52,9 @@ class PieceIterator : public std::iterator<std::bidirectional_iterator_tag, Piec
     // Default Constructible.
     /** @brief Construct the corresponding one-passed-the-end iterator.
      *
-     * @sa ChessPosition::piece_end(void)
+     * @sa ChessPosition::piece_end()
      */
-    PieceIterator(void) : M_chess_position(NULL), M_current_index(index_end) { }
+    PieceIterator() : M_chess_position(NULL), M_current_index(index_end) { }
 
     /** @brief Construct the corresponding one-before-the-beginning iterator.
      */
@@ -141,10 +141,10 @@ class PieceIterator : public std::iterator<std::bidirectional_iterator_tag, Piec
     Piece operator*() const;
 
     //! Return a pointer to the Piece standing on the current index.
-    Piece const* operator->(void) const;
+    Piece const* operator->() const;
 
     //! Return the current index.
-    Index const& index(void) const { return M_current_index; }
+    Index const& index() const { return M_current_index; }
 
   //@}
 
@@ -160,8 +160,8 @@ class PieceIterator : public std::iterator<std::bidirectional_iterator_tag, Piec
   //@}
 
   private:
-    Index get_first_bitindex(void) const { Index result(index_pre_begin); result.next_bit_in(M_pieces()); return result; }
-    Index get_last_bitindex(void) const { Index result(index_end); result.prev_bit_in(M_pieces()); return result; }
+    Index get_first_bitindex() const { Index result(index_pre_begin); result.next_bit_in(M_pieces()); return result; }
+    Index get_last_bitindex() const { Index result(index_end); result.prev_bit_in(M_pieces()); return result; }
 };
 
 } // namespace cwchess

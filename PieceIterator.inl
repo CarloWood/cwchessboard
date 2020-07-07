@@ -28,7 +28,7 @@ inline Piece PieceIterator::operator*() const
   return M_chess_position->M_pieces[M_current_index];
 }
 
-inline Piece const* PieceIterator::operator->(void) const
+inline Piece const* PieceIterator::operator->() const
 {
   return &M_chess_position->M_pieces[M_current_index];
 }

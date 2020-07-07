@@ -53,7 +53,7 @@ class Piece {
   //@{
 
     //! Construct an empty piece (nothing).
-    Piece(void) : M_code(), M_flags(fl_none) { }
+    Piece() : M_code(), M_flags(fl_none) { }
 
     /** @brief Construct a fully initialized Piece.
      *
@@ -109,16 +109,16 @@ class Piece {
      *
      * Only valid if the type is not 'nothing'.
      */
-    Color color(void) const { return M_code.color(); }
+    Color color() const { return M_code.color(); }
 
     //! The type of this piece.
-    Type type(void) const { return M_code.type(); }
+    Type type() const { return M_code.type(); }
 
     //! The flags of this piece.
-    Flags flags(void) const { return M_flags; }
+    Flags flags() const { return M_flags; }
 
     //! The code of this piece.
-    Code code(void) const { return M_code; }
+    Code code() const { return M_code; }
 
   //@}
 
@@ -135,31 +135,31 @@ class Piece {
     void set_type(Type const& type) { if (type == nothing) { M_code.clear(); M_flags.clear(); } else M_code = type; }
 
     //! Reset the 'can take queen side' flag, if any.
-    void reset_can_take_queen_side(void) { M_flags.reset(fl_pawn_can_take_queen_side); }
+    void reset_can_take_queen_side() { M_flags.reset(fl_pawn_can_take_queen_side); }
 
     //! Reset the 'can take king side' flag, if any.
-    void reset_can_take_king_side(void) { M_flags.reset(fl_pawn_can_take_king_side); }
+    void reset_can_take_king_side() { M_flags.reset(fl_pawn_can_take_king_side); }
 
     //! Reset the 'is not blocked' flag, if any.
-    void reset_is_not_blocked(void) { M_flags.reset(fl_pawn_is_not_blocked|fl_pawn_can_move_two_squares); }
+    void reset_is_not_blocked() { M_flags.reset(fl_pawn_is_not_blocked|fl_pawn_can_move_two_squares); }
 
     //! Reset the 'can move two squares' flag, if any.
-    void reset_can_move_two_squares(void) { M_flags.reset(fl_pawn_can_move_two_squares); }
+    void reset_can_move_two_squares() { M_flags.reset(fl_pawn_can_move_two_squares); }
 
     //! Set the 'can take queen side' flag.
-    void set_can_take_queen_side(void) { M_flags.set(fl_pawn_can_take_queen_side); }
+    void set_can_take_queen_side() { M_flags.set(fl_pawn_can_take_queen_side); }
 
     //! Set the 'can take king side' flag.
-    void set_can_take_king_side(void) { M_flags.set(fl_pawn_can_take_king_side); }
+    void set_can_take_king_side() { M_flags.set(fl_pawn_can_take_king_side); }
 
     //! Set the 'is not blocked' flag.
-    void set_is_not_blocked(void) { M_flags.set(fl_pawn_is_not_blocked); }
+    void set_is_not_blocked() { M_flags.set(fl_pawn_is_not_blocked); }
 
     //! Set the 'can move two squares' flag.
-    void set_can_move_two_squares(void) { M_flags.set(fl_pawn_can_move_two_squares); }
+    void set_can_move_two_squares() { M_flags.set(fl_pawn_can_move_two_squares); }
 
     //! Copy the 'is not blocked' flag to the 'can move two squares' flag, if set.
-    void set_can_move_two_squares_if_not_blocked(void) { M_flags.set_can_move_two_squares_if_not_blocked(); }
+    void set_can_move_two_squares_if_not_blocked() { M_flags.set_can_move_two_squares_if_not_blocked(); }
 
   public:
   /** @name Comparison operators */

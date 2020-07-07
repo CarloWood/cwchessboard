@@ -216,16 +216,16 @@ class Index : protected IndexData {
 
   public:
 #if DEBUG_INDEX_INITIALIZATION_AND_RANGE_CHECK
-    Index(void) : M_initialized(0) { }
+    Index() : M_initialized(0) { }
     ~Index() { M_initialized = index_destruction_magic; }
 
-    bool is_initialized(void) const { return M_initialized == index_initialization_magic; }
+    bool is_initialized() const { return M_initialized == index_initialization_magic; }
 #else
   /** @name Constructors */
   //@{
 
     //! Construct an uninitialized Index object.
-    Index(void) { }
+    Index() { }
 #endif
 
     //! Copy-constructor.
@@ -320,9 +320,9 @@ class Index : protected IndexData {
     friend Index operator-(Index const& index, int offset) { Index result(index); return result -= offset; }
     friend Index operator-(int offset, Index const& index) { Index result(index); return result -= offset; }
 
-    Index& operator++(void) { ++M_bits; return *this; }
+    Index& operator++() { ++M_bits; return *this; }
     Index operator++(int) { Index result(*this); operator++(); return result; }
-    Index& operator--(void) { ++M_bits; return *this; }
+    Index& operator--() { ++M_bits; return *this; }
     Index operator--(int) { Index result(*this); operator--(); return result; }
 
   //@}
@@ -331,13 +331,13 @@ class Index : protected IndexData {
   //@{
 
     //! Returns the row.
-    int row(void) const { return M_bits >> 3; }
+    int row() const { return M_bits >> 3; }
 
     //! Returns the column.
-    int col(void) const { return M_bits & 7; }
+    int col() const { return M_bits & 7; }
 
     //! Return the unlaying integral value.
-    uint8_t operator()(void) const { return M_bits; }
+    uint8_t operator()() const { return M_bits; }
 
   //@}
 
@@ -485,7 +485,7 @@ class Index : protected IndexData {
     }
 
     //! Return TRUE if index is not index_pre_begin and also not 0.
-    bool may_call_prev_bit_in(void) const
+    bool may_call_prev_bit_in() const
     {
 #if DEBUG_INDEX_INITIALIZATION_AND_RANGE_CHECK
       assert(is_initialized());

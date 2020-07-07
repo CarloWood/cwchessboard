@@ -73,7 +73,7 @@ class ChessPosition {
     // member variable initialized here is M_to_move because it needs
     // to be set to something before we can call ChessPosition::place,
     // or uninitialized memory would be used.
-    ChessPosition(void) : M_to_move(white) { }
+    ChessPosition() : M_to_move(white) { }
 
   //@}
 
@@ -85,10 +85,10 @@ class ChessPosition {
      * This does not change whose move it is.
      * The half move clock and full move number are reset (to zero and one respectively).
      */
-    void clear(void);
+    void clear();
 
     /** @brief Set up the initial position. */
-    void initial_position(void);
+    void initial_position();
 
     /** @brief Skip a move.
      *
@@ -97,7 +97,7 @@ class ChessPosition {
      *
      * @returns TRUE if the result is a draw due to the 50 moves rule.
      */
-    bool skip_move(void);
+    bool skip_move();
 
     /** @brief Explicitly set whose turn it is.
      *
@@ -147,7 +147,7 @@ class ChessPosition {
      * (to one) because it would impossible to really have the same
      * history: it is not possible that black started the game.
      */
-    void swap_colors(void);
+    void swap_colors();
 
     /** @brief Place a piece on the board.
      *
@@ -241,19 +241,19 @@ class ChessPosition {
     Piece piece_at(int col, int row) const { return M_pieces[Index(col, row)]; }
 
     /** @brief Return whose turn it is. */
-    Color to_move(void) const { return M_to_move; }
+    Color to_move() const { return M_to_move; }
 
     /** @brief Return the half move clock. */
-    unsigned int half_move_clock(void) const { return M_half_move_clock; }
+    unsigned int half_move_clock() const { return M_half_move_clock; }
 
     /** @brief Return the full move number. */
-    unsigned int full_move_number(void) const { return M_full_move_number; }
+    unsigned int full_move_number() const { return M_full_move_number; }
 
     /** @brief Return the castle flag object. */
-    CastleFlags const& castle_flags(void) const { return M_castle_flags; }
+    CastleFlags const& castle_flags() const { return M_castle_flags; }
 
     /** @brief Return the en passant object. */
-    EnPassant const& en_passant(void) const { return M_en_passant; }
+    EnPassant const& en_passant() const { return M_en_passant; }
 
     /** @brief Return a BitBoard with bits set for all \a code, where \a code may not be 'nothing'. */
     BitBoard const& all(Code const& code) const { return M_bitboards[code]; }
@@ -265,7 +265,7 @@ class ChessPosition {
 
 public_notdocumented:
     // Added for debugging purposes.
-    ArrayColor<CountBoard> const& get_defended(void) const { return M_defended; }
+    ArrayColor<CountBoard> const& get_defended() const { return M_defended; }
     BitBoard attackers(Color const& color) const { return M_attackers[color]; }
     BitBoard pinned(Color const& color) const { return M_pinning[color]; }
 
@@ -274,7 +274,7 @@ public:
   //@{
 
     /** @brief Return the FEN code for this position. */
-    std::string FEN(void) const;
+    std::string FEN() const;
 
     /** @brief Return the offset into the candidates_table for type \a type.
      *
@@ -353,7 +353,7 @@ public:
     Index index_of_king(Color const& color) const { CodeData data = { static_cast<uint8_t>(king_bits | color()) }; return mask2index(M_bitboards[data]()); }
 
     /** @brief Return true if the king is in check. */
-    bool check(void) const { return M_bitboards[Code(M_to_move, king)].test(M_defended[M_to_move.opposite()].any()); }
+    bool check() const { return M_bitboards[Code(M_to_move, king)].test(M_defended[M_to_move.opposite()].any()); }
 
     /** @brief Return true if the king of color \a color is in check. */
     bool check(Color const& color) const { return M_bitboards[Code(color, king)].test(M_defended[color.opposite()].any()); }
@@ -391,7 +391,7 @@ public:
   PieceIterator piece_begin(Color const& color) const { return PieceIterator(this, M_bitboards[color]); }
 
   /** @brief Return an iterator one beyond the last piece. */
-  PieceIterator piece_end(void) const { return PieceIterator(); }
+  PieceIterator piece_end() const { return PieceIterator(); }
 
   /** @brief Return an iterator to the first piece with code \a code.
    *
@@ -403,7 +403,7 @@ public:
   MoveIterator move_begin(Index const& index) const { return MoveIterator(this, index); }
 
   /** @brief Return an iterator one beyond the last move. */
-  MoveIterator move_end(void) const { return MoveIterator(); }
+  MoveIterator move_end() const { return MoveIterator(); }
 
   //@}
 
@@ -416,11 +416,11 @@ public:
   //@}
 
   protected:
-    void reset_en_passant(void) { if (M_en_passant.exists()) clear_en_passant(); }
+    void reset_en_passant() { if (M_en_passant.exists()) clear_en_passant(); }
 
   private:
     // Reset the right to take en passant.
-    void clear_en_passant(void);
+    void clear_en_passant();
 
     // Increment M_half_move_clock (or reset if \a pawn_advance_or_capture is true) and M_full_move_number if appropriate.
     bool increment_counters(bool pawn_advance_or_capture);

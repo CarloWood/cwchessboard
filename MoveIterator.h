@@ -70,7 +70,7 @@ class MoveIterator : public std::iterator<std::bidirectional_iterator_tag, Move>
      *
      * @sa ChessPosition::move_end()
      */
-    MoveIterator(void) : M_current_move(index_end, index_end, nothing) { }
+    MoveIterator() : M_current_move(index_end, index_end, nothing) { }
 
     // Assignable.
     //! @brief Copy-Constructor.
@@ -111,7 +111,7 @@ class MoveIterator : public std::iterator<std::bidirectional_iterator_tag, Move>
 
     // Dereferencable.
     Move const& operator*() const { return M_current_move; }
-    Move const* operator->(void) const { return &M_current_move; }
+    Move const* operator->() const { return &M_current_move; }
 
   //@}
 
@@ -149,13 +149,13 @@ class MoveIterator : public std::iterator<std::bidirectional_iterator_tag, Move>
 
   public_notdocumented:
     // Indexing.
-    uint32_t index(void) const { return M_current_move.to()(); } 
+    uint32_t index() const { return M_current_move.to()(); } 
 
   private:
-    bool next_promotion(void);
-    bool prev_promotion(void);
+    bool next_promotion();
+    bool prev_promotion();
 
-    Index get_first_bitindex(void) const { Index result(index_pre_begin); result.next_bit_in(M_targets()); return result; }
+    Index get_first_bitindex() const { Index result(index_pre_begin); result.next_bit_in(M_targets()); return result; }
 
     Type initial_type(Index const& index) const;
 };

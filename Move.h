@@ -52,7 +52,7 @@ class Move {
   //@{
 
     //! Construct an uninitialized Move.
-    Move(void) { }
+    Move() { }
 
     /** @brief Construct a Move from square \a from to square \a to.
      *
@@ -95,16 +95,16 @@ class Move {
   //@{
 
     //! Return TRUE if this move is a pawn promotion.
-    bool is_promotion(void) const { return M_promotion_type != nothing; }
+    bool is_promotion() const { return M_promotion_type != nothing; }
 
     //! Return the square the piece moves from.
-    Index from(void) const { return M_from; }
+    Index from() const { return M_from; }
 
     //! Return the square the piece moves to.
-    Index to(void) const { return M_to; }
+    Index to() const { return M_to; }
 
     //! Return the promotion type. Returns empty if this isn't a promotion.
-    Type promotion_type(void) const { return M_promotion_type; }
+    Type promotion_type() const { return M_promotion_type; }
 
   //@}
 
