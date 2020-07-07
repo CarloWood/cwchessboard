@@ -47,7 +47,7 @@ class ChessGame {
     MetaData const& meta_data() const { return M_meta_data; }
 
     //! @brief Access the game nodes of the game.
-    std::vector<GameNode> const& nodes() const { M_nodes; }
+    std::vector<GameNode> const& nodes() const { return M_nodes; }
 
     //! @brief Read a game from a PGN file.
     void read(pgn::Game const& pgn_game);

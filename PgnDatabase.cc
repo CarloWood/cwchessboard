@@ -247,7 +247,7 @@ class Scanner {
     // once.
     //
     // @returns The first character.
-    typename ForwardIterator::value_type first_character() throw(EndOfFileReached)
+    typename ForwardIterator::value_type first_character()
     {
       if (G_UNLIKELY(*M_current_position.M_iter == M_end))
 	throw end_of_file_reached;
@@ -261,7 +261,7 @@ class Scanner {
     //! @brief Make the next character the current character.
     //
     // @returns The new current character.
-    typename ForwardIterator::value_type next_character() //throw(EndOfFileReached)
+    typename ForwardIterator::value_type next_character()
     {
       if (G_UNLIKELY(++*M_current_position.M_iter == M_end))
       {
@@ -556,12 +556,12 @@ inline bool tag_pair(char& c, scanner_t& scanner)
   return true;
 }
 
-bool decode_movetext_section_white(char& c, scanner_t& scanner) throw(ParseError)
+bool decode_movetext_section_white(char& c, scanner_t& scanner)
 {
   throw ParseError();
 }
 
-bool decode_movetext_section_black(char& c, scanner_t& scanner) throw(ParseError)
+bool decode_movetext_section_black(char& c, scanner_t& scanner)
 {
   throw ParseError();
 }

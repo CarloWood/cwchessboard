@@ -51,7 +51,7 @@ struct MY_ITERATOR {
 
     MY_ITERATOR() : M_dummy('?') { }
     MY_ITERATOR(MY_ITERATOR const& iter) : M_dummy(iter.M_dummy) { }
-    MY_ITERATOR& operator=(MY_ITERATOR const& iter) { M_dummy = iter.M_dummy; }
+    MY_ITERATOR& operator=(MY_ITERATOR const& iter) { M_dummy = iter.M_dummy; return *this; }
 
   private:
     char M_dummy;
