@@ -11,8 +11,9 @@
 #define UNUSED_ARG(x) x
 #endif
 
-#ifndef CWDEBUG
-#define NDEBUG
+#ifndef DEBUG
+// When ASSERT is turned off, also turn off g_assert().
+#define G_DISABLE_ASSERT
 #endif
 
 #ifdef HAVE_CONFIG_H

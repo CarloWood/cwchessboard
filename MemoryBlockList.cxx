@@ -53,7 +53,7 @@ void MemoryBlockListIterator::advance_to_next_block()
   {
     // We should never even have been processing the last block,
     // unless the buffer was already closed.
-    assert(M_buffer->closed());
+    ASSERT(M_buffer->closed());
 
     // This might free the memory of this block, if no other iterator is pointing at it.
     Dout(dc::notice, "Setting M_block to NULL.");

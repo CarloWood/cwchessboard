@@ -736,7 +736,7 @@ void DatabaseSeekable::read_thread()
 
 void DatabaseSeekable::processing_finished()
 {
-  assert(M_buffer->closed());
+  ASSERT(M_buffer->closed());
   delete M_buffer;
   M_buffer = NULL;
   M_slot_open_finished(M_bytes_read);

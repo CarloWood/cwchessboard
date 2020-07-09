@@ -213,7 +213,7 @@ class MemoryBlockListIterator {
     //! Assignment operator (used for backtracking).
     MemoryBlockListIterator& operator=(MemoryBlockListIterator const& iter)
         {
-	  assert(M_buffer == iter.M_buffer);
+	  ASSERT(M_buffer == iter.M_buffer);
 	  M_block = iter.M_block;
 	  M_ptr = iter.M_ptr;
 	  M_block_end = iter.M_block_end;
@@ -260,7 +260,7 @@ class MemoryBlockListIterator {
     //! Make this iterator point to the beginning of \a node.
     MemoryBlockListIterator& operator=(Glib::RefPtr<MemoryBlockNode const> const& node)
         {
-	  assert(M_buffer);
+	  ASSERT(M_buffer);
 	  M_block = node;
 	  M_ptr = node->block_begin();
 	  M_block_end = node->block_end() - 1;
@@ -328,7 +328,7 @@ class MemoryBlockList {
         M_last_node.swap(new_block);
         M_begin = M_last_node;
 	Dout(dc::notice, "Appending FIRST block to the list. Number of blocks is now 1");
-	assert(M_appended_blocks == 0);
+	ASSERT(M_appended_blocks == 0);
 	M_appended_blocks = 1;
 	blocks = 1;
       }
