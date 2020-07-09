@@ -41,12 +41,11 @@
  * both admins and coders.
  *
  */
-#include "config.h"
 
 #include "chattr.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cctype>
 
 static void zeroTables();
 static void markString(attr_t macro, char const* s);

@@ -25,7 +25,7 @@
 #define TYPE_H
 
 #ifndef USE_PCH
-#include <stdint.h>
+#include <cstdint>
 #endif
 
 #include "Color.h"

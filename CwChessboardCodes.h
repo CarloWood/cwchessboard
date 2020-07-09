@@ -26,7 +26,11 @@
 #ifndef CWCHESSBOARDCODES_H
 #define CWCHESSBOARDCODES_H
 
+#ifdef __cplusplus
+#include <cstdint>
+#else
 #include <stdint.h>
+#endif
 
 /** @typedef CwChessboardCode
  *  @brief A code to specify a chess piece.

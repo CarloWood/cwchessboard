@@ -25,7 +25,7 @@
 #define INDEX_H
 
 #ifndef USE_PCH
-#include <stdint.h>
+#include <cstdint>
 #endif
 
 #define DEBUG_INDEX_INITIALIZATION_AND_RANGE_CHECK 0

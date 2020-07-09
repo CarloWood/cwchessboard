@@ -26,8 +26,8 @@
 #define CHATTR_H
 
 #ifndef USE_PCH
-#include <stdint.h>
-#include <limits.h>
+#include <cstdint>
+#include <climits>
 #endif
 
 typedef uint16_t attr_t;

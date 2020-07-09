@@ -25,7 +25,7 @@
 #define COLOR_H
 
 #ifndef USE_PCH
-#include <stdint.h>
+#include <cstdint>
 #endif
 
 namespace cwchess {

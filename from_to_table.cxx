@@ -25,7 +25,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>
-#include <stdint.h>
+#include <cstdint>
 
 typedef uint64_t mask_t;
 
