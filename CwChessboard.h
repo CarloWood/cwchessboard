@@ -27,11 +27,10 @@
 #ifndef CWCHESSBOARD_H
 #define CWCHESSBOARD_H
 
-#include <math.h>
 #include <glib.h>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <gtk/gtkdrawingarea.h>
+#include <gtk/gtk.h>
 #pragma GCC diagnostic pop
 
 #ifdef __cplusplus
@@ -47,10 +46,12 @@
 G_BEGIN_DECLS
 
 #ifdef __cplusplus
-#include <stdint.h>
+#include <cstdint>
+#include <cmath>
 typedef uint16_t CwChessboardCode;
 #else
 #include "CwChessboardCodes.h"
+#include <math.h>
 #endif
 
 GType cw_chessboard_get_type() G_GNUC_CONST;

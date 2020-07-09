@@ -43,16 +43,15 @@ extern std::ostream& operator<<(std::ostream& os, BitBoard const& bit_board);	//
 
 } // namespace cwchess
 
+#ifdef CWDEBUG_GTKMM
 //---------------------------------------------------------------------------
 // gtkmm debug ostream operators.
 
 #include <iosfwd>			// std::ostream&
-#include <gdk/gdkevents.h>		// GdkEventType, GdkEvent
+#include <gdk/gdk.h>		        // GdkEventType, GdkEvent
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <gtk/gtkstyle.h>		// GtkWidget
-#include <gtk/gtkwidget.h>		// GtkAllocation
-#include <gtk/gtkaction.h>		// GtkAction
+#include <gtk/gtk.h>		        // GtkWidget, GtkAllocation, GtkAction
 #pragma GCC diagnostic pop
 #include <glib.h>			// GIOCondition
 
@@ -72,5 +71,6 @@ std::ostream& operator<<(std::ostream& os, GdkRegion const* region);
 std::ostream& operator<<(std::ostream& os, GtkAction const* action);
 
 //---------------------------------------------------------------------------
+#endif // CWDEBUG_GTKMM
 
 #endif // CWDEBUG
