@@ -39,43 +39,36 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(giomm REQUIRED IMPORTED_TARGET giomm-2.4)
 pkg_check_modules(glibmm REQUIRED IMPORTED_TARGET glibmm-2.4)
-pkg_check_modules(gtkmm REQUIRED IMPORTED_TARGET gtkmm-3.0)
+pkg_check_modules(gtkmm REQUIRED IMPORTED_TARGET gtkmm-2.4)
 
 #==============================================================================
-# BUILD OBJECT LIBRARY
+# BUILD OBJECT LIBRARIES
 #
 
-# Create the chessposition OBJECT-library, used by the main project.
-add_library(chessposition_ObjLib OBJECT)
+#------------------------------------------------------------------------------
+# Create the chess position OBJECT-library, used by the main project.
+add_library(position_ObjLib OBJECT)
 
 # Set SOURCE_DIR to the current directory.
 set_property(
-  TARGET chessposition_ObjLib
+  TARGET position_ObjLib
   PROPERTY SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 # The list of source files.
-target_sources(chessposition_ObjLib
+target_sources(position_ObjLib
   PRIVATE
-    # ChessPosition
     "Direction.cxx"
     "ChessNotation.cxx"
     "MoveIterator.cxx"
     "ChessPosition.cxx"
     "Code.cxx"
     "CastleFlags.cxx"
-    # ChessboardWidget
-#    "ChessboardWidget.cxx"
-    # ChessPositionWidget
-#    "ChessPositionWidget.cxx"
-#    "CwChessboard.cxx"
-#    "Referenceable.cxx"
-#    "MemoryBlockList.cxx"
 )
 
-# Add optionial sources.
+# Add optionial debug source files.
 if (OptionEnableLibcwd)
-target_sources(chessposition_ObjLib
+target_sources(position_ObjLib
   PRIVATE
     "debug.cxx"
     "debug_ostream_operators.cxx"
@@ -84,27 +77,69 @@ endif ()
 
 # Required include search-paths.
 get_target_property(CWDS_INTERFACE_INCLUDE_DIRECTORIES AICxx::cwds INTERFACE_INCLUDE_DIRECTORIES)
-target_include_directories(chessposition_ObjLib
+target_include_directories(position_ObjLib
   PUBLIC
     "${top_objdir}"                         # For sys.h.
     "${CWDS_INTERFACE_INCLUDE_DIRECTORIES}" # For debug.h.
 )
 
-target_link_libraries(chessposition_ObjLib
+target_link_libraries(position_ObjLib
   PUBLIC
     PkgConfig::giomm
 )
 
 # Set link dependencies.
 if (OptionEnableLibcwd)
-  target_link_libraries(chessposition_ObjLib
+  target_link_libraries(position_ObjLib
     PUBLIC
       ${libcwd_r_TARGET}
 )
 endif ()
 
 # Create an ALIAS target.
-add_library(AICxx::cwchessboard ALIAS chessposition_ObjLib)
+add_library(CWChessboard::position ALIAS position_ObjLib)
+
+#------------------------------------------------------------------------------
+# Create the chess position_widget OBJECT-library, used by the main project.
+add_library(positionwidget_ObjLib OBJECT)
+
+# Set SOURCE_DIR to the current directory.
+set_property(
+  TARGET positionwidget_ObjLib
+  PROPERTY SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+# The list of source files.
+target_sources(positionwidget_ObjLib
+  PRIVATE
+    "CwChessboard.cxx"
+    #"ChessboardWidget.cxx"
+    #"ChessPositionWidget.cxx"
+    #"Referenceable.cxx"
+    #"MemoryBlockList.cxx"
+)
+
+# Required include search-paths.
+get_target_property(CWDS_INTERFACE_INCLUDE_DIRECTORIES AICxx::cwds INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(positionwidget_ObjLib
+  PUBLIC
+    "${top_objdir}"                         # For sys.h.
+    "${CWDS_INTERFACE_INCLUDE_DIRECTORIES}" # For debug.h.
+)
+
+target_compile_definitions(positionwidget_ObjLib
+  PRIVATE
+    CWDEBUG_GTKMM
+)
+
+target_link_libraries(positionwidget_ObjLib
+  PUBLIC
+    CWChessboard::position
+    PkgConfig::gtkmm
+)
+
+# Create an ALIAS target.
+add_library(CWChessboard::position_widget ALIAS positionwidget_ObjLib)
 
 #==============================================================================
 # GENERATED SOURCE FILES
@@ -141,20 +176,19 @@ add_library(generated::sources ALIAS generated_ObjLib)
 #
 
 add_executable(tstchessposition tstchessposition.cxx)
-target_link_libraries(tstchessposition PRIVATE AICxx::cwchessboard AICxx::cwds)
+target_link_libraries(tstchessposition PRIVATE CWChessboard::position AICxx::cwds)
 
 add_executable(tstbenchmark tstbenchmark.cxx)
-target_link_libraries(tstbenchmark PRIVATE AICxx::cwchessboard AICxx::cwds)
+target_link_libraries(tstbenchmark PRIVATE CWChessboard::position AICxx::cwds)
 
 add_executable(tstpgnread tstpgnread.cxx PgnDatabase.cxx MemoryBlockList.cxx)
-target_link_libraries(tstpgnread PRIVATE generated_ObjLib AICxx::cwchessboard AICxx::cwds)
+target_link_libraries(tstpgnread PRIVATE generated::sources CWChessboard::position AICxx::cwds)
 
 add_executable(tsticonv tsticonv.cxx)
 target_link_libraries(tsticonv PRIVATE PkgConfig::glibmm)
 
 add_executable(tstpgn tstpgn.cxx PgnDatabase.cxx MemoryBlockList.cxx)
-target_link_libraries(tstpgn PRIVATE generated_ObjLib AICxx::cwchessboard AICxx::cwds)
+target_link_libraries(tstpgn PRIVATE generated::sources CWChessboard::position AICxx::cwds)
 
-add_executable(tstspirit tstspirit.cxx)
-target_link_libraries(tstspirit PRIVATE generated_ObjLib)
+add_executable(tstspirit tstspirit.cxx PgnGrammar.h)
 target_include_directories(tstspirit PUBLIC "${top_objdir}")
