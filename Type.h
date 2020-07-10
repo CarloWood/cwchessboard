@@ -21,14 +21,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef TYPE_H
-#define TYPE_H
-
-#ifndef USE_PCH
-#include <cstdint>
-#endif
+#pragma once
 
 #include "Color.h"
+#include <cstdint>
 
 namespace cwchess {
 
@@ -147,5 +143,3 @@ class Type : protected TypeData {
 };
 
 } // namespace cwchess
-
-#endif	// TYPE_H

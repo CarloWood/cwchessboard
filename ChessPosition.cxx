@@ -21,16 +21,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef USE_PCH
 #include "sys.h"
-#include <sstream>
-#include <cassert>
-#endif
-
 #include "ChessPosition.h"
 #include "Direction.h"
 #include "ChessNotation.h"
 #include "debug.h"
+#include <sstream>
+#include <cassert>
 
 namespace cwchess {
 

@@ -21,16 +21,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CODE_H
-#define CODE_H
-
-#ifndef USE_PCH
-#include <cstdint>
-#endif
+#pragma once
 
 #include "Color.h"
 #include "Type.h"
 #include "Direction.h"
+#include <cstdint>
 
 namespace cwchess {
 
@@ -205,5 +201,3 @@ class Code : protected CodeData {
 };
 
 } // namespace cwchess
-
-#endif	// CODE_H

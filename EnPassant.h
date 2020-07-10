@@ -21,11 +21,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef ENPASSANT_H
-#define ENPASSANT_H
-
-#ifndef USE_PCH
-#endif
+#pragma once
 
 #define DEBUG_ENPASSANT_EXISTS 0
 
@@ -139,5 +135,3 @@ class EnPassant {
 };
 
 } // namespace cwchess
-
-#endif	// ENPASSANT_H

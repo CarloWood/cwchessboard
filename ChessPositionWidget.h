@@ -21,14 +21,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CHESSPOSITIONWIDGET_H
-#define CHESSPOSITIONWIDGET_H
+#pragma once
 
 #include "ChessboardWidget.h"
 #include "ChessPosition.h"
 #include "Promotion.h"
-
-#ifndef USE_PCH
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <giomm/simpleactiongroup.h>
@@ -38,7 +35,6 @@
 #include <gtkmm/window.h>
 #pragma GCC diagnostic pop
 #include <boost/shared_ptr.hpp>
-#endif
 
 namespace cwmm {
 
@@ -627,5 +623,3 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
 };
 
 } // namespace cwmm
-
-#endif	// CHESSPOSITIONWIDGET_H

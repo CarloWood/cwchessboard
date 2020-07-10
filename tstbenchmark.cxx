@@ -21,8 +21,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef USE_PCH
 #include "sys.h"
+#include "ChessPosition.h"
+#include "PieceIterator.h"
+#include "MoveIterator.h"
+#include "ChessNotation.h"
+#include "debug.h"
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -30,13 +34,6 @@
 #include <sstream>
 #include <vector>
 #include <sys/time.h>
-#include "debug.h"
-#endif
-
-#include "ChessPosition.h"
-#include "PieceIterator.h"
-#include "MoveIterator.h"
-#include "ChessNotation.h"
 
 using namespace cwchess;
 

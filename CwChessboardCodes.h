@@ -23,8 +23,7 @@
 //! @file CwChessboardCodes.h
 //! @brief This file contains the definitions of the CwChessboardCode constants.
 
-#ifndef CWCHESSBOARDCODES_H
-#define CWCHESSBOARDCODES_H
+#pragma once
 
 #ifdef __cplusplus
 #include <cstdint>
@@ -95,5 +94,3 @@ DOXYGEN_STATIC CwChessboardCode const black_king = 12;
  * it is possible to display more than one king.
  */
 DOXYGEN_STATIC CwChessboardCode const white_king = 13;
-
-#endif // CWCHESSBOARDCODES_H

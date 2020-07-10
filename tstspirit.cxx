@@ -24,12 +24,12 @@
 #define BOOST_SPIRIT_DEBUG
 
 #include "sys.h"
+#include "PgnGrammar.h"
+#include "debug.h"
 #include <iostream>
 #include <fstream>
 #include <boost/spirit/include/classic_core.hpp>
 #include <boost/spirit/include/classic_multi_pass.hpp>
-#include "PgnGrammar.h"
-#include "debug.h"
 
 namespace {
 

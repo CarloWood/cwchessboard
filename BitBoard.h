@@ -21,14 +21,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef BITBOARD_H
-#define BITBOARD_H
-
-#ifndef USE_PCH
-#include <cstdint>
-#endif
+#pragma once
 
 #include "Index.h"
+#include <cstdint>
 
 #define DEBUG_BITBOARD_INITIALIZATION 0
 
@@ -513,5 +509,3 @@ class BitBoard : protected BitBoardData {
 };
 
 } // namespace cwchess
-
-#endif	// BITBOARD_H

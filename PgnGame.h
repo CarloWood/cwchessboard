@@ -21,14 +21,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PGNGAME_H
-#define PGNGAME_H
-
-#ifndef USE_PCH
-#include <cstdint>
-#endif
+#pragma once
 
 #include "PgnDatabase.h"
+#include <cstdint>
 
 namespace cwchess {
 namespace pgn {
@@ -43,5 +39,3 @@ class Game : public Database {
 
 } // namespace pgn
 } // namespace cwchess
-
-#endif	// PGNGAME_H

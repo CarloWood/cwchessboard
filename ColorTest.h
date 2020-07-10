@@ -21,11 +21,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef COLOR_TEST_H
-#define COLOR_TEST_H
+#pragma once
 
-#include <cppunit/extensions/HelperMacros.h>
 #include "Color.h"
+#include <cppunit/extensions/HelperMacros.h>
 
 namespace testsuite {
 
@@ -61,8 +60,6 @@ class ColorTest : public CppUnit::TestFixture {
 };
 
 } // namespace testsuite
-
-#endif // COLOR_TEST_H
 
 #ifdef TESTSUITE_IMPLEMENTATION
 

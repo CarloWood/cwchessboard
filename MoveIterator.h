@@ -21,16 +21,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef MOVEITERATOR_H
-#define MOVEITERATOR_H
-
-#ifndef USE_PCH
-#include <iterator>
-#endif
+#pragma once
 
 #include "Move.h"
 #include "BitBoard.h"
 #include "Piece.h"
+#include <iterator>
 
 #define CWCHESSBOARD_LIKELY(condition) __builtin_expect(condition, true)
 
@@ -161,5 +157,3 @@ class MoveIterator : public std::iterator<std::bidirectional_iterator_tag, Move>
 };
 
 } // namespace cwchess
-
-#endif	// MOVEITERATOR_H

@@ -21,11 +21,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef ARRAY_H
-#define ARRAY_H
-
-#ifndef USE_PCH
-#endif
+#pragma once
 
 #include "Color.h"
 #include "Index.h"
@@ -129,5 +125,3 @@ struct ArrayIndex {
 };
 
 } // namespace cwchess
-
-#endif	// ARRAY_H

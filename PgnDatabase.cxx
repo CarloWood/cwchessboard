@@ -25,22 +25,19 @@
 #define BOOST_SPIRIT_DEBUG
 #endif
 
-#ifndef USE_PCH
 #include "sys.h"
-#include <cstring>
-#include <ctime>		// Needed for clock_gettime.
-#include <iomanip>
-#include "debug.h"
-#include <glib.h>
-#ifdef CWDEBUG
-#include <libcwd/buf2str.h>
-#endif
-#endif
-
 #include "PgnDatabase.h"
 #include "PgnGrammar.h"
 #include "chattr.h"
 #include "Color.h"
+#include "debug.h"
+#include <cstring>
+#include <ctime>		// Needed for clock_gettime.
+#include <iomanip>
+#include <glib.h>
+#ifdef CWDEBUG
+#include <libcwd/buf2str.h>
+#endif
 
 namespace cwchess {
 namespace pgn {

@@ -25,7 +25,6 @@
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include "debug.h"
 
 #define TESTSUITE_IMPLEMENTATION
 #include "ColorTest.h"
@@ -36,6 +35,7 @@
 #include "BitBoardTest.h"
 #include "PieceTest.h"
 #include "ChessPositionTest.h"
+#include "debug.h"
 
 int main()
 {

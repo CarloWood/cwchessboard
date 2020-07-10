@@ -21,17 +21,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef COUNTBOARD_H
-#define COUNTBOARD_H
+#pragma once
 
-#ifndef USE_PCH
-#include <cstring>
 #ifndef DOXYGEN
 #include "debug.h"
 #endif
-#endif
-
 #include "BitBoard.h"
+#include <cstring>
 
 namespace cwchess {
 
@@ -139,5 +135,3 @@ class CountBoard {
 };
 
 } // namespace cwchess
-
-#endif	// COUNTBOARD_H

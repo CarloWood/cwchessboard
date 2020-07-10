@@ -24,9 +24,9 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
 #include "sys.h"
-#include "debug.h"
 
 #ifdef CWDEBUG
+#include "debug.h"
 
 NAMESPACE_DEBUG_CHANNELS_START
 

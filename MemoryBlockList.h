@@ -21,17 +21,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef MEMORYBLOCKLIST_H
-#define MEMORYBLOCKLIST_H
+#pragma once
 
-#ifndef USE_PCH
+#include "Referenceable.h"
 #include "debug.h"
 #include <glibmm/refptr.h>
 #include <glibmm/thread.h>
 #include <glibmm/dispatcher.h>
-#endif
-
-#include "Referenceable.h"
 
 namespace util {
 
@@ -442,5 +438,3 @@ continue_waiting:
 };
 
 } // namespace util
-
-#endif	// MEMORYBLOCKLIST_H

@@ -21,12 +21,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef INDEX_H
-#define INDEX_H
+#pragma once
 
-#ifndef USE_PCH
 #include <cstdint>
-#endif
 
 #define DEBUG_INDEX_INITIALIZATION_AND_RANGE_CHECK 0
 
@@ -498,5 +495,3 @@ class Index : protected IndexData {
 };
 
 } // namespace cwchess
-
-#endif	// INDEX_H

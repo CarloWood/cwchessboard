@@ -21,12 +21,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef REFERENCEABLE_H
-#define REFERENCEABLE_H
+#pragma once
 
-#ifndef USE_PCH
 #include <glib.h>
-#endif
 
 namespace util {
 
@@ -42,5 +39,3 @@ class Referenceable {
 };
 
 } // namespace util
-
-#endif	// REFERENCEABLE_H

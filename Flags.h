@@ -21,12 +21,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef FLAGS_H
-#define FLAGS_H
+#pragma once
 
-#ifndef USE_PCH
 #include <cstdint>
-#endif
 
 namespace cwchess {
 
@@ -172,5 +169,3 @@ class Flags : protected FlagsData {
 };
 
 } // namespace cwchess
-
-#endif	// FLAGS_H

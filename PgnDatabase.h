@@ -21,18 +21,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PGNDATABASE_H
-#define PGNDATABASE_H
-
-#ifndef USE_PCH
-#include <string>
-#include <glibmm/refptr.h>
-#include <glibmm/dispatcher.h>
-#include <giomm/file.h>
-#endif
+#pragma once
 
 #include "Referenceable.h"
 #include "MemoryBlockList.h"
+#include <glibmm/refptr.h>
+#include <glibmm/dispatcher.h>
+#include <giomm/file.h>
+#include <string>
 
 namespace cwchess {
 namespace pgn {
@@ -120,5 +116,3 @@ class DatabaseSeekable : public Database {
 
 } // namespace pgn
 } // namespace cwchess
-
-#endif	// PGNDATABASE_H

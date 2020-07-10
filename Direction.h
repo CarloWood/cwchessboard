@@ -21,11 +21,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef DIRECTION_H
-#define DIRECTION_H
-
-#ifndef USE_PCH
-#endif
+#pragma once
 
 #include "BitBoard.h"
 #include "Type.h"
@@ -99,5 +95,3 @@ inline Direction const& direction_from_to(Index const& from, Index const& to)
 }
 
 } // namespace cwchess
-
-#endif	// DIRECTION_H

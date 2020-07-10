@@ -21,11 +21,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PIECE_H
-#define PIECE_H
-
-#ifndef USE_PCH
-#endif
+#pragma once
 
 #include "Code.h"
 #include "Flags.h"
@@ -217,5 +213,3 @@ class Piece {
 };
 
 } // namespace cwchess
-
-#endif	// PIECE_H

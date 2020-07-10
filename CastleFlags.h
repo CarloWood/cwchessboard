@@ -21,11 +21,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CASTLEFLAGS_H
-#define CASTLEFLAGS_H
-
-#ifndef USE_PCH
-#endif
+#pragma once
 
 #include "Code.h"
 #include "Index.h"
@@ -172,5 +168,3 @@ class CastleFlags {
 };
 
 } // namespace cwchess
-
-#endif	// CASTLEFLAGS_H

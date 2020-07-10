@@ -22,10 +22,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "sys.h"
-#include <giomm/init.h>
 #include "ChessGame.h"
 #include "PgnDatabase.h"
 #include "debug.h"
+#include <giomm/init.h>
 
 //char const* filename="/home/carlo/projects/cwchessboard/chessgames/ftp.cis.uab.edu/crafty/enormous.pgn";
 //char const* filename="test.pgn";

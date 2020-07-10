@@ -21,18 +21,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CHESSNOTATION_H
-#define CHESSNOTATION_H
-
-#ifndef USE_PCH
-#include <iosfwd>
-#endif
+#pragma once
 
 #include "ChessPosition.h"
 #include "Type.h"
 #include "Piece.h"
 #include "Index.h"
 #include "Move.h"
+#include <iosfwd>
 
 namespace cwchess {
 
@@ -82,5 +78,3 @@ class ChessNotation {
 };
 
 } // namespace ChessNotation
-
-#endif	// CHESSNOTATION_H

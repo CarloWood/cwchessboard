@@ -21,16 +21,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PIECE_TEST_H
-#define PIECE_TEST_H
-
-#include <cppunit/extensions/HelperMacros.h>
+#pragma once
 
 namespace testsuite {
   class PieceTest;
 }
 
+#define PIECE_TEST_H    // Make PieceTest a friend of class Piece.
 #include "Piece.h"
+#include <cppunit/extensions/HelperMacros.h>
 
 namespace testsuite {
 
@@ -69,8 +68,6 @@ class PieceTest : public CppUnit::TestFixture {
 };
 
 } // namespace testsuite
-
-#endif // PIECE_TEST_H
 
 #ifdef TESTSUITE_IMPLEMENTATION
 

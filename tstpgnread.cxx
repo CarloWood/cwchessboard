@@ -4,6 +4,7 @@
 // blocks (likely 4096 bytes) at a time.
 
 #include "sys.h"
+#include "debug.h"
 #include <iostream>
 #include <fstream>
 #include <cstdio>
@@ -15,7 +16,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <gio/gio.h>
-#include "debug.h"
 
 char const* filename="/opt/verylarge/chessgames/ftp.cis.uab.edu/crafty/enormous.pgn";
 char const* warmupfile="/home/carlo/chess/fics2008.pgn";

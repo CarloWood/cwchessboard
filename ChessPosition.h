@@ -24,9 +24,6 @@
 #ifndef CHESSPOSITION_H
 #define CHESSPOSITION_H
 
-#ifndef USE_PCH
-#endif
-
 #include "BitBoard.h"
 #include "Piece.h"
 #include "PieceIterator.h"

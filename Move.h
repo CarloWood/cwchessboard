@@ -21,11 +21,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef MOVE_H
-#define MOVE_H
-
-#ifndef USE_PCH
-#endif
+#pragma once
 
 #include "Index.h"
 #include "Type.h"
@@ -124,5 +120,3 @@ class Move {
 };
 
 } // namespace cwchess
-
-#endif	// MOVE_H

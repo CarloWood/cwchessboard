@@ -24,14 +24,11 @@
 #include "sys.h"
 #include "ChessPositionWidget.h"
 #include "CwChessboardCodes.h"
-
-#ifndef USE_PCH
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <gtkmm/radioaction.h>
 #include <gtkmm/stock.h>
 #pragma GCC diagnostic pop
-#endif
 
 using namespace cwchess;
 

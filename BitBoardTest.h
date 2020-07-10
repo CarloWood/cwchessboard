@@ -24,8 +24,8 @@
 #ifndef BITBOARD_TEST_H
 #define BITBOARD_TEST_H
 
-#include <cppunit/extensions/HelperMacros.h>
 #include "BitBoard.h"
+#include <cppunit/extensions/HelperMacros.h>
 
 namespace testsuite {
 

@@ -24,8 +24,7 @@
 //! @brief This file contains the declaration of the GTK+ widget %CwChessboard.
 //! @image html arrowsandmarkers.png
 
-#ifndef CWCHESSBOARD_H
-#define CWCHESSBOARD_H
+#pragma once
 
 #include <glib.h>
 #pragma GCC diagnostic push
@@ -1073,5 +1072,3 @@ void cw_chessboard_remove_arrow(CwChessboard* chessboard, gpointer ptr);
 //@} Arrows
 
 G_END_DECLS
-
-#endif // CWCHESSBOARD_H

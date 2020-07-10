@@ -21,22 +21,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef USE_PCH
 #include "sys.h"        // Put this outside the #ifdef CWDEBUG .. #endif in order
                         // to force recompilation after the configuration changed.
-#endif
 
 #ifdef CWDEBUG
-
-#ifndef USE_PCH
-#include <iostream>
-#include "debug.h"
-#endif
 
 #include "Color.h"
 #include "Index.h"
 #include "ChessPosition.h"
 #include "ChessNotation.h"
+#include "debug.h"
+#include <iostream>
 
 namespace cwchess {
 
@@ -111,10 +106,12 @@ std::ostream& operator<<(std::ostream& os, BitBoard const& bitboard)
 
 } // namespace cwchess
 
-namespace debug {
-
 #undef CASERETURNSTR
 #define CASERETURNSTR(enum_name) case enum_name: return #enum_name
+
+#ifdef CWDEBUG_GTKMM
+
+namespace debug {
 
 /*!
  * @internal
@@ -348,5 +345,7 @@ std::ostream& operator<<(std::ostream& os, GtkAction const* action)
 {
   return os << "{ (" << gtk_action_get_name((GtkAction*)action) << ") }";
 }
+
+#endif //CWDEBUG_GTKMM
 
 #endif // CWDEBUG

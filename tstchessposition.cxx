@@ -22,13 +22,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "sys.h"
-#include <iostream>
-#include <vector>
-#include <cassert>
 #include "ChessPosition.h"
 #include "MoveIterator.h"
 #include "ChessNotation.h"
 #include "debug.h"
+#include <iostream>
+#include <vector>
+#include <cassert>
 
 namespace test {
   using cwchess::ArrayCode;

@@ -21,14 +21,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PIECEITERATOR_H
-#define PIECEITERATOR_H
-
-#ifndef USE_PCH
-#include <iterator>
-#endif
+#pragma once
 
 #include "Piece.h"
+#include <iterator>
 
 namespace cwchess {
 
@@ -165,5 +161,3 @@ class PieceIterator : public std::iterator<std::bidirectional_iterator_tag, Piec
 };
 
 } // namespace cwchess
-
-#endif	// PIECEITERATOR_H

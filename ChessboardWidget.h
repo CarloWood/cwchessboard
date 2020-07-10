@@ -21,19 +21,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CHESSBOARD_H
-#define CHESSBOARD_H
+#pragma once
 
-#ifndef USE_PCH
+#include "CwChessboard.h"
 #include "debug.h"
-#endif
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #pragma GCC diagnostic ignored "-Wparentheses"
 #include <gtkmm/drawingarea.h>
 #pragma GCC diagnostic pop
-#include "CwChessboard.h"
 
 /** @namespace cwmm
  *  @brief A namespace for all gtkmm related objects.
@@ -896,5 +893,3 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
 };
 
 } // namespace cwmm
-
-#endif	// CHESSBOARD_H

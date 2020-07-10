@@ -21,11 +21,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef METADATA_H
-#define METADATA_H
-
-#ifndef USE_PCH
-#endif
+#pragma once
 
 namespace cwchess {
 
@@ -33,5 +29,3 @@ class MetaData {
 };
 
 } // namespace cwchess
-
-#endif	// METADATA_H

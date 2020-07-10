@@ -21,11 +21,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef GAMENODE_H
-#define GAMENODE_H
-
-#ifndef USE_PCH
-#endif
+#pragma once
 
 namespace cwchess {
 
@@ -33,5 +29,3 @@ class GameNode {
 };
 
 } // namespace cwchess
-
-#endif	// GAMENODE_H

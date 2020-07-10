@@ -22,13 +22,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CHATTR_H
-#define CHATTR_H
+#pragma once
 
-#ifndef USE_PCH
 #include <cstdint>
 #include <climits>
-#endif
 
 typedef uint16_t attr_t;
 
@@ -109,5 +106,3 @@ inline attr_t is_comment_start(char c) { return PGN_CharAttrTab[c - CHAR_MIN] & 
 inline attr_t is_printable_comment(char c) { return PGN_CharAttrTab[c - CHAR_MIN] & pgn_printable_comment; }
 //! @brief Test whether a character is allowed in a semi-colon comment.
 inline attr_t is_printable(char c) { return PGN_CharAttrTab[c - CHAR_MIN] & pgn_printable; }
-
-#endif // CHATTR_H

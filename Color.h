@@ -21,12 +21,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef COLOR_H
-#define COLOR_H
+#pragma once
 
-#ifndef USE_PCH
 #include <cstdint>
-#endif
 
 namespace cwchess {
 
@@ -149,5 +146,3 @@ class Color : protected ColorData {
 };
 
 } // namespace cwchess
-
-#endif	// COLOR_H

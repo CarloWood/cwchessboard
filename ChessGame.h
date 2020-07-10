@@ -21,16 +21,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef CHESSGAME_H
-#define CHESSGAME_H
-
-#ifndef USE_PCH
-#include <vector>
-#endif
+#pragma once
 
 #include "MetaData.h"
 #include "GameNode.h"
 #include "PgnGame.h"
+#include <vector>
 
 namespace cwchess {
 
@@ -54,5 +50,3 @@ class ChessGame {
 };
 
 } // namespace cwchess
-
-#endif	// CHESSGAME_H

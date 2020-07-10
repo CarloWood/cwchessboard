@@ -21,11 +21,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PROMOTION_H
-#define PROMOTION_H
-
-#ifndef USE_PCH
-#endif
+#pragma once
 
 #include "Type.h"
 #include "Referenceable.h"
@@ -41,5 +37,3 @@ class Promotion : public util::Referenceable {
 };
 
 } // namespace cwchess
-
-#endif	// PROMOTION_H
