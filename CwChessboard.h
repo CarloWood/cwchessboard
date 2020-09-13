@@ -106,7 +106,7 @@ struct CwChessboard
 struct _CwChessboard
 #endif
 {
-  GtkDrawingArea parent;
+  GtkDrawingArea* m_drawing_area;
   CwChessboardPrivate* priv;
 
   //! Square side in pixels (read only).
@@ -623,7 +623,7 @@ CwChessboardColorHandle cw_chessboard_allocate_color_handle_rgb(CwChessboard* ch
 
 /**
  * Allocate a new CwChessboardColorHandle.
- * From more information, see #cw_chessboard_allocate_color_handle_rgb.
+ * For more information, see #cw_chessboard_allocate_color_handle_rgb.
  *
  * @param chessboard	A #CwChessboard.
  * @param color		The color to allocate.

@@ -72,6 +72,12 @@ int main(int argc, char* argv[])
 {
   Debug(NAMESPACE_DEBUG::init());
 
+  if (argc < 2)
+  {
+    std::cerr << "Usage: " << argv[0] << " <PGN file>" << std::endl;
+    return 1;
+  }
+
   for (int i = 1; i < argc; ++i)
   {
     if (std::string(argv[i]) == "/home/carlo/chess/freechess.ladder/0018.pgn")

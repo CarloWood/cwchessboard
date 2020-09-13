@@ -37,9 +37,11 @@ configure_file("sys.h.in" "sys.h" @ONLY)
 
 find_package(PkgConfig REQUIRED)
 
+pkg_check_modules(gtk REQUIRED IMPORTED_TARGET gtk+-3.0)
 pkg_check_modules(giomm REQUIRED IMPORTED_TARGET giomm-2.4)
 pkg_check_modules(glibmm REQUIRED IMPORTED_TARGET glibmm-2.4)
-pkg_check_modules(gtkmm REQUIRED IMPORTED_TARGET gtkmm-2.4)
+pkg_check_modules(gtkmm REQUIRED IMPORTED_TARGET gtkmm-3.0)
+pkg_check_modules(cppunit REQUIRED IMPORTED_TARGET cppunit)
 
 #==============================================================================
 # BUILD OBJECT LIBRARIES
@@ -113,11 +115,19 @@ set_property(
 target_sources(positionwidget_ObjLib
   PRIVATE
     "CwChessboard.cxx"
-    #"ChessboardWidget.cxx"
-    #"ChessPositionWidget.cxx"
-    #"Referenceable.cxx"
-    #"MemoryBlockList.cxx"
+    "ChessboardWidget.cxx"
+    "ChessPositionWidget.cxx"
+    "Referenceable.cxx"
+    "MemoryBlockList.cxx"
 )
+
+# Add optionial debug source files.
+if (OptionEnableLibcwd)
+target_sources(positionwidget_ObjLib
+  PRIVATE
+    "debug_ostream_operators_gtkmm.cxx"
+)
+endif ()
 
 # Required include search-paths.
 get_target_property(CWDS_INTERFACE_INCLUDE_DIRECTORIES AICxx::cwds INTERFACE_INCLUDE_DIRECTORIES)
@@ -127,14 +137,10 @@ target_include_directories(positionwidget_ObjLib
     "${CWDS_INTERFACE_INCLUDE_DIRECTORIES}" # For debug.h.
 )
 
-target_compile_definitions(positionwidget_ObjLib
-  PRIVATE
-    CWDEBUG_GTKMM
-)
-
 target_link_libraries(positionwidget_ObjLib
-  PUBLIC
+  PRIVATE
     CWChessboard::position
+  PUBLIC
     PkgConfig::gtkmm
 )
 
@@ -144,6 +150,9 @@ add_library(CWChessboard::position_widget ALIAS positionwidget_ObjLib)
 #==============================================================================
 # GENERATED SOURCE FILES
 #
+
+#------------------------------------------------------------------------------
+# generated::cpp_sources : chattr.tab.cpp and PgnGrammar.h.
 
 add_executable(table_gen table_gen.cxx)
 
@@ -166,10 +175,10 @@ target_sources(generated_ObjLib
 
 target_include_directories(generated_ObjLib
   PRIVATE
-    "${CMAKE_CURRENT_SRC_DIR}"          # For local header files.
+    "${CMAKE_CURRENT_SOURCE_DIR}"          # For local header files.
 )
 
-add_library(generated::sources ALIAS generated_ObjLib)
+add_library(generated::cpp_sources ALIAS generated_ObjLib)
 
 #==============================================================================
 # TEST EXECUTABLES
@@ -182,13 +191,19 @@ add_executable(tstbenchmark tstbenchmark.cxx)
 target_link_libraries(tstbenchmark PRIVATE CWChessboard::position AICxx::cwds)
 
 add_executable(tstpgnread tstpgnread.cxx PgnDatabase.cxx MemoryBlockList.cxx)
-target_link_libraries(tstpgnread PRIVATE generated::sources CWChessboard::position AICxx::cwds)
+target_link_libraries(tstpgnread PRIVATE generated::cpp_sources CWChessboard::position AICxx::cwds)
 
 add_executable(tsticonv tsticonv.cxx)
 target_link_libraries(tsticonv PRIVATE PkgConfig::glibmm)
 
 add_executable(tstpgn tstpgn.cxx PgnDatabase.cxx MemoryBlockList.cxx)
-target_link_libraries(tstpgn PRIVATE generated::sources CWChessboard::position AICxx::cwds)
+target_link_libraries(tstpgn PRIVATE generated::cpp_sources CWChessboard::position AICxx::cwds)
 
 add_executable(tstspirit tstspirit.cxx PgnGrammar.h)
-target_include_directories(tstspirit PUBLIC "${top_objdir}")
+target_include_directories(tstspirit PUBLIC "${top_objdir}" AICxx::cwds)
+
+add_executable(testsuite testsuite.cxx)
+target_link_libraries(testsuite PRIVATE CWChessboard::position AICxx::cwds PkgConfig::cppunit)
+
+add_executable(linuxchess LinuxChessApplication.cxx LinuxChessboardWidget.cxx LinuxChess.cxx LinuxChessWindow.cxx LinuxChessMenuBar.cxx LinuxChessIconFactory.cxx)
+target_link_libraries(linuxchess PRIVATE CWChessboard::position_widget CWChessboard::position AICxx::cwds)

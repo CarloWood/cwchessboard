@@ -33,6 +33,7 @@
 #include <gtkmm/uimanager.h>
 #include <gtkmm/iconfactory.h>
 #include <gtkmm/window.h>
+#include <gtkmm/toggleaction.h>
 #pragma GCC diagnostic pop
 #include <boost/shared_ptr.hpp>
 
@@ -92,7 +93,7 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
   //@{
 
     //! The type of the builtin widget modes.
-    typedef unsigned int widget_mode_type;
+    using widget_mode_type = unsigned int;
     //! The value used for the 'Edit Position' mode.
     static widget_mode_type const mode_edit_position = 0;
     //! The value used for the 'Edit Game' mode.
@@ -141,8 +142,8 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
   protected:
     //! The square that a new piece is being placed on with the popup menu, in 'Edit Position' mode.
     cwchess::Index M_placepiece_index;
-    //! A pointer to a drawable used for it's colormap (for the icons in the popup menu).
-    Gtk::Window* M_drawable;
+    //! A pointer to the window that contains this widget and our menu. Used for its colormap (for the icons in the popup menu) and to add other menu items to..
+    Gtk::Window* M_window;
     //! An instance of the popup menu to place new pieces.
     Gtk::Menu* M_MenuPopup;
     //! Reference to a UIManager.
@@ -152,9 +153,9 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
     //! Reference to a IconFactory.
     Glib::RefPtr<Gtk::IconFactory> M_refIconFactory;
     //! Reference to RadioAction for ToMoveWhite.
-    Glib::RefPtr<Gtk::RadioAction> M_refToMoveWhite_action;
+    Glib::RefPtr<Gio::SimpleAction> M_refToMoveWhite_action;
     //! Reference to RadioAction for ToMoveBlack.
-    Glib::RefPtr<Gtk::RadioAction> M_refToMoveBlack_action;
+    Glib::RefPtr<Gio::SimpleAction> M_refToMoveBlack_action;
     //! Reference to ToggleAction for PieceHasMoved.
     Glib::RefPtr<Gtk::ToggleAction> M_refPieceHasMoved_action;
     //! Reference to ToggleAction for AllowEnPassantCapture.
@@ -172,25 +173,27 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
 
     /** @brief Constructor.
      *
-     * @param drawable : A drawable, usually the main window of the application.
+     * @param window : A window that contains this widget and our menu, usually the main window of the application.
      * @param promotion : An object derived from Promotion that handles pawn promotions.
      */
-    ChessPositionWidget(Gtk::Window* drawable, Glib::RefPtr<cwchess::Promotion> promotion = Glib::RefPtr<cwchess::Promotion>(new cwchess::Promotion)) :
-        M_floating_piece_handle(-1), M_widget_mode(mode_edit_position), M_promotion(promotion), M_MenuPopup(NULL), M_drawable(drawable), M_trying_primary(false)
+    ChessPositionWidget(Gtk::Window* window, Glib::RefPtr<cwchess::Promotion> promotion = Glib::RefPtr<cwchess::Promotion>(new cwchess::Promotion)) :
+        M_floating_piece_handle(-1), M_widget_mode(mode_edit_position), M_promotion(promotion), M_MenuPopup(NULL), M_window(window), M_trying_primary(false)
     {
       // Continue initialization when realized.
-      drawable->signal_realize().connect(sigc::mem_fun(this, &ChessPositionWidget::initialize_menus));
+      window->signal_realize().connect(sigc::mem_fun(this, &ChessPositionWidget::initialize_menu));
     }
+
+    virtual ~ChessPositionWidget() { DoutEntering(dc::notice, "cwmm::ChessPositionWidget::~ChessPositionWidget()"); }
 
   //@}
 
   private:
-    void initialize_menus();
     bool popup_menu(GdkEventButton* event, int col, int row);
     void popup_deactivated();
     void update_paste_status();
 
   protected:
+    virtual void initialize_menu();
     virtual void on_menu_placepiece_black_pawn();
     virtual void on_menu_placepiece_black_rook();
     virtual void on_menu_placepiece_black_knight();
@@ -265,11 +268,23 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
     //! See cwchess::ChessPosition::to_move.
     void to_move(cwchess::Color const& color) { ChessPosition::to_move(color); set_active_turn_indicator(to_move().is_white()); }
     //! See cwchess::ChessPosition::set_en_passant.
-    bool set_en_passant(cwchess::Index const& index) { ChessPosition::set_en_passant(index); set_active_turn_indicator(to_move().is_white()); }
+    bool set_en_passant(cwchess::Index const& index)
+    {
+      bool possible = ChessPosition::set_en_passant(index);
+      if (possible)
+        set_active_turn_indicator(to_move().is_white());
+      return possible;
+    }
     //! See cwchess::ChessPosition::swap_colors.
     void swap_colors() { ChessPosition::swap_colors(); sync(); }
     //! See cwchess::ChessPosition::place.
-    bool place(cwchess::Code const& code, cwchess::Index const& index) { if (ChessPosition::place(code, index)) set_square(index.col(), index.row(), code); }
+    bool place(cwchess::Code const& code, cwchess::Index const& index)
+    {
+      bool result = ChessPosition::place(code, index);
+      if (result)
+        set_square(index.col(), index.row(), code);
+      return result;
+    }
     //! See cwchess::ChessPosition::load_FEN.
     bool load_FEN(std::string const& FEN);
 
@@ -369,7 +384,7 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
     using ChessboardWidget::get_draw_turn_indicators;
     using ChessboardWidget::set_flip_board;
     using ChessboardWidget::get_flip_board;
-    using ChessboardWidget::set_calc_board_border_width ;
+//    using ChessboardWidget::set_calc_board_border_width;
 
   //@}
 
@@ -531,7 +546,11 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
      * function with <code>event->type == GDK_BUTTON_PRESS</code> and a subsequent on_button_release at
      * the same coordinates should be a non-operation (if you want to use double clicks too).
      */
-    virtual bool on_button_press(gint col, gint row, GdkEventButton const* event) { return false; }
+    virtual bool on_button_press(gint col, gint row, GdkEventButton const* event)
+    {
+      DoutEntering(dc::notice, "on_button_press(" << col << ", " << row << ", " << event << ")");
+      return false;
+    }
 
     /** @brief Called when a mouse button is released.
      *
@@ -549,19 +568,23 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
      * the event is considered to be completely handled and nothing else
      * will be done.
      */
-    virtual bool on_button_release(gint col, gint row, GdkEventButton const* event) { return false; }
+    virtual bool on_button_release(gint col, gint row, GdkEventButton const* event)
+    {
+      DoutEntering(dc::notice, "on_button_release(" << col << ", " << row << ", " << event << ")");
+      return false;
+    }
 
     /** @brief Called when the mouse pointer left the chessboard.
      *
      * The default does nothing.
      */
-    virtual void on_cursor_left_chessboard(gint prev_col, gint prev_row) { }
+    virtual void on_cursor_left_chessboard(gint prev_col, gint prev_row) override { }
 
     /** @brief Called when the mouse pointer entered a new square.
      *
      * The default does nothing.
      */
-    virtual void on_cursor_entered_square(gint prev_col, gint prev_row, gint col, gint row) { }
+    virtual void on_cursor_entered_square(gint prev_col, gint prev_row, gint col, gint row) override { }
 
   //@}
 

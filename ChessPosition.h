@@ -70,7 +70,8 @@ class ChessPosition {
     // member variable initialized here is M_to_move because it needs
     // to be set to something before we can call ChessPosition::place,
     // or uninitialized memory would be used.
-    ChessPosition() : M_to_move(white) { }
+    ChessPosition() : M_to_move(white) { DoutEntering(dc::notice, "cwchess::ChessPosition::ChessPosition()"); }
+    ~ChessPosition() { DoutEntering(dc::notice, "cwchess::ChessPosition::~ChessPosition()"); }
 
   //@}
 
@@ -407,7 +408,10 @@ public:
   /** @name Game play */
   //@{
 
-  /** @brief Execute move \a move. */
+  /** @brief Execute move \a move.
+   *
+   * @returns TRUE if drawn by the 50 moves rule.
+   */
   bool execute(Move const& move);
 
   //@}

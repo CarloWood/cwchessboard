@@ -43,34 +43,4 @@ extern std::ostream& operator<<(std::ostream& os, BitBoard const& bit_board);	//
 
 } // namespace cwchess
 
-#ifdef CWDEBUG_GTKMM
-//---------------------------------------------------------------------------
-// gtkmm debug ostream operators.
-
-#include <iosfwd>			// std::ostream&
-#include <gdk/gdk.h>		        // GdkEventType, GdkEvent
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <gtk/gtk.h>		        // GtkWidget, GtkAllocation, GtkAction
-#pragma GCC diagnostic pop
-#include <glib.h>			// GIOCondition
-
-std::ostream& operator<<(std::ostream& os, GdkEventType event_type);
-std::ostream& operator<<(std::ostream& os, GdkEvent const* event);
-std::ostream& operator<<(std::ostream& os, GtkWidget const* widget);
-std::ostream& operator<<(std::ostream& os, GtkAllocation const* widget);
-std::ostream& operator<<(std::ostream& os, GdkEventButton const* eb);
-std::ostream& operator<<(std::ostream& os, GdkModifierType modifier_type);
-std::ostream& operator<<(std::ostream& os, GdkDevice const* device);
-std::ostream& operator<<(std::ostream& os, GdkWindow const* window);
-std::ostream& operator<<(std::ostream& os, GdkEventMotion const* em);
-std::ostream& operator<<(std::ostream& os, GdkEventConfigure const* ec);
-std::ostream& operator<<(std::ostream& os, GdkRectangle const& rect);
-std::ostream& operator<<(std::ostream& os, GdkEventExpose const* ee);
-std::ostream& operator<<(std::ostream& os, GdkRegion const* region);
-std::ostream& operator<<(std::ostream& os, GtkAction const* action);
-
-//---------------------------------------------------------------------------
-#endif // CWDEBUG_GTKMM
-
 #endif // CWDEBUG

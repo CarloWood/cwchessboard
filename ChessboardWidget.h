@@ -37,15 +37,65 @@
  */
 namespace cwmm {
 
-/** @internal
- *
- * A helper class, needed because we must initialize CwChessboard before we can initialize Gtk::DrawingArea.
+// The number of squares being drawn on the screen (for debugging purposes).
+// If set to less than 8, only the bottom-left corner of the board is show.
+static gint const squares = 8;
+
+// The absolute minimum size of a side of a square in pixels.
+static gint const min_sside = 12;
+
+// The number of Head-Up Displays.
+static guint const number_of_hud_layers = 2;
+
+// Piece encodings.
+static int const pawn = 0;
+static int const rook = 1;
+static int const knight = 2;
+static int const bishop = 3;
+static int const queen = 4;
+static int const king = 5;
+
+/*
+ * An RGB color as used by cairo.
  */
-class CwChessboardPtr {
-  protected:
-    CwChessboard* M_chessboard;
-    CwChessboardPtr() : M_chessboard(CW_CHESSBOARD(cw_chessboard_new())) { }
+struct CairoColor
+{
+  double red;
+  double green;
+  double blue;
 };
+
+// A piece that is not bound to a square.
+struct FloatingPiece
+{
+  gint pixmap_x;		// Current x position of the top-left of the piece, in pixmap coordinates.
+  gint pixmap_y;		// Current y position of the top-left of the piece, in pixmap coordinates.
+  CwChessboardCode code;	// Which piece and which color.
+  gboolean moved;		// Temporary set between a move and a redraw.
+  gboolean pointer_device;	// Set if this is the pointer device.
+};
+
+// Pixmap cache of the size of one square.
+struct SquareCache
+{
+  Cairo::RefPtr<Cairo::Surface> surface;	// Pointer to the cairo surface of the pixmap.
+};
+
+// An arrow drawn on the board.
+struct Arrow
+{
+  gint begin_col;
+  gint begin_row;
+  gint end_col;
+  gint end_row;
+  CairoColor color;
+  guint64 has_content[number_of_hud_layers];
+};
+
+/*
+ * Array index type for chessboard square.
+ */
+using BoardIndex = gint;
 
 /** @class ChessboardWidget
  *  @brief A gtkmm chessboard widget.
@@ -56,47 +106,205 @@ class CwChessboardPtr {
  *
  * @sa ChessPositionWidget
  */
-class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
-  public:
+class ChessboardWidget : public Gtk::DrawingArea
+{
+  // Colors.
+ protected:
+  CairoColor m_dark_square_color;	// The color of the dark squares.
+  CairoColor m_light_square_color;	// The color of the light squares.
+ private:
+  CairoColor m_board_border_color;	// The color of the border.
+  CairoColor m_white_piece_fill_color;	// The fill color of the white pieces.
+  CairoColor m_white_piece_line_color;	// The line color of the white pieces.
+  CairoColor m_black_piece_fill_color;	// The fill color of the black pieces.
+  CairoColor m_black_piece_line_color;	// The line color of the black pieces.
+  GdkColor m_widget_background_color;	// The background color of the widget.
+  CairoColor m_color_palet[31];		// 31 colors for markers and backgrounds.
+  guint32 m_allocated_colors_mask;	// The colors of color_palet that are used.
+  CairoColor m_cursor_color;		// The color of the cursor.
+
+  // Other configuration.
+  gboolean m_draw_border;		// Do we need to draw a border?
+  gboolean m_flip_board;		// White or black at the bottom?
+  gboolean m_draw_turn_indicators;	// Do we need to draw turn indicators?
+  gboolean m_active_turn_indicator;	// Is whites turn indicator active (or blacks?).
+  gboolean m_has_hud_layer[number_of_hud_layers];	// Do we need to call the user provided HUD draw function?
+  gdouble m_marker_thickness;		// Thickness of the markers as fraction of sside.
+  gboolean m_marker_below;		// Whether the markers are drawn below HUD 0.
+  gdouble m_cursor_thickness;		// Thickness of the cursor as fraction of sside.
+  gboolean m_show_cursor;		// True if the cursor should be visible.
+
+  // Sizes and offsets.
+  gint m_sside;				// The size of one side of a square.
+  gint m_border_width;			// The border width.
+  Cairo::RefPtr<Cairo::Region> m_chessboard_region;  // The rectangular region where the chessboard resides.
+  gint m_marker_thickness_px;		// Thickness of the markers.
+  gint m_cursor_thickness_px;		// Thickness of the cursor.
+  gint m_cursor_col;			// Current cursor column.
+  gint m_cursor_row;			// Current cursor row.
+
+  // Buffers and caches.
+  cairo_surface_t* m_pixmap;		// X server side drawing buffer.
+  cairo_t* m_cr;			// Corresponding Cairo context.
+  SquareCache m_piece_pixmap[12];	// 12 images using piece_buffer.
+  Cairo::RefPtr<Cairo::Surface> m_hud_layer_surface[number_of_hud_layers];	// The HUD layers.
+ protected:
+  gint64 m_hud_has_content[number_of_hud_layers];		// Which HUD squares are not entirely transparent?
+ private:
+  gint64 m_hud_need_redraw[number_of_hud_layers];		// Which HUD squares need a redraw?
+  SquareCache m_hatching_pixmap;	// Cache used for the hatch lines.
+
+  CwChessboardCode m_board_codes[64];	// The chessboard, contains pieces and background colors.
+  gint64 m_need_redraw_invalidated;	// Which squares are invalidated?
+  gint64 m_need_redraw;			// Which squares need a redraw?
+  bool m_turn_indicators_invalidated;   // Set when invalidate_turn_indicators was called.
+  bool m_border_invalidated;            // Set when invalidate_border was called.
+
+  gsize m_number_of_floating_pieces;	// Current number of floating pieces.
+  FloatingPiece m_floating_piece[32];	// Current floating pieces.
+  gint m_floating_piece_handle;		// The handle of the floating piece under the pointer device, or -1.
+  gboolean m_redraw_background;		// Set when the window was recently resized (reset in the expose function).
+
+  std::vector<Arrow*> m_arrows;		// Array with pointers to Arrow objects.
+
+#ifdef CWDEBUG
+  bool m_inside_on_draw;                // True when inside on_draw. Used for debugging.
+#endif
+
+  gint m_total_size;                    // The size of the adjusted allocation.
+  bool m_redraw_pixmap;
+  bool m_redraw_pieces;
+
+  static constexpr CwChessboardCode s_color_mask = 0x0001;
+  static constexpr CwChessboardCode s_piece_mask = 0x000e;
+  static constexpr CwChessboardCode s_piece_color_mask = 0x000f;
+  static constexpr CwChessboardCode s_bghandle_mask = 0x01f0;           // BackGround of square.
+  static constexpr CwChessboardCode s_mahandle_mask = 0x3e00;           // MArker.
+
+  static gboolean is_empty_square(CwChessboardCode code) { return (code & s_piece_mask) == 0; }
+
+  // This assumes it is a piece (not an empty square).
+  static int convert_code2piece(CwChessboardCode code) { return ((code & s_piece_mask) >> 1) - 1; }
+
+  // This assumes it is a piece (not an empty square).
+  static int convert_code2piece_pixmap_index(CwChessboardCode code) { return (code & s_piece_color_mask) - 2; }
+
+  // This assumes it is a piece (not an empty square).
+  static gboolean is_white_piece(CwChessboardCode code) { return (code & s_color_mask) != 0; }
+
+  static CwChessboardCode convert_piece2code(int piece, gboolean white) { return (unsigned char)((piece << 1) | (white ? 3 : 2)); }
+
+  static gint convert_code2bghandle(CwChessboardCode code) { return (code & s_bghandle_mask) >> 4; }
+
+  // This should be OR-ed with the other data.
+  static CwChessboardCode convert_bghandle2code(gint bghandle) { return bghandle << 4; }
+
+  static gint convert_code2mahandle(CwChessboardCode code) { return (code & s_mahandle_mask) >> 9; }
+
+  // This should be OR-ed with the other data.
+  static CwChessboardCode convert_mahandle2code(gint mahandle) { return mahandle << 9; }
+
+ public:
   /** @name Construction/Destruction */
   //@{
 
     //! @brief Create a ChessboardWidget object.
     ChessboardWidget();
     //! @brief Destructor.
-    virtual ~ChessboardWidget();
+    ~ChessboardWidget() override;
 
   //@}
 
-  private:
-    static void S_draw_pawn_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
-    static void S_draw_rook_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
-    static void S_draw_knight_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
-    static void S_draw_bishop_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
-    static void S_draw_queen_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
-    static void S_draw_king_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
-    static void S_draw_hud_layer_hook(CwChessboard* chessboard, cairo_t* cr, gint sside, guint hud);
-    static gboolean S_draw_hud_square_hook(CwChessboard* chessboard, cairo_t* cr, gint col, gint row, gint sside, guint hud);
-    static void S_draw_border_hook(CwChessboard* chessboard);
-    static void S_draw_turn_indicator_hook(CwChessboard* chessboard, gboolean white, gboolean on);
-    static void S_on_cursor_left_chessboard_hook(CwChessboard* chessboard, gint prev_col, gint prev_row);
-    static void S_on_cursor_entered_square_hook(CwChessboard* chessboard, gint prev_col, gint prev_row, gint col, gint row);
+ private:
+
+  void set_fill_color(cairo_t* cr, gboolean white);
+  void set_line_color(cairo_t* cr, gboolean white);
+  void recreate_hud_layers(Cairo::RefPtr<Cairo::Context> const& cr);
+  void redraw_pixmap(Cairo::RefPtr<Cairo::Context> const& cr);
+  void invalidate_border();
+  void invalidate_turn_indicators();
+  void invalidate_square(gint col, gint row);
+  void invalidate_board();
+  void invalidate_markers();
+  void invalidate_cursor();
+  guint64 invalidate_arrow(gint col1, gint row1, gint col2, gint row2);
+  void redraw_square(Cairo::RefPtr<Cairo::Context> const& cr, gint index);
+  void redraw_pieces(Cairo::RefPtr<Cairo::Surface> const& surface);
+  void redraw_hud_layer(guint hud);
+  void update_cursor_position(gdouble x, gdouble y, gboolean forced);
+
+  /*
+   * Convert a (column, row) pair (each running from 0 till 7) to a BoardIndex value.
+   */
+  static BoardIndex convert_colrow2index(gint col, gint row)
+  {
+    return col | (row << 3);
+  }
+
+  /*
+   * Convert a BoardIndex value to the column of the corresponding square.
+   * A value of 0 corresponds to 'a', 1 corresponds to 'b' and so on, till 7 corresponding to column 'h'.
+   */
+  static gint convert_index2column(BoardIndex index)
+  {
+    // The last 3 bits contain the col.
+    return index & 0x7;
+  }
+
+  /*
+   * Convert a BoardIndex value to the row of the corresponding square.
+   */
+  static gint convert_index2row(BoardIndex index)
+  {
+    // Bits 3 till 6 contain the row. Higher bits are zero.
+    return index >> 3;
+  }
+
+  /*
+   * Convert a BoardIndex value to the top-left widget coordinates of the corresponding square.
+   */
+  void convert_index2xy(BoardIndex index, gint& x, gint& y)
+  {
+    colrow2xy(convert_index2column(index), convert_index2row(index), x, y);
+  }
+
+  /*
+   * Convert the widget coordinates (\a x, \a y) to the BoardIndex of the corresponding square.
+   */
+  BoardIndex convert_xy2index(gdouble x, gdouble y)
+  {
+    gint col = x2col(x);
+    if ((col & ~0x7))
+      return -1;
+    gint row = y2row(y);
+    if ((row & ~0x7))
+      return -1;
+    return convert_colrow2index(col, row);
+  }
 
   /** @name Events */
   //@{
 
-  protected:
+   protected:
     /** @brief Called when the mouse button is pressed while on the chessboard widget.
      *
      * This function should be overridden. See the example tstcpp.cxx in the source code for an example.
      */
-    virtual bool on_button_press_event(GdkEventButton* event) { return Gtk::DrawingArea::on_button_press_event(event); }
+    bool on_button_press_event(GdkEventButton* event) override
+    {
+      DoutEntering(dc::notice, "ChessboardWidget::on_button_press_event(" << event << ")");
+      return Gtk::DrawingArea::on_button_press_event(event);
+    }
 
     /** @brief Called when the mouse button is released again.
      *
      * This function should be overridden. See the example tstcpp.cxx in the source code for an example.
      */
-    virtual bool on_button_release_event(GdkEventButton* event) { return Gtk::DrawingArea::on_button_release_event(event); }
+    bool on_button_release_event(GdkEventButton* event) override
+    {
+      DoutEntering(dc::notice, "ChessboardWidget::on_button_release_event(" << event << ")");
+      return Gtk::DrawingArea::on_button_release_event(event);
+    }
 
     /** @brief Called when the mouse pointer left the chessboard.
      *
@@ -116,52 +324,47 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
     virtual void on_cursor_entered_square(gint prev_col, gint prev_row, gint col, gint row)
         { Dout(dc::notice, "Calling on_cursor_entered_square(" << prev_col << ", " << prev_row << ", " << col << ", " << row << ")"); }
 
+    /** @brief Called when (a part of) the chessboard drawing area needs to be (re)draw.
+     *
+     * @param cr        : The cairo context to draw on.
+     */
+    bool on_draw(Cairo::RefPtr<Cairo::Context> const& cr) override;
+
+    bool on_motion_notify_event(GdkEventMotion* motion_event) override;
+    void on_realize() override;
+    void on_unrealize() override;
+    void on_size_allocate(Gtk::Allocation& allocation) override;
+    void get_preferred_width_vfunc(int& minimum_width, int& natural_width) const override;
+    void get_preferred_height_vfunc(int& minimum_height, int& natural_height) const override;
+
   //@}
 
   /** @name Drawing primitives */
   //@{
 
     /** @brief Called to draw a pawn.
-     *
-     * The default calls #cw_chessboard_draw_pawn.
      */
-    virtual void draw_pawn(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-        { cw_chessboard_draw_pawn(M_chessboard, cr, x, y, sside, white); }
+    virtual void draw_pawn(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
 
     /** @brief Called to draw a rook.
-     *
-     * The default calls #cw_chessboard_draw_rook.
      */
-    virtual void draw_rook(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-        { cw_chessboard_draw_rook(M_chessboard, cr, x, y, sside, white); }
+    virtual void draw_rook(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
 
     /** @brief Called to draw a knight.
-     *
-     * The default calls #cw_chessboard_draw_knight.
      */
-    virtual void draw_knight(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-        { cw_chessboard_draw_knight(M_chessboard, cr, x, y, sside, white); }
+    virtual void draw_knight(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
 
     /** @brief Called to draw a bishop.
-     *
-     * The default calls #cw_chessboard_draw_bishop.
      */
-    virtual void draw_bishop(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-        { cw_chessboard_draw_bishop(M_chessboard, cr, x, y, sside, white); }
+    virtual void draw_bishop(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
 
     /** @brief Called to draw a queen.
-     *
-     * The default calls #cw_chessboard_draw_queen.
      */
-    virtual void draw_queen(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-        { cw_chessboard_draw_queen(M_chessboard, cr, x, y, sside, white); }
+    virtual void draw_queen(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
 
     /** @brief Called to draw a king.
-     *
-     * The default calls #cw_chessboard_draw_king.
      */
-    virtual void draw_king(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-        { cw_chessboard_draw_king(M_chessboard, cr, x, y, sside, white); }
+    virtual void draw_king(cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white);
 
     /** @brief Draw the HUD layer.
      *
@@ -180,8 +383,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa enable_hud_layer, disable_hud_layer
      */
-    virtual void draw_hud_layer(cairo_t* cr, gint sside, guint hud)
-        { cw_chessboard_default_draw_hud_layer(M_chessboard, cr, sside, hud); }
+    virtual void draw_hud_layer(Cairo::RefPtr<Cairo::Context> const& cr, gint sside, guint hud);
 
     /** @brief Draw a single HUD square at \a col, \a row.
      *
@@ -198,20 +400,16 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * The default calls #cw_chessboard_default_draw_hud_square.
      */
-    virtual gboolean draw_hud_square(cairo_t* cr, gint col, gint row, gint sside, guint hud)
-        { return cw_chessboard_default_draw_hud_square(M_chessboard, cr, col, row, sside, hud); }
+    virtual gboolean draw_hud_square(Cairo::RefPtr<Cairo::Context> const& cr, gint col, gint row, gint sside, guint hud);
 
     /** @brief Draw the border around the chessboard.
      *
      * This function is called when the border is first drawn, and every time the chessboard is resized.
      * The width of the drawn border should be the value returned by CwChessboardClass::calc_board_border_width.
      *
-     * The default calls #cw_chessboard_default_draw_border.
-     *
      * @sa set_draw_border
      */
-    virtual void draw_border()
-        { return cw_chessboard_default_draw_border(M_chessboard); }
+    virtual void draw_border(Cairo::RefPtr<Cairo::Context> const& cr);
 
     /** @brief Draw the indicator that indicates whose turn it is.
      *
@@ -225,57 +423,79 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_draw_border, set_draw_turn_indicators
      */
-    virtual void draw_turn_indicator(gboolean white, gboolean on)
-        { return cw_chessboard_default_draw_turn_indicator(M_chessboard, white, on); }
+    virtual void draw_turn_indicator(Cairo::RefPtr<Cairo::Context> const& cr, gboolean white, gboolean on);
 
   //@}
 
-  public:
+ public:
 
   // Typedefs
 
-    /** @typedef ColorHandle
-     *  @brief A color handle used for background markers.
-     *
-     *  The five least significant bits determine the color
-     *  from a user defined color palet, used by the background squares
-     *  and markers. A value of zero meaning the default background value
-     *  for that square, or no marker - respectively.
-     *
-     *  @sa allocate_color_handle_rgb, allocate_color_handle, free_color_handle,
-     *      set_background_color, get_background_color, set_background_colors,
-     *      get_background_colors, set_marker_color, get_marker_color
-     */
-    typedef CwChessboardColorHandle ColorHandle;
+  /** @typedef ColorHandle
+   *  @brief A color handle used for background markers.
+   *
+   *  The five least significant bits determine the color
+   *  from a user defined color palet, used by the background squares
+   *  and markers. A value of zero meaning the default background value
+   *  for that square, or no marker - respectively.
+   *
+   *  @sa allocate_color_handle_rgb, allocate_color_handle, free_color_handle,
+   *      set_background_color, get_background_color, set_background_colors,
+   *      get_background_colors, set_marker_color, get_marker_color
+   */
+  typedef CwChessboardColorHandle ColorHandle;
 
-    /** @typedef code_t
-     *  @brief A code to specify a chess piece.
-     *
-     * One of the following constants:
-     * #empty_square, #black_pawn, #white_pawn, #black_rook, #white_rook, #black_knight, #white_knight,
-     * #black_bishop, #white_bishop, #black_queen, #white_queen, #black_king or #white_king.
-     *
-     * @sa set_square, floating_piece, get_floating_piece
-     */
-    typedef CwChessboardCode code_t;
+  /** @typedef code_t
+   *  @brief A code to specify a chess piece.
+   *
+   * One of the following constants:
+   * #empty_square, #black_pawn, #white_pawn, #black_rook, #white_rook, #black_knight, #white_knight,
+   * #black_bishop, #white_bishop, #black_queen, #white_queen, #black_king or #white_king.
+   *
+   * @sa set_square, floating_piece, get_floating_piece
+   */
+  typedef CwChessboardCode code_t;
 
   /** @name Accessors */
   //@{
 
     //! @brief The side of a square in pixels.
-    gint sside() const { return M_chessboard->sside; }
-    /** @brief The x coordinate of the top-left pixel of square a1.
+    gint sside() const { return m_sside; }
+
+    /** @brief The x coordinate of the top-left pixel of square a1 relative to the adjusted allocation.
      *
      * If the board is flipped, then the x coordinate of the top-left pixel of square h8 is returned.
      * In other words, this value is not depending on whether or not the board is flipped.
      */
-    gint top_left_a1_x() const { return M_chessboard->top_left_a1_x; }
-    /** @brief The y coordinate of the top-left pixel of square a1.
+    gint top_left_a1_x() const { return m_border_width; }
+
+    /** @brief The y coordinate of the top-left pixel of square a1 relative to the adjusted allocation.
      *
      * If the board is flipped, then the y coordinate of the top-left pixel of square h8 is returned.
      * In other words, this value is not depending on whether or not the board is flipped.
      */
-    gint top_left_a1_y() const { return M_chessboard->top_left_a1_y; }
+    gint top_left_a1_y() const { return m_border_width + (squares - 1) * m_sside; }
+
+    /** @brief The x coordinate of the top-left pixel of square a8 relative to the adjusted allocation.
+     *
+     * If the board is flipped, then the x coordinate of the top-left pixel of square h1 is returned.
+     * In other words, this value is not depending on whether or not the board is flipped.
+     */
+    gint top_left_a8_x() const { return m_border_width; }
+
+    /** @brief The y coordinate of the top-left pixel of square a8 relative to the adjusted allocation.
+     *
+     * If the board is flipped, then the y coordinate of the top-left pixel of square h1 is returned.
+     * In other words, this value is not depending on whether or not the board is flipped.
+     */
+    gint top_left_a8_y() const { return m_border_width; }
+
+    // These are currently zero, but lets keep them for now.
+    gint top_left_pixmap_x() const { return 0; }
+    gint top_left_pixmap_y() const { return 0; }
+
+    gint bottom_right_pixmap_x() const { return 2 * m_border_width + 8 * m_sside; }
+    gint bottom_right_pixmap_y() const { return 2 * m_border_width + 8 * m_sside; }
 
   //@}
 
@@ -290,7 +510,10 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      * @param y	  : A reference to where the y-coordinate of the result will be written to.
      */
     void colrow2xy(gint col, gint row, gint& x, gint& y) const
-        { cw_chessboard_colrow2xy(M_chessboard, col, row, &x, &y); }
+    {
+      x = top_left_a1_x() + (m_flip_board ? 7 - col : col) * m_sside;
+      y = top_left_a1_y() - (m_flip_board ? 7 - row : row) * m_sside;
+    }
 
     /** @brief Convert an x-coordinate to the column number that it matches.
      *
@@ -302,7 +525,10 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      * @returns A column number.
      */
     gint x2col(gdouble x) const
-        { return cw_chessboard_x2col(M_chessboard, x); }
+    {
+      gint xcol = std::floor((x - top_left_a1_x()) / m_sside);
+      return (m_flip_board ? 7 - xcol : xcol);
+    }
 
     /** @brief Convert a y-coordinate to the row number that it matches.
      *
@@ -314,7 +540,10 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      * @returns A row number.
      */
     gint y2row(gdouble y) const
-        { return cw_chessboard_y2row(M_chessboard, y); }
+    {
+      gint yrow = std::floor((top_left_a1_y() + m_sside - 1 - y) / m_sside);
+      return m_flip_board ? 7 - yrow : yrow;
+    }
 
     /** @brief Test if a given column and row are on the chessboard.
      *
@@ -342,15 +571,13 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      * @param row  : A row [0..7]
      * @param code : A #code_t.
      */
-    void set_square(gint col, gint row, code_t code)
-        { cw_chessboard_set_square(M_chessboard, col, row, code); }
+    void set_square(gint col, gint row, code_t code);
 
     /** @brief Get what is currently on a square.
      *
      * Get the chess piece code for the square at (\a col, \a row).
      */
-    code_t get_square(gint col, gint row) const
-        { return cw_chessboard_get_square(M_chessboard, col, row); }
+    code_t get_square(gint col, gint row) const;
 
   //@}
 
@@ -365,8 +592,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa draw_border
      */
-    void set_draw_border(gboolean draw)
-        { cw_chessboard_set_draw_border(M_chessboard, draw); }
+    void set_draw_border(gboolean draw);
 
     /** @brief Get the boolean that determines whether or not the chessboard widget draws a border around the chessboard.
      *
@@ -374,8 +600,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_draw_border
      */
-    gboolean get_draw_border() const
-        { return cw_chessboard_get_draw_border(M_chessboard); }
+    gboolean get_draw_border() const { return m_draw_border; }
 
     /** @brief Set the boolean which determines whether or not to draw turn indicators.
      *
@@ -386,15 +611,13 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_draw_border, draw_turn_indicator
      */
-    void set_draw_turn_indicators(gboolean draw)
-        { return cw_chessboard_set_draw_turn_indicators(M_chessboard, draw); }
+    void set_draw_turn_indicators(gboolean draw);
 
     /** @brief Get the boolean which determines whether or not to draw turn indicators.
      *
      * @sa set_draw_turn_indicators
      */
-    gboolean get_draw_turn_indicators() const
-        { return cw_chessboard_get_draw_turn_indicators(M_chessboard); }
+    gboolean get_draw_turn_indicators() const { return m_draw_turn_indicators; }
 
     /** @brief Set the color of the active turn indicator.
      *
@@ -404,15 +627,13 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_draw_turn_indicators
      */
-    void set_active_turn_indicator(gboolean white)
-        { return cw_chessboard_set_active_turn_indicator(M_chessboard, white); }
+    void set_active_turn_indicator(gboolean white);
 
     /** @brief Get the boolean which determines whether whites or black turn indicator is active.
      *
      * @sa set_active_turn_indicator
      */
-    gboolean get_active_turn_indicator() const
-        { return cw_chessboard_get_active_turn_indicator(M_chessboard); }
+    gboolean get_active_turn_indicator() const { return m_active_turn_indicator; }
 
     /** @brief Set the boolean which determines whether white is playing bottom up or top down.
      *
@@ -420,16 +641,15 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @param flip	Boolean, determining if white plays upwards or not.
      */
-    void set_flip_board(gboolean flip)
-        { return cw_chessboard_set_flip_board(M_chessboard, flip); }
+    void set_flip_board(gboolean flip);
 
     /** @brief Get the boolean which determines whether white is playing bottom up or top down.
      *
      * @sa set_flip_board
      */
-    gboolean get_flip_board() const
-        { return cw_chessboard_get_flip_board(M_chessboard); }
+    gboolean get_flip_board() const { return m_flip_board; }
 
+#if 0 // Not supported at the moment.
     /** @brief Set the calc_board_border_width function.
      *
      * Change the function that calculates the border width as function of the size of the squares.
@@ -442,6 +662,15 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
         {
 	  CW_CHESSBOARD_GET_CLASS(M_chessboard)->calc_board_border_width = new_calc_board_border_width;
 	}
+#endif
+
+    static gint default_calc_board_border_width(gint sside)
+    {
+      // Make line width run from 1.0 (at sside == 12) to 4.0 (at sside == 87)).
+      // Round to nearest even integer. Then add sside / 3. Return at least 8.
+      return std::max(8.0, std::round(1.0 + (sside - 12) / 25.0) + sside / 3.0);
+    }
+
   //@}
 
   /** @name Colors */
@@ -454,8 +683,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @param color : The new color of the dark squares.
      */
-    void set_dark_square_color(GdkColor const& color)
-        { cw_chessboard_set_dark_square_color(M_chessboard, &color); }
+    void set_dark_square_color(GdkColor const& color);
 
     /** @brief Set the color of the light squares.
      *
@@ -464,8 +692,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @param color : The new color of the light squares.
      */
-    void set_light_square_color(GdkColor const& color)
-        { cw_chessboard_set_light_square_color(M_chessboard, &color); }
+    void set_light_square_color(GdkColor const& color);
 
     /** @brief Set the color of the border around the chessboard.
      *
@@ -473,8 +700,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa get_border_color, set_draw_border
      */
-    void set_border_color(GdkColor const& color)
-        { cw_chessboard_set_border_color(M_chessboard, &color); }
+    void set_border_color(GdkColor const& color);
 
     /** @brief Set the fill color of the white chess pieces.
      *
@@ -482,8 +708,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @param color : The new fill color of the white pieces.
      */
-    void set_white_fill_color(GdkColor const& color)
-        { cw_chessboard_set_white_fill_color(M_chessboard, &color); }
+    void set_white_fill_color(GdkColor const& color);
 
     /** @brief Set the line color of the white chess pieces.
      *
@@ -491,8 +716,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @param color : The new line color of the white pieces.
      */
-    void set_white_line_color(GdkColor const& color)
-        { cw_chessboard_set_white_line_color(M_chessboard, &color); }
+    void set_white_line_color(GdkColor const& color);
 
     /** @brief Set the fill color of the black chess pieces.
      *
@@ -500,8 +724,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @param color : The new fill color of the black pieces.
      */
-    void set_black_fill_color(GdkColor const& color)
-        { cw_chessboard_set_black_fill_color(M_chessboard, &color); }
+    void set_black_fill_color(GdkColor const& color);
 
     /** @brief Set the line color of the black chess pieces.
      *
@@ -509,8 +732,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @param color : The new line color of the black pieces.
      */
-    void set_black_line_color(GdkColor const& color)
-        { cw_chessboard_set_black_line_color(M_chessboard, &color); }
+    void set_black_line_color(GdkColor const& color);
 
     /** @brief Retrieve the current background color of the dark squares.
      *
@@ -518,8 +740,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_dark_square_color
      */
-    void get_dark_square_color(GdkColor& color) const
-        { cw_chessboard_get_dark_square_color(M_chessboard, &color); }
+    void get_dark_square_color(GdkColor& color) const;
 
     /** @brief Retrieve the current background color of the light squares.
      *
@@ -527,8 +748,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_light_square_color
      */
-    void get_light_square_color(GdkColor& color) const
-        { cw_chessboard_get_light_square_color(M_chessboard, &color);  }
+    void get_light_square_color(GdkColor& color) const;
 
     /** @brief Retrieve the current color of the border around the chessboard.
      *
@@ -536,8 +756,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_border_color
      */
-    void get_border_color(GdkColor& color) const
-        { cw_chessboard_get_border_color(M_chessboard, &color); }
+    void get_border_color(GdkColor& color) const;
 
     /** @brief Retrieve the current fill color of the white chess pieces.
      *
@@ -545,8 +764,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_white_fill_color
      */
-    void get_white_fill_color(GdkColor& color) const
-        { cw_chessboard_get_white_fill_color(M_chessboard, &color); }
+    void get_white_fill_color(GdkColor& color) const;
 
     /** @brief Retrieve the current line color of the white chess pieces.
      *
@@ -554,8 +772,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_white_line_color
      */
-    void get_white_line_color(GdkColor& color) const
-        { cw_chessboard_get_white_line_color(M_chessboard, &color); }
+    void get_white_line_color(GdkColor& color) const;
 
     /** @brief Retrieve the current fill color of the black chess pieces.
      *
@@ -563,8 +780,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_black_fill_color
      */
-    void get_black_fill_color(GdkColor& color) const
-        { cw_chessboard_get_black_fill_color(M_chessboard, &color); }
+    void get_black_fill_color(GdkColor& color) const;
 
     /** @brief Retrieve the current line color of the black chess pieces.
      *
@@ -572,8 +788,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_black_line_color
      */
-    void get_black_line_color(GdkColor& color) const
-        { cw_chessboard_get_black_line_color(M_chessboard, &color); }
+    void get_black_line_color(GdkColor& color) const;
 
     /** @brief Allocate a new ColorHandle.
      *
@@ -588,8 +803,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa allocate_color_handle, free_color_handle
      */
-    ColorHandle allocate_color_handle_rgb(gdouble red, gdouble green, gdouble blue)
-        { return cw_chessboard_allocate_color_handle_rgb(M_chessboard, red, green, blue); }
+    ColorHandle allocate_color_handle_rgb(gdouble red, gdouble green, gdouble blue);
 
     /** @brief Allocate a new CwChessboardColorHandle.
      *
@@ -602,7 +816,9 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      * @sa free_color_handle
      */
     ColorHandle allocate_color_handle(GdkColor const& color)
-        { return cw_chessboard_allocate_color_handle(M_chessboard, &color); }
+    {
+      return allocate_color_handle_rgb(color.red / 65535.0, color.green / 65535.0, color.blue / 65535.0);
+    }
 
     /** @brief Free up the color handle \a handle, so it can be reused.
      *
@@ -610,8 +826,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa allocate_color_handle_rgb, allocate_color_handle
      */
-    void free_color_handle(ColorHandle handle)
-        { cw_chessboard_free_color_handle(M_chessboard, handle); }
+    void free_color_handle(ColorHandle handle);
 
     /** @brief Set the background color of the square at \a col, \a row.
      *
@@ -621,8 +836,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *                 #allocate_color_handle. A handle with a value of 0 means the
      *                 default background color.
      */
-    void set_background_color(gint col, gint row, ColorHandle handle)
-        { cw_chessboard_set_background_color(M_chessboard, col, row, handle); }
+    void set_background_color(gint col, gint row, ColorHandle handle);
 
     /** @brief Get the current background color handle.
      *
@@ -636,15 +850,16 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *          with a color handle.
      */
     ColorHandle get_background_color(gint col, gint row) const
-        { return cw_chessboard_get_background_color(M_chessboard, col, row); }
+    {
+      return convert_code2bghandle(m_board_codes[convert_colrow2index(col, row)]);
+    }
 
     /** @brief Set new background colors of any number of squares.
      *
      * @param handles : Array of 64 ColorHandles.
      *                  A handle with a value of 0 means the default background color.
      */
-    void set_background_colors(ColorHandle const* handles)
-        { cw_chessboard_set_background_colors(M_chessboard, handles); }
+    void set_background_colors(ColorHandle const* handles);
 
     /** @brief Get all background colors handles.
      *
@@ -652,8 +867,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @param handles : The output array. Should be an array of 64 ColorHandles.
      */
-    void get_background_colors(ColorHandle* handles) const
-        { cw_chessboard_get_background_colors(M_chessboard, handles); }
+    void get_background_colors(ColorHandle* handles) const;
 
   //@}
 
@@ -684,8 +898,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa get_floating_piece, remove_floating_piece, move_floating_piece
      */
-    gint add_floating_piece(code_t code, gdouble x, gdouble y, gboolean pointer_device)
-        { return cw_chessboard_add_floating_piece(M_chessboard, code, x, y, pointer_device); }
+    gint add_floating_piece(code_t code, gdouble x, gdouble y, gboolean pointer_device);
 
     /** @brief Move a floating chess piece to a new position.
      *
@@ -699,8 +912,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa add_floating_piece
      */
-    void move_floating_piece(gint handle, gdouble x, gdouble y)
-        { cw_chessboard_move_floating_piece(M_chessboard, handle, x, y); }
+    void move_floating_piece(gint handle, gdouble x, gdouble y);
 
     /** @brief Remove a floating piece.
      *
@@ -709,8 +921,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @param handle : The floating piece handle.
      */
-    void remove_floating_piece(gint handle)
-        { cw_chessboard_remove_floating_piece(M_chessboard, handle); }
+    void remove_floating_piece(gint handle);
 
     /** @brief Determine what piece a given floating piece is.
      *
@@ -720,7 +931,10 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      * @param handle : The floating piece handle.
      */
     code_t get_floating_piece(gint handle) const
-        { return cw_chessboard_get_floating_piece(M_chessboard, handle); }
+    {
+      g_assert(handle >= 0 && handle < (gint)G_N_ELEMENTS(m_floating_piece));
+      return m_floating_piece[handle].code;
+    }
 
   //@}
 
@@ -737,8 +951,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa CwChessboardClass::draw_hud_layer, disable_hud_layer
      */
-    void enable_hud_layer(guint hud)
-        { cw_chessboard_enable_hud_layer(M_chessboard, hud); }
+    void enable_hud_layer(guint hud);
 
     /** @brief Disable the HUD layer again.
      *
@@ -749,7 +962,11 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      * @sa enable_hud_layer
      */
     void disable_hud_layer(guint hud)
-        { cw_chessboard_disable_hud_layer(M_chessboard, hud); }
+    {
+      g_return_if_fail(hud < number_of_hud_layers);
+      m_has_hud_layer[hud] = false;
+      m_hud_need_redraw[hud] = (guint64)-1;
+    }
 
   //@}
 
@@ -765,8 +982,7 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      * @param mahandle : A color handle as returned by #allocate_color_handle_rgb or #allocate_color_handle.
      *                   A handle with a value of 0 removes the marker (if any was there).
      */
-    void set_marker_color(gint col, gint row, ColorHandle mahandle)
-        { cw_chessboard_set_marker_color(M_chessboard, col, row, mahandle); }
+    void set_marker_color(gint col, gint row, ColorHandle mahandle);
 
     /** @brief Get marker color.
      *
@@ -779,7 +995,9 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *          for this square, or 0 if the square doesn't have a marker.
      */
     ColorHandle get_marker_color(gint col, gint row) const
-        { return cw_chessboard_get_marker_color(M_chessboard, col, row); }
+    {
+      return convert_code2mahandle(m_board_codes[convert_colrow2index(col, row)]);
+    }
 
     /** @brief Set the marker thickness.
      *
@@ -789,15 +1007,16 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa get_marker_thickness
      */
-    void set_marker_thickness(gdouble thickness)
-        { return cw_chessboard_set_marker_thickness(M_chessboard, thickness); }
+    void set_marker_thickness(gdouble thickness);
 
     /** @brief Get the current marker thickness as fraction of sside.
      *
      * @sa set_marker_thickness
      */
     gdouble get_marker_thickness() const
-        { return cw_chessboard_get_marker_thickness(M_chessboard); }
+    {
+      return m_marker_thickness;
+    }
 
     /** @brief Choose whether markers should be drawn below or above HUD layer 0.
      *
@@ -806,7 +1025,9 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      * @param below : TRUE when markers should be drawn below HUD layer 0.
      */
     void set_marker_level(gboolean below)
-        { return cw_chessboard_set_marker_level(M_chessboard, below); }
+    {
+      m_marker_below = below;
+    }
 
   //@}
 
@@ -820,15 +1041,13 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa set_cursor_thickness, get_cursor_thickness
      */
-    void show_cursor()
-        { cw_chessboard_show_cursor(M_chessboard); }
+    void show_cursor();
 
     /** @brief Hide the cursor.
      *
      * @sa show_cursor
      */
-    void hide_cursor()
-        { cw_chessboard_hide_cursor(M_chessboard); }
+    void hide_cursor();
 
     /** @brief Set the thickness of the cursor.
      *
@@ -838,29 +1057,28 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa get_cursor_thickness
      */
-    void set_cursor_thickness(gdouble thickness)
-        { cw_chessboard_set_cursor_thickness(M_chessboard, thickness); }
+    void set_cursor_thickness(gdouble thickness);
 
     /** @brief Get the current cursor thickness as fraction of sside.
      *
      * @sa set_cursor_thickness
      */
     gdouble get_cursor_thickness() const
-        { return cw_chessboard_get_cursor_thickness(M_chessboard); }
+    {
+      return m_cursor_thickness;
+    }
 
     /** @brief Set the color of the cursor.
      *
      * @param color : The color to be used for the cursor.
      */
-    void set_cursor_color(GdkColor const& color)
-        { cw_chessboard_set_cursor_color(M_chessboard, &color); }
+    void set_cursor_color(GdkColor const& color);
 
     /** @brief Get the current cursor color.
      *
      * @param color : Pointer to the output variable.
      */
-    void get_cursor_color(GdkColor& color) const
-        { cw_chessboard_get_cursor_color(M_chessboard, &color); }
+    void get_cursor_color(GdkColor& color) const;
 
   //@}
 
@@ -879,15 +1097,13 @@ class ChessboardWidget : public CwChessboardPtr, public Gtk::DrawingArea {
      *
      * @sa remove_arrow
      */
-    gpointer add_arrow(gint begin_col, gint begin_row, gint end_col, gint end_row, GdkColor const& color)
-        { return cw_chessboard_add_arrow(M_chessboard, begin_col, begin_row, end_col, end_row, &color); }
+    gpointer add_arrow(gint begin_col, gint begin_row, gint end_col, gint end_row, GdkColor const& color);
 
     /** @brief Remove a previously added arrow.
      *
      * @param ptr : The arrow handle as returned by #add_arrow.
      */
-    void remove_arrow(gpointer ptr)
-        { cw_chessboard_remove_arrow(M_chessboard, ptr); }
+    void remove_arrow(gpointer ptr);
 
   //@}
 };
