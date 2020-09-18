@@ -538,6 +538,8 @@ void ChessPositionWidget::initialize_menu()
 #else
   //assert(false); // To be implemented.
 #endif
+
+  initial_position();
 }
 
 void ChessPositionWidget::popup_deactivated()

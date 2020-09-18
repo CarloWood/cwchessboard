@@ -26,14 +26,21 @@ void LinuxChessboardWidget::append_menu_entries(LinuxChessMenuBar* menubar)
 #define ADD(top, entry) \
   menubar->append_menu_entry({top, entry},   this, &LinuxChessboardWidget::on_menu_##top##_##entry)
 
-  ADD(Mode, ShowCandidates);
-  ADD(Mode, ShowReachables);
-  ADD(Mode, ShowAttacked);
-  ADD(Mode, ShowDefendables);
-  ADD(Mode, ShowDefendedBlack);
-  ADD(Mode, ShowDefendedWhite);
-  ADD(Mode, ShowMoves);
+  Gtk::RadioButtonGroup show;
+#define ADD_RADIO(top, entry) \
+  menubar->append_radio_menu_entry(show, {top, entry},   this, &LinuxChessboardWidget::on_menu_##top##_##entry)
+
+  ADD_RADIO(Mode, ShowCandidates);
+  ADD_RADIO(Mode, ShowReachables);
+  ADD_RADIO(Mode, ShowAttacked);
+  ADD_RADIO(Mode, ShowDefendables);
+  ADD_RADIO(Mode, ShowDefendedBlack);
+  ADD_RADIO(Mode, ShowDefendedWhite);
+  ADD_RADIO(Mode, ShowMoves);
   ADD(Mode, PlacePieces);
+
+  // This wasn't called for some reason.
+  on_menu_Mode_ShowCandidates();
 }
 
 void LinuxChessboardWidget::draw_hud_layer(Cairo::RefPtr<Cairo::Context> const& cr, gint sside, guint hud)
@@ -166,7 +173,7 @@ void LinuxChessboardWidget::illegal(cwchess::Move const& move, cwchess::ChessPos
   DoutEntering(dc::notice, "LinuxChessboardWidget::illegal(" << cwchess::ChessNotation(*this, move) << ", ...)");
 }
 
-LinuxChessboardWidget::LinuxChessboardWidget(Gtk::Window* window, Glib::RefPtr<cwchess::Promotion> promotion) : cwmm::ChessPositionWidget(window, promotion)
+LinuxChessboardWidget::LinuxChessboardWidget(Gtk::Window* window, Glib::RefPtr<cwchess::Promotion> promotion) : cwmm::ChessPositionWidget(window, promotion), M_en_passant_arrow(nullptr)
 {
   DoutEntering(dc::notice, "LinuxChessboardWidget::LinuxChessboardWidget()");
   init_colors();
@@ -335,14 +342,16 @@ void LinuxChessboardWidget::show_reachables(int col, int row, mode_type mode)
 
 void LinuxChessboardWidget::update_en_passant_arrow()
 {
+  DoutEntering(dc::notice, "LinuxChessboardWidget::update_en_passant_arrow()");
   using namespace cwchess;
   EnPassant const& en_passant(this->en_passant());
   if (en_passant.exists())
   {
-    if (M_en_passant_arrow_index != en_passant.index())
+    if (M_en_passant_arrow &&
+        M_en_passant_arrow_index != en_passant.index())
     {
       remove_arrow(M_en_passant_arrow);
-      M_en_passant_arrow = NULL;
+      M_en_passant_arrow = nullptr;
     }
     if (!M_en_passant_arrow)
     {
@@ -356,7 +365,7 @@ void LinuxChessboardWidget::update_en_passant_arrow()
   else if (M_en_passant_arrow)
   {
     remove_arrow(M_en_passant_arrow);
-    M_en_passant_arrow = NULL;
+    M_en_passant_arrow = nullptr;
   }
 }
 

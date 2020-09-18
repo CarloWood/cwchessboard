@@ -93,7 +93,7 @@ void ChessboardWidget::set_line_color(cairo_t* cr, gboolean white)
 
 void ChessboardWidget::recreate_hud_layers(Cairo::RefPtr<Cairo::Context> const& cr)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::recreate_hud_layers()");
+  DoutEntering(dc::widget, "ChessboardWidget::recreate_hud_layers()");
 
   for (guint hud = 0; hud < number_of_hud_layers; ++hud)
   {
@@ -111,75 +111,76 @@ void ChessboardWidget::recreate_hud_layers(Cairo::RefPtr<Cairo::Context> const& 
 // Allocate the pixmap and redraw everything (including the border).
 void ChessboardWidget::redraw_pixmap(Cairo::RefPtr<Cairo::Context> const& cr)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::redraw_pixmap(cr)");
+  DoutEntering(dc::widget, "ChessboardWidget::redraw_pixmap(cr)");
 
-  int const old_total_size = 2 * m_border_width + squares * m_sside;
+  int const old_total_size = 2 * m_border_width + squares * m_sside;    // m_total_size was already changed in on_size_allocate.
   int const old_sside = m_sside;
 
   // get_allocation() returns the "adjusted" allocation, which is the entire board including border
   // as well as equal to the entire "pixmap" (cairo surface) that we draw to.
   //
-  //                      0
-  //                    0 .-----------------------------------------------.
-  //                      |                                               |
-  //                      |   .---------------------------------------.   |
-  //                      |   |    |    |    |    |    |    |    |    |   |
-  //    squares = 8       | 8 |    |    |    |    |    |    |    |    |   |
-  //                      |   |---------------------------------------|   |
-  //                      |   |    |    |    |    |    |    |    |    |   |
-  //                      | 7 |    |    |    |    |    |    |    |    |   |
-  //                      |   |---------------------------------------|   |
-  //                      |   |    |    |    |    |    |    |    |    |   |
-  //                      | 6 |    |    |    |    |    |    |    |    |   |
-  //                      |   |---------------------------------------|   |
-  //                      |   |    |    |    |    |    |    |    |    |   |
-  //                      | 5 |    |    |    |    |    |    |    |    |   |
-  //                      |   |---------------------------------------|   |
-  //                      |   |    |    |    |    |    |    |    |    |   |
-  //                      | 4 |    |    |    |    |    |    |    |    |   |
-  //                      |   |---------------------------------------|   |
-  //                      |   |    |    |    |    |    |    |    |    |   |
-  //                      | 3 |    |    |    |    |    |    |    |    |   |
-  //                      |   |---------------------------------------|   |
-  //                      |   |    |    |    |    |    |    |    |    |   |
-  //                      | 2 |    |    |    |    |    |    |    |    |   |
-  //                      |   |---------------------------------------|   | ----
-  //                      |   |    |    |    |    |    |    |    |    |   |    ^__ m_sside
-  //                      | 1 |    |    |    |    |    |    |    |    |   |    v
-  //                      |   '---------------------------------------'   | ----
-  //                      |     A    B    C    D    E    F    G    H      |
-  //                      '-----------------------------------------------'
+  // 0,0                m_top_left_a8_x                               m_border_width
+  //  |                       |                                         /
+  //  V                       v                                       |<->|
+  //  .-------------------.-----------------------------------------------.-------------------.
+  //  |                   |                                               |  ^_ m_border_width|
+  //  | m_top_left_a8_y > |   .---------------------------------------....|..v                |
+  //  |                   |   |    |    |    |    |    |    |    |    |   |                   |
+  //  | squares = 8       | 8 |    |    |    |    |    |    |    |    |   |                   |
+  //  |                   |   |----+----+----+----+----+----+----+----|   |                   |
+  //  |                   |   |    |    |    |    |    |    |    |    |   |                   |
+  //  |                   | 7 |    |    |    |    |    |    |    |    |   |                   |
+  //  |                   |   |----+----+----+----+----+----+----+----|   |                   |
+  //  |                   |   |    |    |    |    |    |    |    |    |   |                   |
+  //  |                   | 6 |    |    |    |    |    |    |    |    |   |                   |
+  //  |                   |   |----+----+----+----+----+----+----+----|   |                   |
+  //  |                   |   |    |    |    |    |    |    |    |    |   |                   |
+  //  |                   | 5 |    |    |    |    |    |    |    |    |   |                   |
+  //  |  m_top_or_left_   |   |----+----+----+----+----+----+----+----|   |  m_bottom_right_  |
+  //  |  background_rect  |   |    |    |    |    |    |    |    |    |   |  background_rect  |
+  //  |                   | 4 |    |    |    |    |    |    |    |    |   |                   |
+  //  |                   |   |----+----+----+----+----+----+----+----|   |                   |
+  //  |                   |   |    |    |    |    |    |    |    |    |   |                   |
+  //  |                   | 3 |    |    |    |    |    |    |    |    |   |                   |
+  //  |                   |   |----+----+----+----+----+----+----+----|   |                   |
+  //  |                   |   |    |    |    |    |    |    |    |    |   |                   |
+  //  |                   | 2 |    |    |    |    |    |    |    |    |   |                   |
+  //  |                   |   |----+----+----+----+----+----+----+----|   | ----              |
+  //  |                   |   |    |    |    |    |    |    |    |    |   |    ^__ m_sside    |
+  //  |                   | 1 |    |    |    |    |    |    |    |    |   |    v              |
+  //  |                   |   '---------------------------------------'   | ----              |
+  //  |                   |     A    B    C    D    E    F    G    H      |                   |
+  //  '-------------------'-----------------------------------------------'-------------------'
   //
-  //                      <--------------- total_size -------------------->
+  //                      <--------------- m_total_size ------------------>
+  //  <---------------------------------allocation.get_width()-------------------------------->
 
   // Calculate the size of the pixmap. Include areas outside the border if small enough.
   Gtk::Allocation allocation = get_allocation();
 
-  ASSERT(allocation.get_width() == allocation.get_height());
-  // The total size of one side of the board, including border.
-  int const total_size = allocation.get_width();
+  Dout(dc::notice, "allocation = " << allocation);
 
   m_border_width = 0;
-  // Since `total_size = squares * sside + 2 * ChessboardWidget::default_calc_board_border_width(sside)`, we can determine sside from total_size.
+  // Since `m_total_size = squares * sside + 2 * ChessboardWidget::default_calc_board_border_width(sside)`, we can determine sside from m_total_size.
   // Without a border the sside is
-  m_sside = total_size / squares;
+  m_sside = m_total_size / squares;
   if (m_draw_border)
   {
     // Otherwise the above is an upper limit. Find the largest value that still fits.
     for (;;)
     {
       m_border_width = ChessboardWidget::default_calc_board_border_width(m_sside);
-      if (squares * m_sside + 2 * m_border_width <= total_size)
+      if (squares * m_sside + 2 * m_border_width <= m_total_size)
         break;
       --m_sside;
     }
   }
 
-  // The total size of one side of the board, excluding border.
-  gint const side = squares * m_sside;
+  m_top_left_a8_x = (allocation.get_width() - m_total_size) / 2 + m_border_width;
+  m_top_left_a8_y = (allocation.get_height() - m_total_size) / 2 + m_border_width;
 
-  Dout(dc::cwchessboardwidget, "Size including border is " << total_size);
-  Dout(dc::cwchessboardwidget, "Border width is " << m_border_width << "; " << squares << 'x' << squares << " squares with side " << m_sside);
+  Dout(dc::widget, "Size including border is " << m_total_size);
+  Dout(dc::widget, "Border width is " << m_border_width << "; " << squares << 'x' << squares << " squares with side " << m_sside);
 
   // Invalidate everything.
   m_need_redraw_invalidated = (guint64)-1;
@@ -189,29 +190,40 @@ void ChessboardWidget::redraw_pixmap(Cairo::RefPtr<Cairo::Context> const& cr)
 
   // Cache the rectangular region where the chessboard resides as a Cairo::RefPtr<Cairo::Region>.
   Cairo::RectangleInt rect;
-  rect.x = m_border_width;
-  rect.y = m_border_width;
+  rect.x = m_top_left_a8_x;
+  rect.y = m_top_left_a8_y;
   rect.width = squares * m_sside;
   rect.height = squares * m_sside;
   m_chessboard_region = Cairo::Region::create(rect);
+
+  m_top_or_left_background_rect.x = 0;
+  m_top_or_left_background_rect.y = 0;
+  if (m_top_left_a8_x == m_border_width)
+  {
+    m_top_or_left_background_rect.width = m_total_size;
+    m_top_or_left_background_rect.height = top_left_pixmap_y();
+    Dout(dc::notice, "m_top_or_left_background_rect.height was set to top_left_pixmap_y() = " << m_top_or_left_background_rect.height <<
+        "; m_border_width = " << m_border_width << "; m_top_left_a8_y = " << m_top_left_a8_y);
+    m_bottom_or_right_background_rect.width = m_total_size;
+    m_bottom_or_right_background_rect.height = allocation.get_height() - bottom_right_pixmap_y();
+  }
+  else
+  {
+    m_top_or_left_background_rect.width = top_left_pixmap_x();
+    m_top_or_left_background_rect.height = m_total_size;
+    Dout(dc::notice, "m_top_or_left_background_rect.height was set to m_total_size = " << m_top_or_left_background_rect.height);
+    m_bottom_or_right_background_rect.width = allocation.get_width() - bottom_right_pixmap_x();
+    m_bottom_or_right_background_rect.height = m_total_size;
+  }
+  m_bottom_or_right_background_rect.x = allocation.get_width() - m_bottom_or_right_background_rect.width;
+  m_bottom_or_right_background_rect.y = allocation.get_height() - m_bottom_or_right_background_rect.height;
 
   // Also update m_marker_thickness_px and m_cursor_thickness_px.
   set_marker_thickness(m_marker_thickness);
   set_cursor_thickness(m_cursor_thickness);
 
-  if (old_total_size == total_size)
+  if (old_total_size == m_total_size)
     return;
-
-  if (m_cr)
-    cairo_destroy(m_cr);
-  if (m_pixmap)
-    cairo_surface_destroy(m_pixmap);
-
-  // Allocate a pixmap for the board including the border.
-  m_pixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, total_size, total_size);
-
-  // (Re)create cairo context for the new pixmap.
-  m_cr = cairo_create(m_pixmap);
 
   // If the resize even changed the side of the squares then we have to redraw
   // the cached pieces and the HUD layer cache. Initially m_sside is set to
@@ -226,14 +238,14 @@ void ChessboardWidget::redraw_pixmap(Cairo::RefPtr<Cairo::Context> const& cr)
 
     // Calculate the marker thickness.
     m_marker_thickness_px = std::max(1, std::min((gint)round(m_marker_thickness * m_sside), m_sside / 2));
-    Dout(dc::cwchessboardwidget, "Marker thickness set to " << m_marker_thickness_px);
+    Dout(dc::widget, "Marker thickness set to " << m_marker_thickness_px);
 
     // Calculate the cursor thickness.
     m_cursor_thickness_px = std::max(1, std::min((gint)round(m_cursor_thickness * m_sside), m_sside / 2));
-    Dout(dc::cwchessboardwidget, "Cursor thickness set to " << m_cursor_thickness_px);
+    Dout(dc::widget, "Cursor thickness set to " << m_cursor_thickness_px);
 
     // (Re)create alpha layer.
-    Dout(dc::cwchessboardwidget|continued_cf, "(Re)creating HUD layers... ");
+    Dout(dc::widget|continued_cf, "(Re)creating HUD layers... ");
     recreate_hud_layers(cr);
     Dout(dc::finish, "done");
   }
@@ -253,7 +265,7 @@ void ChessboardWidget::redraw_square(Cairo::RefPtr<Cairo::Context> const& cr, gi
   gint sx = top_left_a8_x() + (m_flip_board ? 7 - col : col) * m_sside;
   gint sy = top_left_a8_y() + (squares - 1 - (m_flip_board ? 7 - row : row)) * m_sside;
 
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::redraw_square(cr, " << index << ")" << " with Board Code: " << (int)code);
+//  DoutEntering(dc::widget, "ChessboardWidget::redraw_square(cr, " << index << ")" << " with Board Code: " << (int)code);
 
   // Draw background color.
   cr->rectangle(sx, sy, m_sside, m_sside);
@@ -350,12 +362,12 @@ void ChessboardWidget::redraw_square(Cairo::RefPtr<Cairo::Context> const& cr, gi
 
 void ChessboardWidget::redraw_pieces(Cairo::RefPtr<Cairo::Surface> const& surface)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::redraw_pieces(cr)");
+  DoutEntering(dc::widget, "ChessboardWidget::redraw_pieces(cr)");
 
   for (int i = 0; i < 12; ++i)
   {
     m_piece_pixmap[i].surface = Cairo::Surface::create(surface, Cairo::CONTENT_COLOR_ALPHA, m_sside, m_sside);
-    Dout(dc::cwchessboardwidget|continued_cf, "(Re)drawing piece cache " << i << "... ");
+    Dout(dc::widget|continued_cf, "(Re)drawing piece cache " << i << "... ");
     Cairo::RefPtr<Cairo::Context> cr = Cairo::Context::create(m_piece_pixmap[i].surface);
     unsigned char code = static_cast<unsigned char>(i + 2);
     cr->rectangle(0, 0, m_sside, m_sside);
@@ -414,7 +426,7 @@ void ChessboardWidget::invalidate_turn_indicators()
     gint const side = squares * m_sside;
 
     double const factor = 0.085786;       // (1/sqrt(2) − 0.5)/(1 + sqrt(2)).
-    int const dx = (int)ceil((edge_width + 1) * factor);
+    int const dx = (int)std::ceil((edge_width + 1) * factor);
 
     Cairo::RectangleInt top_indicator_rect, bottom_indicator_rect;
     top_indicator_rect.x = top_left_pixmap_x() + top_left_a8_x() + side + 1 - dx;
@@ -488,7 +500,7 @@ void ChessboardWidget::invalidate_cursor()
 
 guint64 ChessboardWidget::invalidate_arrow(gint col1, gint row1, gint col2, gint row2)
 {
-  DoutEntering(dc::cwchessboardwidget|continued_cf, "ChessboardWidget::invalidate_arrow(" << col1 << ", " << row1 << ", " << col2 << ", " << row2 << ") = ");
+  DoutEntering(dc::widget|continued_cf, "ChessboardWidget::invalidate_arrow(" << col1 << ", " << row1 << ", " << col2 << ", " << row2 << ") = ");
 
   guint64 result = 0;
   if (col1 == col2)                     // Vertical arrow?
@@ -594,7 +606,7 @@ void ChessboardWidget::update_cursor_position(gdouble x, gdouble y, gboolean for
   if (m_show_cursor && !m_need_redraw_invalidated)
   {
     // Make sure we'll get more motion events.
-    Dout(dc::cwchessboardwidget, "FIXME: NOT Calling gdk_window_get_device_position()");
+    Dout(dc::motion_event, "FIXME: NOT Calling gdk_window_get_device_position()");
 #if 0 // Is this still needed?
     GdkDisplay* display = gdk_display_get_default();
     GdkSeat* seat = gdk_display_get_default_seat(display);
@@ -1999,21 +2011,24 @@ ChessboardWidget::ChessboardWidget() :
   m_marker_below(false),
   m_cursor_thickness(0.04),
   m_show_cursor(false),
+  m_top_left_a8_x(0),
+  m_top_left_a8_y(0),
   m_sside(-1),
+  m_border_width(0),
   m_cursor_col(-1),
   m_cursor_row(-1),
-  m_pixmap(nullptr),
-  m_cr(nullptr),
   m_piece_pixmap{},
   m_hud_has_content{},
   m_hud_need_redraw{},
   m_hatching_pixmap{},
   m_board_codes{},
+  m_need_redraw_invalidated(0),
   m_need_redraw((guint64)-1),
   m_number_of_floating_pieces(0),
   m_floating_piece{},
   m_floating_piece_handle(-1),
   m_redraw_background(true),
+  m_resized(false),
 #ifdef CWDEBUG
   m_inside_on_draw(false),
 #endif
@@ -2193,7 +2208,7 @@ static Cairo::RefPtr<Cairo::Region> convert_mask2region(guint64 mask, gint x, gi
 
 void ChessboardWidget::redraw_hud_layer(guint hud)
 {
-  DoutEntering(dc::cwchessboardwidget, "Calling ChessboardWidget::redraw_hud_layer(" << hud << ")");
+  DoutEntering(dc::widget, "Calling ChessboardWidget::redraw_hud_layer(" << hud << ")");
 
   Cairo::RefPtr<Cairo::Context> cr = Cairo::Context::create(m_hud_layer_surface[hud]);
   cr->set_operator(Cairo::OPERATOR_CLEAR);
@@ -2274,22 +2289,24 @@ void ChessboardWidget::redraw_hud_layer(guint hud)
 
 bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
 {
-  DoutEntering(dc::notice, "ChessboardWidget::on_draw(cr)");
+  DoutEntering(dc::widget, "ChessboardWidget::on_draw(cr)");
   Debug(m_inside_on_draw = true);
 
   Gdk::Rectangle clip_rectangle;
   Gdk::Cairo::get_clip_rectangle(crmm, clip_rectangle);
-  Dout(dc::notice, "clip_rectangle = " << clip_rectangle);
+  Dout(dc::clip, "clip_rectangle = " << clip_rectangle);
 
   Gtk::Allocation allocation = get_allocation();
-  Dout(dc::notice, "allocation = " << allocation);
+  Dout(dc::clip, "allocation = " << allocation);
 
-  if (clip_rectangle.get_width() == m_total_size && clip_rectangle.get_height() == m_total_size)
+  if (m_resized)
   {
+    Dout(dc::notice, "Invalidating everything because m_resized = true.");
     // Everything was invalidated (probably due to a spurious call to on_size_allocate).
     m_need_redraw_invalidated = (guint64)-1;
     m_border_invalidated = true;
     m_turn_indicators_invalidated = true;
+    m_resized = false;
   }
 
 #if CW_CHESSBOARD_EXPOSE_DEBUG
@@ -2297,7 +2314,10 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
 #endif
 
   if (m_redraw_pixmap)
+  {
     redraw_pixmap(crmm);
+    m_redraw_pixmap = false;
+  }
 
 #if 0
   // Last minute update of the HUD layers.
@@ -2324,6 +2344,14 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   }
   m_border_invalidated = false;
   m_turn_indicators_invalidated = false;
+
+  {
+    crmm->save();
+    crmm->rectangle(m_bottom_or_right_background_rect.x, m_bottom_or_right_background_rect.y, m_bottom_or_right_background_rect.width, m_bottom_or_right_background_rect.height);
+    crmm->set_source_rgb(0.8, 0.2, 0.0);
+    crmm->fill();
+    crmm->restore();
+  }
 
 #if CW_CHESSBOARD_FLOATING_PIECE_DOUBLE_BUFFER
   // Draw any floating pieces to the pixbuf.
@@ -2367,7 +2395,7 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   // However, if we resized -- or another window moved over the widget -- it could be true.
   Gdk::Rectangle clipbox;
   Gdk::Cairo::get_clip_rectangle(crmm, clipbox);
-  Dout(dc::notice, "get_clip_rectangle returned " << clipbox);
+  Dout(dc::clip, "get_clip_rectangle returned " << clipbox);
   if (G_UNLIKELY(clipbox.get_y() < top_left_pixmap_y()))
     region_extends_outside_pixmap = vertical;
   if (G_UNLIKELY(clipbox.get_y() + clipbox.get_height() > bottom_right_pixmap_y()))
@@ -2424,34 +2452,6 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
     cairo_region_destroy(pixmap_region);
   }
 
-#if 0
-  GdkWindow* window = get_window()->gobj();
-  cairo_t* dest = gdk_cairo_create(window);
-#if !CW_CHESSBOARD_FLOATING_PIECE_DOUBLE_BUFFER && !CW_CHESSBOARD_FLOATING_PIECE_INVALIDATE_TARGET
-  if (m_number_of_floating_pieces)
-    cairo_save(dest);
-#endif
-  cairo_surface_t* source = cairo_get_target(cr);
-#if CW_CHESSBOARD_EXPOSE_DEBUG
-  cairo_set_source_surface(dest, source, top_left_pixmap_x(), top_left_pixmap_y());
-  cairo_paint_with_alpha(dest, 0.35);
-#endif
-  cairo_set_source_surface(dest, source, top_left_pixmap_x(), top_left_pixmap_y());
-  // FIXME: we need 'dest' to have the same clip region as what 'cr' has.
-//  gdk_cairo_region(dest, region);
-#if CW_CHESSBOARD_EXPOSE_DEBUG
-  cairo_clip_preserve(dest);
-#else
-  cairo_clip(dest);
-#endif
-  cairo_paint(dest);
-#if CW_CHESSBOARD_EXPOSE_DEBUG
-  cairo_set_line_width(dest, 2);
-  cairo_set_source_rgb(dest, 1, 0, 0);
-  cairo_stroke(dest);
-#endif
-#endif // dest
-
 #if !CW_CHESSBOARD_FLOATING_PIECE_DOUBLE_BUFFER
   // Draw any floating pieces to the screen.
   if (m_number_of_floating_pieces)
@@ -2471,31 +2471,13 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   }
 #endif
 
-//  cairo_destroy(dest);
-
-  if (m_show_cursor || m_floating_piece_handle != -1)
-  {
-    // Call this function so that we'll get the next pointer motion hint.
-    Dout(dc::cwchessboardwidget, "FIXME: NOT Calling gdk_window_get_pointer()");
-    //gdk_window_get_pointer(gtk_widget_get_window(GTK_WIDGET(chessboard)), NULL, NULL, NULL);
-  }
-#if 0
-  static int benchmark = 0;
-  if (benchmark & 1)
-    cw_chessboard_enable_hud_layer(chessboard, 0);
-  else
-    cw_chessboard_disable_hud_layer(chessboard, 0);
-  if (++benchmark == 100)
-    exit(0);
-#endif
-
   Debug(m_inside_on_draw = false);
   return true;
 }
 
 bool ChessboardWidget::on_motion_notify_event(GdkEventMotion* motion_event)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::on_motion_notify_event(" << motion_event << ")");
+  DoutEntering(dc::motion_event, "ChessboardWidget::on_motion_notify_event(" << motion_event << ")");
 
   if (m_floating_piece_handle != -1)
   {
@@ -2510,7 +2492,7 @@ bool ChessboardWidget::on_motion_notify_event(GdkEventMotion* motion_event)
 
 void ChessboardWidget::on_realize()
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::on_realize()");
+  DoutEntering(dc::widget, "ChessboardWidget::on_realize()");
   Gtk::Widget::on_realize();
   m_redraw_pixmap = true;
   //FIXME set background colors:
@@ -2520,51 +2502,53 @@ void ChessboardWidget::on_realize()
 
 void ChessboardWidget::on_unrealize()
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::on_unrealize()");
+  DoutEntering(dc::widget, "ChessboardWidget::on_unrealize()");
   for (int i = 0; i < 12; ++i)
     m_piece_pixmap[i].surface.clear();
   m_hatching_pixmap.surface.clear();
   m_chessboard_region.clear();
   for (guint hud = 0; hud < number_of_hud_layers; ++hud)
     m_hud_layer_surface[hud].clear();
-  cairo_destroy(m_cr);
-  m_cr = nullptr;
-  g_object_unref(m_pixmap);
-  m_pixmap = nullptr;
   m_sside = -1;
   Gtk::Widget::on_unrealize();
 }
 
 void ChessboardWidget::on_size_allocate(Gtk::Allocation& allocation)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::on_size_allocate(" << allocation << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::on_size_allocate(" << allocation << ")");
   // We were resized.
+  int const total_size = std::min(allocation.get_width(), allocation.get_height());
+#if 0
   // Calculate the size and place of the chessboard widget, including border
   // and use that as the adjusted allocation.
-  int const total_size = std::min(allocation.get_width(), allocation.get_height());
   // Calculate the adjusted allocation such that it becomes a centered square with side `total_size`.
   allocation.set_x(allocation.get_x() + (allocation.get_width() - total_size) / 2);
   allocation.set_y(allocation.get_y() + (allocation.get_height() - total_size) / 2);
   allocation.set_width(total_size);
   allocation.set_height(total_size);
-  Gtk::Allocation old_allocation = get_allocation();
+//  Gtk::Allocation old_allocation = get_allocation();
+#endif
+  m_redraw_background = true;
+  m_resized = true;
+#if 0
   // on_size_allocate turns out to be called too often, also when nothing changed.
   if (allocation == old_allocation)
     return;
+#endif
   m_total_size = total_size;
   set_allocation(allocation);
   // Redraw everything.
   if (get_realized())
   {
+    //FIXME: is this needed now we don't change the allocation?
     get_window()->move_resize(allocation.get_x(), allocation.get_y(), allocation.get_width(), allocation.get_height());
     m_redraw_pixmap = true;
   }
-  m_redraw_background = true;
 }
 
 void ChessboardWidget::get_preferred_width_vfunc(int& minimum_width, int& natural_width) const
 {
-  DoutEntering(dc::cwchessboardwidget|continued_cf, "ChessboardWidget::get_preferred_width_vfunc({");
+  DoutEntering(dc::widget|continued_cf, "ChessboardWidget::get_preferred_width_vfunc({");
 
   // Return the minimum size we really need.
   gint min_border_width = 0;
@@ -2577,7 +2561,7 @@ void ChessboardWidget::get_preferred_width_vfunc(int& minimum_width, int& natura
 
 void ChessboardWidget::get_preferred_height_vfunc(int& minimum_height, int& natural_height) const
 {
-  DoutEntering(dc::cwchessboardwidget|continued_cf, "ChessboardWidget::get_preferred_height_vfunc({");
+  DoutEntering(dc::widget|continued_cf, "ChessboardWidget::get_preferred_height_vfunc({");
 
   // Return the minimum size we really need.
   gint min_border_width = 0;
@@ -2590,7 +2574,7 @@ void ChessboardWidget::get_preferred_height_vfunc(int& minimum_height, int& natu
 
 void ChessboardWidget::set_square(gint col, gint row, CwChessboardCode code)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_square(" << col << ", " << row << ", " << (int)code << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_square(" << col << ", " << row << ", " << (int)code << ")");
   gint index = convert_colrow2index(col, row);
   CwChessboardCode old_code = m_board_codes[index];
   if (old_code != code)
@@ -2602,14 +2586,14 @@ void ChessboardWidget::set_square(gint col, gint row, CwChessboardCode code)
 
 CwChessboardCode ChessboardWidget::get_square(gint col, gint row) const
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::get_square(" << col << ", " << row << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::get_square(" << col << ", " << row << ")");
   gint index = convert_colrow2index(col, row);
   return m_board_codes[index] & s_piece_color_mask;
 }
 
 void ChessboardWidget::set_draw_border(gboolean draw)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_draw_border(" << std::boolalpha << draw << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_draw_border(" << std::boolalpha << draw << ")");
   if (m_draw_border != draw)
   {
     m_draw_border = draw;
@@ -2620,7 +2604,7 @@ void ChessboardWidget::set_draw_border(gboolean draw)
 
 void ChessboardWidget::set_draw_turn_indicators(gboolean draw)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_draw_turn_indicators(" << std::boolalpha << draw << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_draw_turn_indicators(" << std::boolalpha << draw << ")");
   if (m_draw_turn_indicators != draw)
   {
     m_draw_turn_indicators = draw;
@@ -2631,7 +2615,7 @@ void ChessboardWidget::set_draw_turn_indicators(gboolean draw)
 
 void ChessboardWidget::set_active_turn_indicator(gboolean white)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_active_turn_indicator(" << std::boolalpha << white << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_active_turn_indicator(" << std::boolalpha << white << ")");
   if (m_active_turn_indicator != white)
   {
     m_active_turn_indicator = white;
@@ -2642,7 +2626,7 @@ void ChessboardWidget::set_active_turn_indicator(gboolean white)
 
 void ChessboardWidget::set_flip_board(gboolean flip)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_flip_board(" << std::boolalpha << flip << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_flip_board(" << std::boolalpha << flip << ")");
   if (m_flip_board != flip)
   {
     m_flip_board = flip;
@@ -2661,7 +2645,7 @@ void ChessboardWidget::set_flip_board(gboolean flip)
 
 CwChessboardColorHandle ChessboardWidget::allocate_color_handle_rgb(gdouble red, gdouble green, gdouble blue)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::allocate_color_handle_rgb(" << red << ", " << green << ", " << blue << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::allocate_color_handle_rgb(" << red << ", " << green << ", " << blue << ")");
   guint32 bit = 1;
   guint color_index = 0;
   while ((m_allocated_colors_mask & bit))
@@ -2689,7 +2673,7 @@ void ChessboardWidget::free_color_handle(CwChessboardColorHandle handle)
 
 void ChessboardWidget::set_marker_color(gint col, gint row, CwChessboardColorHandle mahandle)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_marker_color(" << col << ", " << row << ", " << (int)mahandle << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_marker_color(" << col << ", " << row << ", " << (int)mahandle << ")");
   BoardIndex index = convert_colrow2index(col, row);
   CwChessboardCode old_code = m_board_codes[index];
   m_board_codes[index] = convert_mahandle2code(mahandle) | (old_code & ~s_mahandle_mask);
@@ -2698,7 +2682,7 @@ void ChessboardWidget::set_marker_color(gint col, gint row, CwChessboardColorHan
 
 void ChessboardWidget::set_marker_thickness(gdouble thickness)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_marker_thickness(" << std::boolalpha << thickness << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_marker_thickness(" << std::boolalpha << thickness << ")");
   m_marker_thickness = std::min(std::max(0.0, thickness), 0.5);
   m_marker_thickness_px = std::max(1, std::min((gint)std::round(m_marker_thickness * m_sside), m_sside / 2));
   invalidate_markers();
@@ -2706,7 +2690,7 @@ void ChessboardWidget::set_marker_thickness(gdouble thickness)
 
 void ChessboardWidget::set_background_color(gint col, gint row, CwChessboardColorHandle bghandle)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_background_color(" << col << ", " << row << ", " << (int)bghandle << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_background_color(" << col << ", " << row << ", " << (int)bghandle << ")");
   BoardIndex index = convert_colrow2index(col, row);
   CwChessboardCode old_code = m_board_codes[index];
   m_board_codes[index] = convert_bghandle2code(bghandle) | (old_code & ~s_bghandle_mask);
@@ -2715,7 +2699,7 @@ void ChessboardWidget::set_background_color(gint col, gint row, CwChessboardColo
 
 void ChessboardWidget::set_dark_square_color(GdkColor const& color)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_dark_square_color(" << color << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_dark_square_color(" << color << ")");
   m_dark_square_color.red = color.red / 65535.0;
   m_dark_square_color.green = color.green / 65535.0;
   m_dark_square_color.blue = color.blue / 65535.0;
@@ -2724,7 +2708,7 @@ void ChessboardWidget::set_dark_square_color(GdkColor const& color)
 
 void ChessboardWidget::set_background_colors(ColorHandle const* handles)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_background_colors(" << handles << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_background_colors(" << handles << ")");
   // Read through the whole array, only calling set_background_color when the value changed.
   CwChessboardCode* board_codes = m_board_codes;
   for (int i = 0; i < 64; ++i)
@@ -2741,7 +2725,7 @@ void ChessboardWidget::get_dark_square_color(GdkColor& color) const
 
 void ChessboardWidget::set_light_square_color(GdkColor const& color)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_light_square_color(" << color << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_light_square_color(" << color << ")");
   m_light_square_color.red = color.red / 65535.0;
   m_light_square_color.green = color.green / 65535.0;
   m_light_square_color.blue = color.blue / 65535.0;
@@ -2757,7 +2741,7 @@ void ChessboardWidget::get_light_square_color(GdkColor& color) const
 
 void ChessboardWidget::set_border_color(GdkColor const& color)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_border_color(" << color << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_border_color(" << color << ")");
   m_board_border_color.red = color.red / 65535.0;
   m_board_border_color.green = color.green / 65535.0;
   m_board_border_color.blue = color.blue / 65535.0;
@@ -2773,7 +2757,7 @@ void ChessboardWidget::get_border_color(GdkColor& color) const
 
 void ChessboardWidget::set_white_fill_color(GdkColor const& color)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_white_fill_color(" << color << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_white_fill_color(" << color << ")");
   m_white_piece_fill_color.red = color.red / 65535.0;
   m_white_piece_fill_color.green = color.green / 65535.0;
   m_white_piece_fill_color.blue = color.blue / 65535.0;
@@ -2789,7 +2773,7 @@ void ChessboardWidget::get_white_fill_color(GdkColor& color) const
 
 void ChessboardWidget::set_white_line_color(GdkColor const& color)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_white_line_color(" << color << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_white_line_color(" << color << ")");
   m_white_piece_line_color.red = color.red / 65535.0;
   m_white_piece_line_color.green = color.green / 65535.0;
   m_white_piece_line_color.blue = color.blue / 65535.0;
@@ -2805,7 +2789,7 @@ void ChessboardWidget::get_white_line_color(GdkColor& color) const
 
 void ChessboardWidget::set_black_fill_color(GdkColor const& color)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_black_fill_color(" << color << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_black_fill_color(" << color << ")");
   m_black_piece_fill_color.red = color.red / 65535.0;
   m_black_piece_fill_color.green = color.green / 65535.0;
   m_black_piece_fill_color.blue = color.blue / 65535.0;
@@ -2821,7 +2805,7 @@ void ChessboardWidget::get_black_fill_color(GdkColor& color) const
 
 void ChessboardWidget::set_black_line_color(GdkColor const& color)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_black_line_color(" << color << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_black_line_color(" << color << ")");
   m_black_piece_line_color.red = color.red / 65535.0;
   m_black_piece_line_color.green = color.green / 65535.0;
   m_black_piece_line_color.blue = color.blue / 65535.0;
@@ -2837,7 +2821,7 @@ void ChessboardWidget::get_black_line_color(GdkColor& color) const
 
 void ChessboardWidget::set_cursor_color(GdkColor const& color)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_cursor_color(" << color << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_cursor_color(" << color << ")");
   m_cursor_color.red = color.red / 65535.0;
   m_cursor_color.green = color.green / 65535.0;
   m_cursor_color.blue = color.blue / 65535.0;
@@ -2853,7 +2837,7 @@ void ChessboardWidget::get_cursor_color(GdkColor& color) const
 
 void ChessboardWidget::set_cursor_thickness(gdouble thickness)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::set_cursor_thickness" << thickness << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::set_cursor_thickness" << thickness << ")");
   m_cursor_thickness = std::min(std::max(0.0, thickness), 0.5);
   m_cursor_thickness_px = std::max(1, std::min((gint)round(m_cursor_thickness * m_sside), m_sside / 2));
   invalidate_cursor();
@@ -2864,7 +2848,7 @@ void ChessboardWidget::show_cursor()
   if (m_show_cursor)
     return;
   m_show_cursor = true;
-  Dout(dc::cwchessboardwidget, "Calling gdk_window_get_pointer()");
+  Dout(dc::widget, "Calling gdk_window_get_pointer()");
   auto display = Gdk::Display::get_default();
   auto seat = display->get_default_seat();
   auto pointer = seat->get_pointer();
@@ -2882,7 +2866,8 @@ void ChessboardWidget::hide_cursor()
 
 void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::move_floating_piece(" << (int)handle << ", " << x << ", " << y << ")");
+  // Produces too much debug output.
+  //DoutEntering(dc::widget, "ChessboardWidget::move_floating_piece(" << (int)handle << ", " << x << ", " << y << ")");
 
   g_assert(handle >= 0 && (gsize)handle < G_N_ELEMENTS(m_floating_piece));
   g_assert(!is_empty_square(m_floating_piece[handle].code));
@@ -2951,7 +2936,7 @@ void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
 #endif
   if (outside_window && m_floating_piece[handle].pointer_device)
   {
-    Dout(dc::cwchessboardwidget, "FIXME: NOT Calling gdk_window_get_pointer()");
+    Dout(dc::motion_event, "FIXME: NOT Calling gdk_window_get_pointer()");
 #if 0 // Do still need this?
     gdk_window_get_pointer(gtk_widget_get_window(widget), NULL, NULL, NULL);
 #endif
@@ -2963,7 +2948,7 @@ void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
 
 gint ChessboardWidget::add_floating_piece(CwChessboardCode code, gdouble x, gdouble y, gboolean pointer_device)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::add_floating_piece(code:" << code <<
+  DoutEntering(dc::widget, "ChessboardWidget::add_floating_piece(code:" << code <<
       ", x:" << x << ", y:" << y << ", " << pointer_device << ")");
 
   // There can't be more than 32 floating pieces.
@@ -2992,15 +2977,15 @@ gint ChessboardWidget::add_floating_piece(CwChessboardCode code, gdouble x, gdou
   window->invalidate_rect(rect, false);
 #endif
 
-  Dout(dc::cwchessboardwidget, "number_of_floating_pieces = " << m_number_of_floating_pieces);
-  Dout(dc::cwchessboardwidget, "Allocated handle " << handle);
+  Dout(dc::widget, "number_of_floating_pieces = " << m_number_of_floating_pieces);
+  Dout(dc::widget, "Allocated handle " << handle);
 
   return handle;
 }
 
 void ChessboardWidget::remove_floating_piece(gint handle)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::remove_floating_piece(handle:" << handle << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::remove_floating_piece(handle:" << handle << ")");
 
   g_assert(handle >= 0 && (gsize)handle < G_N_ELEMENTS(m_floating_piece));
   g_assert(!is_empty_square(m_floating_piece[handle].code));
@@ -3052,12 +3037,12 @@ void ChessboardWidget::remove_floating_piece(gint handle)
     m_floating_piece_handle = -1;
   m_number_of_floating_pieces--;
   m_floating_piece[handle].code = empty_square;
-  Dout(dc::cwchessboardwidget, "number_of_floating_pieces = " << m_number_of_floating_pieces);
+  Dout(dc::widget, "number_of_floating_pieces = " << m_number_of_floating_pieces);
 }
 
 void ChessboardWidget::enable_hud_layer(guint hud)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::enable_hud_layer(" << hud << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::enable_hud_layer(" << hud << ")");
   g_return_if_fail(hud < number_of_hud_layers);
   m_has_hud_layer[hud] = TRUE;
   m_hud_need_redraw[hud] = (guint64)-1;
@@ -3065,8 +3050,8 @@ void ChessboardWidget::enable_hud_layer(guint hud)
 
 gpointer ChessboardWidget::add_arrow(gint begin_col, gint begin_row, gint end_col, gint end_row, GdkColor const& color)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::add_arrow(" <<
-      begin_col << ", " << begin_row << ", " << end_col << ", " << end_row << ", " << color << ")");
+  DoutEntering(dc::widget|continued_cf, "ChessboardWidget::add_arrow(" <<
+      begin_col << ", " << begin_row << ", " << end_col << ", " << end_row << ", " << color << ") = ");
 
   g_return_val_if_fail(begin_col != end_col || begin_row != end_row, NULL);
   g_return_val_if_fail(is_inside_board(begin_col, begin_row) && is_inside_board(end_col, end_row), NULL);
@@ -3084,12 +3069,13 @@ gpointer ChessboardWidget::add_arrow(gint begin_col, gint begin_row, gint end_co
   guint64 start_square = (guint64)1 << convert_colrow2index(begin_col, begin_row);
   m_hud_need_redraw[0] |= (arrow->has_content[0] = start_square);
   m_hud_need_redraw[1] |= (arrow->has_content[1] = content ^ start_square);
+  Dout(dc::finish, arrow);
   return arrow;
 }
 
 void ChessboardWidget::remove_arrow(gpointer ptr)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::remove_arrow(" << ptr << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::remove_arrow(" << ptr << ")");
   Arrow* arrow = (Arrow*)ptr;
   // Only call remove_arrow for an arrow that was added before with add_arrow.
   ASSERT(std::find(m_arrows.begin(), m_arrows.end(), arrow) != m_arrows.end());
@@ -3101,7 +3087,7 @@ void ChessboardWidget::remove_arrow(gpointer ptr)
 
 void ChessboardWidget::draw_hud_layer(Cairo::RefPtr<Cairo::Context> const& crmm, gint sside, guint hud)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::draw_hud_layer(cr, " << sside << ", " << hud << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::draw_hud_layer(cr, " << sside << ", " << hud << ")");
   // Only call this function from on_draw().
   ASSERT(m_inside_on_draw);
 
@@ -3130,7 +3116,7 @@ void ChessboardWidget::draw_hud_layer(Cairo::RefPtr<Cairo::Context> const& crmm,
 
 gboolean ChessboardWidget::draw_hud_square(Cairo::RefPtr<Cairo::Context> const& crmm, gint col, gint row, gint sside, guint hud)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::draw_hud_square(cr" << ", " << col << ", " << row << ", " << sside << ", " << hud << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::draw_hud_square(cr" << ", " << col << ", " << row << ", " << sside << ", " << hud << ")");
   // Only call this function from on_draw().
   ASSERT(m_inside_on_draw);
 
@@ -3171,30 +3157,29 @@ gboolean ChessboardWidget::draw_hud_square(Cairo::RefPtr<Cairo::Context> const& 
 
 void ChessboardWidget::draw_border(Cairo::RefPtr<Cairo::Context> const& cr)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::draw_border(cr)");
+  DoutEntering(dc::widget, "ChessboardWidget::draw_border(cr)");
   // Only call this function from on_draw().
   ASSERT(m_inside_on_draw);
 
 #if 0
-  // FIXME: that area can not be reached from here.
   // Fill the area around the board with the background color.
   gint const pixmap_width = bottom_right_pixmap_x() - top_left_pixmap_x();
   gint const pixmap_height = bottom_right_pixmap_y() - top_left_pixmap_y();
   gint const side = squares * m_sside;
 
-  if (top_left_a8_x() != 0)
-    cairo_rectangle(m_cr, 0, 0, top_left_a8_x(), pixmap_height);
+  if (top_left_pixmap_x() != 0)
+    cairo_rectangle(cr, 0, 0, top_left_pixmap_x(), pixmap_height);
   if (pixmap_width - top_left_a8_x() - side != 0)
-    cairo_rectangle(m_cr, top_left_a8_x() + side, 0,
+    cairo_rectangle(cr, top_left_a8_x() + side, 0,
         pixmap_width - top_left_a8_x() - side, pixmap_height);
   if (top_left_a8_y() != 0)
-    cairo_rectangle(m_cr, 0, 0, pixmap_width, top_left_a8_y());
+    cairo_rectangle(cr, 0, 0, pixmap_width, top_left_a8_y());
   if (pixmap_height - top_left_a8_y() - side != 0)
-    cairo_rectangle(m_cr, 0, top_left_a8_y() + side,
+    cairo_rectangle(cr, 0, top_left_a8_y() + side,
         pixmap_width, pixmap_height - top_left_a8_y() - side);
-  cairo_set_source_rgb(m_cr, m_widget_background_color.red / 65535.0,
+  cairo_set_source_rgb(cr, m_widget_background_color.red / 65535.0,
       m_widget_background_color.green / 65535.0, m_widget_background_color.blue / 65535.0);
-  cairo_fill(m_cr);
+  cairo_fill(cr);
 #endif
 
   gint const border_width = m_border_width;
@@ -3284,7 +3269,7 @@ void ChessboardWidget::draw_border(Cairo::RefPtr<Cairo::Context> const& cr)
 
 void ChessboardWidget::draw_turn_indicator(Cairo::RefPtr<Cairo::Context> const& cr, gboolean white, gboolean on)
 {
-  DoutEntering(dc::cwchessboardwidget, "ChessboardWidget::draw_turn_indicator(cr, " << std::boolalpha << white << ", " << on << ")");
+  DoutEntering(dc::widget, "ChessboardWidget::draw_turn_indicator(cr, " << std::boolalpha << white << ", " << on << ")");
   // Only call this function from on_draw().
   ASSERT(m_inside_on_draw);
 
@@ -3292,37 +3277,34 @@ void ChessboardWidget::draw_turn_indicator(Cairo::RefPtr<Cairo::Context> const& 
   gint const border_shadow_width = 2;
   gint const edge_width = border_width - border_shadow_width - 1;
   gint const side = squares * m_sside;
+  gboolean const top = (white == m_flip_board);
+  double const dir = top ? 1.0 : -1.0;
+  double const factor = 0.085786;       // (1/sqrt(2) − 0.5)/(1 + sqrt(2)).
 
   cr->save();
 
   // We draw relative to the top-left of a square of edge_width X edge_width.
   cr->translate(
       top_left_a8_x() + side + 1,
-      top_left_a8_y() - border_width + border_shadow_width + ((white != m_flip_board) ? side + edge_width + 2 : 0));
+      top_left_a8_y() - border_width + border_shadow_width + (top ? 0 : side + edge_width + 2));
 
-  double const factor = 0.085786;       // (1/sqrt(2) − 0.5)/(1 + sqrt(2)).
+  cr->move_to(0, top ? edge_width : 0);
+  cr->rel_line_to(0, dir * ((edge_width + 1) * factor + 1));
+  cr->rel_line_to(edge_width, 0);
+  cr->line_to(edge_width, top ? 0 : edge_width);
+  cr->rel_line_to(-(edge_width + (edge_width + 1) * factor + 1), 0);
+  cr->rel_line_to(0, dir * edge_width);
+  cr->close_path();
+
+  cr->set_source_rgb(m_board_border_color.red, m_board_border_color.green, m_board_border_color.blue);
+  cr->fill();
+
   if (on)
   {
-    if (white)
-      cr->set_source_rgb(1.0, 1.0, 1.0);
-    else
-      cr->set_source_rgb(0, 0, 0);
+    double val = white ? 1.0 : 0.0;     // White or black color.
+    cr->set_source_rgb(val, val, val);
     cr->arc(edge_width * 0.5 - MAX((edge_width + 1) * factor - 1, 0),
-            edge_width * 0.5 - (edge_width + 1) * ((white != m_flip_board) ? factor : -factor), edge_width * 0.5, 0, 2 * M_PI);
-    cr->fill();
-  }
-  else
-  {
-    gboolean top = (white == m_flip_board);
-    double dir = top ? 1.0 : -1.0;
-    cr->set_source_rgb(m_board_border_color.red, m_board_border_color.green, m_board_border_color.blue);
-    cr->move_to(0, top ? edge_width : 0);
-    cr->rel_line_to(0, dir * ((edge_width + 1) * factor + 1));
-    cr->rel_line_to(edge_width, 0);
-    cr->line_to(edge_width, top ? 0 : edge_width);
-    cr->rel_line_to(-(edge_width + (edge_width + 1) * factor + 1), 0);
-    cr->rel_line_to(0, dir * edge_width);
-    cr->close_path();
+            edge_width * 0.5 - (edge_width + 1) * (top ? -factor : factor), edge_width * 0.5, 0, 2 * M_PI);
     cr->fill();
   }
 

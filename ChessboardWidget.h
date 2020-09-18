@@ -135,6 +135,8 @@ class ChessboardWidget : public Gtk::DrawingArea
   gboolean m_show_cursor;		// True if the cursor should be visible.
 
   // Sizes and offsets.
+  gint m_top_left_a8_x;                 // The x coordinate of the top-left square of the board (a8 when not flipped, h1 if flipped).
+  gint m_top_left_a8_y;                 // The y coordinate of the top-left square of the board.
   gint m_sside;				// The size of one side of a square.
   gint m_border_width;			// The border width.
   Cairo::RefPtr<Cairo::Region> m_chessboard_region;  // The rectangular region where the chessboard resides.
@@ -142,10 +144,10 @@ class ChessboardWidget : public Gtk::DrawingArea
   gint m_cursor_thickness_px;		// Thickness of the cursor.
   gint m_cursor_col;			// Current cursor column.
   gint m_cursor_row;			// Current cursor row.
+  Cairo::RectangleInt m_top_or_left_background_rect;            // Widget area above or to the left of the board.
+  Cairo::RectangleInt m_bottom_or_right_background_rect;        // Widget area below or to the right of the board.
 
   // Buffers and caches.
-  cairo_surface_t* m_pixmap;		// X server side drawing buffer.
-  cairo_t* m_cr;			// Corresponding Cairo context.
   SquareCache m_piece_pixmap[12];	// 12 images using piece_buffer.
   Cairo::RefPtr<Cairo::Surface> m_hud_layer_surface[number_of_hud_layers];	// The HUD layers.
  protected:
@@ -164,6 +166,7 @@ class ChessboardWidget : public Gtk::DrawingArea
   FloatingPiece m_floating_piece[32];	// Current floating pieces.
   gint m_floating_piece_handle;		// The handle of the floating piece under the pointer device, or -1.
   gboolean m_redraw_background;		// Set when the window was recently resized (reset in the expose function).
+  bool m_resized;                       // Set when on_size_allocate was called. Reset when handled in on_draw.
 
   std::vector<Arrow*> m_arrows;		// Array with pointers to Arrow objects.
 
@@ -467,35 +470,35 @@ class ChessboardWidget : public Gtk::DrawingArea
      * If the board is flipped, then the x coordinate of the top-left pixel of square h8 is returned.
      * In other words, this value is not depending on whether or not the board is flipped.
      */
-    gint top_left_a1_x() const { return m_border_width; }
+    gint top_left_a1_x() const { return m_top_left_a8_x; }
 
     /** @brief The y coordinate of the top-left pixel of square a1 relative to the adjusted allocation.
      *
      * If the board is flipped, then the y coordinate of the top-left pixel of square h8 is returned.
      * In other words, this value is not depending on whether or not the board is flipped.
      */
-    gint top_left_a1_y() const { return m_border_width + (squares - 1) * m_sside; }
+    gint top_left_a1_y() const { return m_top_left_a8_y + (squares - 1) * m_sside; }
 
     /** @brief The x coordinate of the top-left pixel of square a8 relative to the adjusted allocation.
      *
      * If the board is flipped, then the x coordinate of the top-left pixel of square h1 is returned.
      * In other words, this value is not depending on whether or not the board is flipped.
      */
-    gint top_left_a8_x() const { return m_border_width; }
+    gint top_left_a8_x() const { return m_top_left_a8_x; }
 
     /** @brief The y coordinate of the top-left pixel of square a8 relative to the adjusted allocation.
      *
      * If the board is flipped, then the y coordinate of the top-left pixel of square h1 is returned.
      * In other words, this value is not depending on whether or not the board is flipped.
      */
-    gint top_left_a8_y() const { return m_border_width; }
+    gint top_left_a8_y() const { return m_top_left_a8_y; }
 
     // These are currently zero, but lets keep them for now.
-    gint top_left_pixmap_x() const { return 0; }
-    gint top_left_pixmap_y() const { return 0; }
+    gint top_left_pixmap_x() const { return m_top_left_a8_x - m_border_width; }
+    gint top_left_pixmap_y() const { return m_top_left_a8_y - m_border_width; }
 
-    gint bottom_right_pixmap_x() const { return 2 * m_border_width + 8 * m_sside; }
-    gint bottom_right_pixmap_y() const { return 2 * m_border_width + 8 * m_sside; }
+    gint bottom_right_pixmap_x() const { return m_top_left_a8_x + squares * m_sside + m_border_width; }
+    gint bottom_right_pixmap_y() const { return m_top_left_a8_y + squares * m_sside + m_border_width; }
 
   //@}
 

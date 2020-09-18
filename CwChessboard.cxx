@@ -382,14 +382,14 @@ static void cw_chessboard_class_init(CwChessboardClass* chessboard_class)
 
 static void cw_chessboard_destroy(GtkWidget* widget)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_destroy(" << widget << ")");
+  Dout(dc::widget, "Calling cw_chessboard_destroy(" << widget << ")");
   GTK_WIDGET_CLASS(cw_chessboard_parent_class)->destroy(widget);
 }
 
 // Initialization of CwChessboard instances.
 static void cw_chessboard_init(CwChessboard* chessboard)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_init(" << chessboard << ")");
+  Dout(dc::widget, "Calling cw_chessboard_init(" << chessboard << ")");
 
   CwChessboardPrivate* priv = (CwChessboardPrivate*)cw_chessboard_get_instance_private(chessboard);
   //GdkVisual* visual = gtk_widget_get_visual(GTK_WIDGET(chessboard));
@@ -556,7 +556,7 @@ static void cw_chessboard_init(CwChessboard* chessboard)
 
 static void cw_chessboard_finalize(GObject* object)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_finalize(" << object << ")");
+  Dout(dc::widget, "Calling cw_chessboard_finalize(" << object << ")");
   CwChessboard* chessboard = CW_CHESSBOARD(object);
   g_ptr_array_free(chessboard->priv->arrows, TRUE);
   G_OBJECT_CLASS(cw_chessboard_parent_class)->finalize(object);
@@ -718,7 +718,7 @@ static void update_cursor_position(CwChessboard* chessboard, gdouble x, gdouble 
   if (priv->show_cursor && !priv->need_redraw_invalidated)
   {
     // Make sure we'll get more motion events.
-    Dout(dc::cwchessboardwidget, "Calling gdk_window_get_device_position()");
+    Dout(dc::widget, "Calling gdk_window_get_device_position()");
     GdkDisplay* display = gdk_display_get_default();
     GdkSeat* seat = gdk_display_get_default_seat(display);
     GdkDevice* pointer = gdk_seat_get_pointer(seat);
@@ -905,7 +905,7 @@ static void redraw_square(CwChessboard* chessboard, gint index)
   gint sx = priv->pixmap_top_left_a8_x + (priv->flip_board ? 7 - col : col) * priv->sside;
   gint sy = priv->pixmap_top_left_a8_y + (squares - 1 - (priv->flip_board ? 7 - row : row)) * priv->sside;
 
-  Dout(dc::cwchessboardwidget, "Calling redraw_square(" << chessboard << ", " << index << ")" <<
+  Dout(dc::widget, "Calling redraw_square(" << chessboard << ", " << index << ")" <<
       " with Board Code: " << (int)code);
 
   // Draw background color.
@@ -1011,7 +1011,7 @@ static void redraw_pieces(CwChessboard* chessboard)
     priv->piece_pixmap[i].surface =
 	cairo_surface_create_similar(cairo_get_target(priv->cr),
 	CAIRO_CONTENT_COLOR_ALPHA, priv->sside, priv->sside);
-    Dout(dc::cwchessboardwidget|continued_cf, "(Re)drawing piece cache " << i << "... ");
+    Dout(dc::widget|continued_cf, "(Re)drawing piece cache " << i << "... ");
     cairo_t* cr = cairo_create(priv->piece_pixmap[i].surface);
     unsigned char code = (unsigned char)(i + 2);
     cairo_rectangle(cr, 0, 0, priv->sside, priv->sside);
@@ -1105,14 +1105,14 @@ static void redraw_pixmap(GtkWidget* widget)
     cairo_region_destroy(priv->chessboard_region);
   priv->chessboard_region = cairo_region_create_rectangle(&rect);
 
-  Dout(dc::cwchessboardwidget, "widget size is (" << allocation.width << ", " << allocation.height << ")");
-  Dout(dc::cwchessboardwidget, "border width is " << priv->border_width <<
+  Dout(dc::widget, "widget size is (" << allocation.width << ", " << allocation.height << ")");
+  Dout(dc::widget, "border width is " << priv->border_width <<
       "; " << squares << 'x' << squares << " squares with side " << sside);
-  Dout(dc::cwchessboardwidget, "pixmap at (" << priv->top_left_pixmap_x << ", " << priv->top_left_pixmap_y << ") with size (" <<
+  Dout(dc::widget, "pixmap at (" << priv->top_left_pixmap_x << ", " << priv->top_left_pixmap_y << ") with size (" <<
       pixmap_width << ", " << pixmap_height << ")");
-  Dout(dc::cwchessboardwidget, "a8 offset within pixmap is (" <<
+  Dout(dc::widget, "a8 offset within pixmap is (" <<
       priv->pixmap_top_left_a8_x << ", " << priv->pixmap_top_left_a8_y << ")");
-  Dout(dc::cwchessboardwidget, "    a1 at (" << chessboard->top_left_a1_x << ", " << chessboard->top_left_a1_y << ")");
+  Dout(dc::widget, "    a1 at (" << chessboard->top_left_a1_x << ", " << chessboard->top_left_a1_y << ")");
 
   // Invalidate everything.
   gdk_window_invalidate_rect(gtk_widget_get_window(widget), &allocation, FALSE);
@@ -1150,14 +1150,14 @@ static void redraw_pixmap(GtkWidget* widget)
 
     // Calculate the marker thickness.
     priv->marker_thickness_px = MAX(1, MIN((gint)round(priv->marker_thickness * sside), sside / 2));
-    Dout(dc::cwchessboardwidget, "Marker thickness set to " << priv->marker_thickness_px);
+    Dout(dc::widget, "Marker thickness set to " << priv->marker_thickness_px);
 
     // Calculate the cursor thickness.
     priv->cursor_thickness_px = MAX(1, MIN((gint)round(priv->cursor_thickness * sside), sside / 2));
-    Dout(dc::cwchessboardwidget, "Cursor thickness set to " << priv->cursor_thickness_px);
+    Dout(dc::widget, "Cursor thickness set to " << priv->cursor_thickness_px);
 
     // (Re)create alpha layer.
-    Dout(dc::cwchessboardwidget|continued_cf, "(Re)creating HUD layers... ");
+    Dout(dc::widget|continued_cf, "(Re)creating HUD layers... ");
     recreate_hud_layers(chessboard);
     Dout(dc::finish, "done");
   }
@@ -1167,7 +1167,7 @@ static void redraw_pixmap(GtkWidget* widget)
 
 static void cw_chessboard_preferred_width(GtkWidget* widget, gint* minimal_width, gint* natural_width)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_preferred_width(" << ")");
+  Dout(dc::widget, "Calling cw_chessboard_preferred_width(" << ")");
 
   CwChessboard* chessboard = CW_CHESSBOARD(widget);
   CwChessboardPrivate* priv = chessboard->priv;
@@ -1181,7 +1181,7 @@ static void cw_chessboard_preferred_width(GtkWidget* widget, gint* minimal_width
 
 static void cw_chessboard_preferred_height(GtkWidget* widget, gint* minimal_height, gint* natural_height)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_preferred_height(" << ")");
+  Dout(dc::widget, "Calling cw_chessboard_preferred_height(" << ")");
 
   CwChessboard* chessboard = CW_CHESSBOARD(widget);
   CwChessboardPrivate* priv = chessboard->priv;
@@ -1195,7 +1195,7 @@ static void cw_chessboard_preferred_height(GtkWidget* widget, gint* minimal_heig
 
 static void cw_chessboard_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_size_allocate(" << widget << ", " << allocation << ")");
+  Dout(dc::widget, "Calling cw_chessboard_size_allocate(" << widget << ", " << allocation << ")");
   gtk_widget_set_allocation(widget, allocation);
   if (gtk_widget_get_realized(widget))
   {
@@ -1210,7 +1210,7 @@ static void cw_chessboard_size_allocate(GtkWidget* widget, GtkAllocation* alloca
 
 static void cw_chessboard_realize(GtkWidget* widget)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_realize(" << widget << ")");
+  Dout(dc::widget, "Calling cw_chessboard_realize(" << widget << ")");
   CwChessboard* chessboard = CW_CHESSBOARD(widget);
   GTK_WIDGET_CLASS(cw_chessboard_parent_class)->realize(widget);
   redraw_pixmap(widget);
@@ -1220,7 +1220,7 @@ static void cw_chessboard_realize(GtkWidget* widget)
 
 static void cw_chessboard_unrealize(GtkWidget* widget)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_unrealize(" << widget << ")");
+  Dout(dc::widget, "Calling cw_chessboard_unrealize(" << widget << ")");
   CwChessboard* chessboard = CW_CHESSBOARD(widget);
   CwChessboardPrivate* priv = chessboard->priv;
   for (int i = 0; i < 12; ++i)
@@ -1253,7 +1253,7 @@ static void cw_chessboard_unrealize(GtkWidget* widget)
 // to be redrawn, for whatever reason.
 static gboolean cw_chessboard_draw(GtkWidget* widget, cairo_t* cr)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_draw(" << widget << ", " << cr << ")");
+  Dout(dc::widget, "Calling cw_chessboard_draw(" << widget << ", " << cr << ")");
   CwChessboard* chessboard = CW_CHESSBOARD(widget);
   CwChessboardPrivate* priv = chessboard->priv;
 
@@ -1421,7 +1421,7 @@ static gboolean cw_chessboard_draw(GtkWidget* widget, cairo_t* cr)
   if (priv->show_cursor || priv->floating_piece_handle != -1)
   {
     // Call this function so that we'll get the next pointer motion hint.
-    Dout(dc::cwchessboardwidget, "Calling gdk_window_get_pointer()");
+    Dout(dc::widget, "Calling gdk_window_get_pointer()");
     gdk_window_get_pointer(gtk_widget_get_window(GTK_WIDGET(chessboard)), NULL, NULL, NULL);
   }
 #if 0
@@ -1447,7 +1447,7 @@ gint cw_chessboard_default_calc_board_border_width(G_GNUC_UNUSED CwChessboard co
 gboolean cw_chessboard_default_draw_hud_square(G_GNUC_UNUSED CwChessboard* chessboard,
     cairo_t* cr, gint col, gint row, gint sside, guint hud)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_default_draw_hud_square(" << chessboard << ", " <<
+  Dout(dc::widget, "Calling cw_chessboard_default_draw_hud_square(" << chessboard << ", " <<
       cr << ", " << col << ", " << row << ", " << sside << ", " << hud << ")");
 
   g_return_val_if_fail(hud < number_of_hud_layers, FALSE);
@@ -1556,7 +1556,7 @@ static cairo_region_t* convert_mask2region(guint64 mask, gint x, gint y, gint ss
 
 static void redraw_hud_layer(CwChessboard* chessboard, guint hud)
 {
-  Dout(dc::cwchessboardwidget, "Calling redraw_hud_layer(" << chessboard << ", " << hud << ")");
+  Dout(dc::widget, "Calling redraw_hud_layer(" << chessboard << ", " << hud << ")");
 
   CwChessboardPrivate* priv = chessboard->priv;
   gint sside = priv->sside;
@@ -1652,7 +1652,7 @@ static void redraw_hud_layer(CwChessboard* chessboard, guint hud)
 
 static void recreate_hud_layers(CwChessboard* chessboard)
 {
-  Dout(dc::cwchessboardwidget, "Calling recreate_hud_layers(" << chessboard << ")");
+  Dout(dc::widget, "Calling recreate_hud_layers(" << chessboard << ")");
 
   CwChessboardPrivate* priv = chessboard->priv;
 
@@ -1713,7 +1713,7 @@ void cw_chessboard_free_color_handle(CwChessboard* chessboard, CwChessboardColor
 void cw_chessboard_set_marker_color(CwChessboard* chessboard,
     gint col, gint row, CwChessboardColorHandle mahandle)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_set_marker_color(" <<
+  Dout(dc::widget, "Calling cw_chessboard_set_marker_color(" <<
       chessboard << ", " << col << ", " << row << ", " << (int)mahandle << ")");
   CwChessboardPrivate* priv = chessboard->priv;
   BoardIndex index = convert_colrow2index(col, row);
@@ -1747,7 +1747,7 @@ void cw_chessboard_set_marker_level(CwChessboard* chessboard, gboolean below)
 
 void cw_chessboard_set_background_color(CwChessboard* chessboard, gint col, gint row, CwChessboardColorHandle bghandle)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_set_background_color(" <<
+  Dout(dc::widget, "Calling cw_chessboard_set_background_color(" <<
       chessboard << ", " << col << ", " << row << ", " << (int)bghandle << ")");
   CwChessboardPrivate* priv = chessboard->priv;
   BoardIndex index = convert_colrow2index(col, row);
@@ -1779,7 +1779,7 @@ void cw_chessboard_get_background_colors(CwChessboard* chessboard, CwChessboardC
 
 void cw_chessboard_set_square(CwChessboard* chessboard, gint col, gint row, CwChessboardCode code)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_set_square(" <<
+  Dout(dc::widget, "Calling cw_chessboard_set_square(" <<
       chessboard << ", " << col << ", " << row << ", " << (int)code << ")");
   gint index = convert_colrow2index(col, row);
   CwChessboardCode* board_codes = chessboard->priv->board_codes;
@@ -1793,7 +1793,7 @@ void cw_chessboard_set_square(CwChessboard* chessboard, gint col, gint row, CwCh
 
 CwChessboardCode cw_chessboard_get_square(CwChessboard* chessboard, gint col, gint row)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_get_square(" << chessboard << ", " << col << ", " << row << ")");
+  Dout(dc::widget, "Calling cw_chessboard_get_square(" << chessboard << ", " << col << ", " << row << ")");
   gint index = convert_colrow2index(col, row);
   CwChessboardCode* board_codes = chessboard->priv->board_codes;
   return board_codes[index] & piece_color_mask;
@@ -2039,7 +2039,7 @@ void cw_chessboard_show_cursor(CwChessboard* chessboard)
   priv->show_cursor = TRUE;
   gint x;
   gint y;
-  Dout(dc::cwchessboardwidget, "Calling gdk_window_get_pointer()");
+  Dout(dc::widget, "Calling gdk_window_get_pointer()");
   gdk_window_get_pointer(gtk_widget_get_window(widget), &x, &y, NULL);
   update_cursor_position(chessboard, x, y, TRUE);
 }
@@ -2053,7 +2053,7 @@ void cw_chessboard_hide_cursor(CwChessboard* chessboard)
 
 void cw_chessboard_move_floating_piece(CwChessboard* chessboard, gint handle, gdouble x, gdouble y)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_move_floating_piece(" <<
+  Dout(dc::widget, "Calling cw_chessboard_move_floating_piece(" <<
       chessboard << ", " << (int)handle << ", " << x << ", " << y << ")");
 
   GtkWidget* widget = GTK_WIDGET(chessboard);
@@ -2128,7 +2128,7 @@ void cw_chessboard_move_floating_piece(CwChessboard* chessboard, gint handle, gd
 #endif
   if (outside_window && priv->floating_piece[handle].pointer_device)
   {
-    Dout(dc::cwchessboardwidget, "Calling gdk_window_get_pointer()");
+    Dout(dc::widget, "Calling gdk_window_get_pointer()");
     gdk_window_get_pointer(gtk_widget_get_window(widget), NULL, NULL, NULL);
   }
   priv->floating_piece[handle].pixmap_x = rect.x - priv->top_left_pixmap_x;
@@ -2139,7 +2139,7 @@ void cw_chessboard_move_floating_piece(CwChessboard* chessboard, gint handle, gd
 gint cw_chessboard_add_floating_piece(CwChessboard* chessboard, CwChessboardCode code,
     gdouble x, gdouble y, gboolean pointer_device)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_add_floating_piece(" << chessboard << ", code:" << code <<
+  Dout(dc::widget, "Calling cw_chessboard_add_floating_piece(" << chessboard << ", code:" << code <<
       ", x:" << x << ", y:" << y << ", " << pointer_device << ")");
 
   CwChessboardPrivate* priv = chessboard->priv;
@@ -2175,15 +2175,15 @@ gint cw_chessboard_add_floating_piece(CwChessboard* chessboard, CwChessboardCode
   gdk_window_invalidate_rect(gtk_widget_get_window(GTK_WIDGET(chessboard)), &rect, FALSE);
 #endif
 
-  Dout(dc::cwchessboardwidget, "number_of_floating_pieces = " << priv->number_of_floating_pieces);
-  Dout(dc::cwchessboardwidget, "Allocated handle " << handle);
+  Dout(dc::widget, "number_of_floating_pieces = " << priv->number_of_floating_pieces);
+  Dout(dc::widget, "Allocated handle " << handle);
 
   return handle;
 }
 
 void cw_chessboard_remove_floating_piece(CwChessboard* chessboard, gint handle)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_remove_floating_piece(" << chessboard << ", handle:" << handle << ")");
+  Dout(dc::widget, "Calling cw_chessboard_remove_floating_piece(" << chessboard << ", handle:" << handle << ")");
 
   CwChessboardPrivate* priv = chessboard->priv;
   cairo_rectangle_int_t rect;
@@ -2238,7 +2238,7 @@ void cw_chessboard_remove_floating_piece(CwChessboard* chessboard, gint handle)
     priv->floating_piece_handle = -1;
   priv->number_of_floating_pieces--;
   priv->floating_piece[handle].code = empty_square;
-  Dout(dc::cwchessboardwidget, "number_of_floating_pieces = " << priv->number_of_floating_pieces);
+  Dout(dc::widget, "number_of_floating_pieces = " << priv->number_of_floating_pieces);
 }
 
 CwChessboardCode cw_chessboard_get_floating_piece(CwChessboard* chessboard, gint handle)
@@ -2263,7 +2263,7 @@ void cw_chessboard_disable_hud_layer(CwChessboard* chessboard, guint hud)
 
 static guint64 invalidate_arrow(CwChessboard* chessboard, gint col1, gint row1, gint col2, gint row2)
 {
-  Dout(dc::cwchessboardwidget|continued_cf, "Calling invalidate_arrow(" << chessboard << ", " <<
+  Dout(dc::widget|continued_cf, "Calling invalidate_arrow(" << chessboard << ", " <<
       col1 << ", " << row1 << ", " << col2 << ", " << row2 << ") = ");
   guint64 result = 0;
   if (col1 == col2)			// Vertical arrow?
@@ -2344,7 +2344,7 @@ static guint64 invalidate_arrow(CwChessboard* chessboard, gint col1, gint row1, 
 gpointer cw_chessboard_add_arrow(CwChessboard* chessboard,
     gint begin_col, gint begin_row, gint end_col, gint end_row, GdkColor const* color)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_add_arrow(" << chessboard << ", " <<
+  Dout(dc::widget, "Calling cw_chessboard_add_arrow(" << chessboard << ", " <<
       begin_col << ", " << begin_row << ", " << end_col << ", " << end_row << ", " << color << ")");
 
   g_return_val_if_fail(begin_col != end_col || begin_row != end_row, NULL);
@@ -2368,7 +2368,7 @@ gpointer cw_chessboard_add_arrow(CwChessboard* chessboard,
 
 void cw_chessboard_remove_arrow(CwChessboard* chessboard, gpointer ptr)
 {
-  Dout(dc::cwchessboardwidget, "Calling cw_chessboard_remove_arrow(" << chessboard << ", " << ptr << ")");
+  Dout(dc::widget, "Calling cw_chessboard_remove_arrow(" << chessboard << ", " << ptr << ")");
   if (g_ptr_array_remove_fast(chessboard->priv->arrows, ptr))
   {
     Arrow* arrow = (Arrow*)ptr;

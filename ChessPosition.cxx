@@ -55,6 +55,7 @@ void ChessPosition::clear_en_passant()
 
 void ChessPosition::clear()
 {
+  DoutEntering(dc::notice, "ChessPosition::clear() [" << (void*)this << "]");
   for (Index index = index_begin; index != index_end; ++index)
     M_pieces[index].set_type(nothing);
   M_en_passant.clear();
@@ -79,6 +80,7 @@ void ChessPosition::clear()
 
 void ChessPosition::initial_position()
 {
+  DoutEntering(dc::notice, "ChessPosition::initial_position()");
   clear();
   // It's white's turn.
   M_to_move = white;
@@ -1085,6 +1087,7 @@ bool ChessPosition::set_en_passant(Index const& index)
     to_move(white);
   }
   M_en_passant = EnPassant(index);
+  Dout(dc::notice, "M_en_passant is set to " << (int)M_en_passant.M_bits);
   Index index_of_only_neighboring_pawn = index_end;
   bool possible = false;
   if (index.col() > 0 && M_pieces[index + offset - 1] == code)

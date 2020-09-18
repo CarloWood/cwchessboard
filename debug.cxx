@@ -33,11 +33,12 @@ NAMESPACE_DEBUG_CHANNELS_START
 // Add new debug channels here.
 channel_ct event("EVENT");
 channel_ct motion_event("MOTION_EVENT");
-channel_ct cwchessboardwidget("WIDGET");
+channel_ct widget("WIDGET");
 channel_ct place("PLACE");
 channel_ct countboard("COUNTBOARD");
 channel_ct clipboard("CLIPBOARD");
 channel_ct parser("PARSER");
+channel_ct clip("CLIP");
 
 NAMESPACE_DEBUG_CHANNELS_END
 

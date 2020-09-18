@@ -43,7 +43,7 @@ namespace cwchess {
  * @sa ChessPosition::en_passant
  */
 class EnPassant {
-  private:
+  public: //private:
     //! @brief En passant information.
     //
     // PEIIIIII, where 'IIIIII' is the index of the square that a pawn just passed by moving two squares forward,

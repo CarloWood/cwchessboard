@@ -117,6 +117,16 @@ class LinuxChessMenuBar : public Gtk::MenuBar, public LinuxChessIconFactory
     append_menu_entry({menu_entry_key.m_top_entry, get_icon_id(menu_entry_key.m_menu_entry)}, obj, cb);
   }
 
+  template<class T>
+  void append_radio_menu_entry(Gtk::RadioButtonGroup& group, MenuEntryKey menu_entry_key, T* obj, void (T::*cb)())
+  {
+    ASSERT(menu_entry_key.is_menu_entry_without_icon_id());     // None of our radio menu items have icons.
+    Gtk::RadioMenuItem* menu_item_ptr = Gtk::manage(new Gtk::RadioMenuItem(group, get_label(menu_entry_key.get_menu_entry_without_icon_id())));
+    m_menu_items[menu_entry_key] = menu_item_ptr;
+    m_submenus[menu_entry_key.m_top_entry]->append(*menu_item_ptr);
+    menu_item_ptr->signal_activate().connect(sigc::mem_fun(*obj, cb));
+  }
+
  private:
   static char const* top_entry_label(TopEntries top_entry);
 };
