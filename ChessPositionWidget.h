@@ -365,8 +365,6 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
 
   public:
     using ChessboardWidget::sside;
-    using ChessboardWidget::top_left_a1_x;
-    using ChessboardWidget::top_left_a1_y;
 
   //@}
 
