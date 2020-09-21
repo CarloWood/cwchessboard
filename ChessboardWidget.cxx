@@ -32,11 +32,226 @@
 
 // Fine tuning.
 #define CW_CHESSBOARD_FLOATING_PIECE_INVALIDATE_TARGET 0
-#define CW_CHESSBOARD_FLOATING_PIECE_DOUBLE_BUFFER 1
 #define CW_CHESSBOARD_EXPOSE_ALWAYS_CLEAR_BACKGROUND 1          // Needed to erase things like menu's.
 #define CW_CHESSBOARD_EXPOSE_DEBUG 1
 
 namespace cwmm {
+
+//
+// The widget is devided into 108 segments (rectangles).
+//
+// Let the largest rectangle below be the 'Allocation' of the ChessboardWidget.
+//
+// The origin is in the top-left corner.
+// A chessboard square is sside x sside pixels.
+// The chessboard square encodings are given by convert_colrow2index:
+//  (col, row) = (0, 0) is the bottom-left most corner square (A1 when white is at the bottom).
+//
+//  O = (0, 0)                                __ background
+//   \                                       /
+//    O-------------------------------------/-------.
+//    |  |                                 /   |    |
+//    |  |               __ border        x    |    |
+//    |  |              /                      |    |
+//    |--E-------------/-----------------------+----|   E = (edge_x, edge_y)
+//    |  |  |   |   | x |   |   |   |   |   |  |    |
+//    |  |--B-------------------------------.--|    |   B = (board_x, board_y) = E + (border_width, border_width)
+//    |  |8 |0,7|           |            7,7|  |    |
+//    |  |--|---D           |  x            |--|    |   D = B + (sside, sside)
+//    |  |7 |               |   \           |  |    |
+//    |  |--|  64 squares   |    \__ chess  |--|    |
+//    |  |6 |               |        board  |  |    |
+//    |  |--|               |               |--|    |
+//    |  |5 |               |               |  |    |
+//    |  |--|---------------+---------------|--|    |
+//    |  |4 |               |               |  |    |
+//    |  |--|               |               |--|    |
+//    |  |3 |               |               |  |    |
+//    |  |--|               |               |--|    |
+//    |  |2 |               |               |  |    |
+//    |  |--|               |               |--|    |
+//    |  |1 |0,0            |            7,0|  |    |
+//    |  |--'-------------------------------C--|    |    C = B + (squares * sside, squares * sside)
+//    |  |  | A | B | C | D | E | F | G | H |  |    |
+//    |--'-------------------------------------F----|    F = E + (squares * sside + 2 * border_width, squares * sside + 2 * border_width)
+//    |  |                                     |    |
+//    |  |                                     |    |
+//    |  |                                     |    |
+//    '---------------------------------------------'
+//                                                  \__ (allocation.width, allocation.height)
+//
+// Represented by a bitmask, (col, row) = (0, 0) corresponds to the least significant bit (bit 0),
+// and so on up till (col, row) = (7, 7) corresponding to bit 63.
+//
+// The other 44 rectangles use bits encodings in a separate 64bit mask,
+// also starting at bit zero:
+
+enum widget_segment_bit
+{
+  background_top_left,    background_top,    background_top_right,
+  background_left,                           background_right,
+  background_bottom_left, background_bottom, background_bottom_right,
+
+  border_top_right,   border_A_top,   border_B_top,   border_C_top,   border_D_top,   border_E_top,   border_F_top,   border_G_top,   border_H_top,   border_top_left,
+  border_bottom_left, border_A,       border_B,       border_C,       border_D,       border_E,       border_F,       border_G,       border_H,       border_bottom_right,
+
+                      border_1,       border_2,       border_3,       border_4,       border_5,       border_6,       border_7,       border_8,
+                      border_1_right, border_2_right, border_3_right, border_4_right, border_5_right, border_6_right, border_7_right, border_8_right,
+
+  chessboard_bit
+};
+
+constexpr uint64_t segment_bit_2_mask(widget_segment_bit segment_bit)
+{
+  return uint64_t{1} << segment_bit;
+}
+
+static constexpr uint64_t background_top_left_mask = segment_bit_2_mask(background_top_left);
+static constexpr uint64_t background_top_mask = segment_bit_2_mask(background_top);
+static constexpr uint64_t background_top_right_mask = segment_bit_2_mask(background_top_right);
+static constexpr uint64_t background_left_mask = segment_bit_2_mask(background_left);
+static constexpr uint64_t background_right_mask = segment_bit_2_mask(background_right);
+static constexpr uint64_t background_bottom_left_mask = segment_bit_2_mask(background_bottom_left);
+static constexpr uint64_t background_bottom_mask = segment_bit_2_mask(background_bottom);
+static constexpr uint64_t background_bottom_right_mask = segment_bit_2_mask(background_bottom_right);
+static constexpr uint64_t border_top_right_mask = segment_bit_2_mask(border_top_right);
+static constexpr uint64_t border_A_top_mask = segment_bit_2_mask(border_A_top);
+static constexpr uint64_t border_B_top_mask = segment_bit_2_mask(border_B_top);
+static constexpr uint64_t border_C_top_mask = segment_bit_2_mask(border_C_top);
+static constexpr uint64_t border_D_top_mask = segment_bit_2_mask(border_D_top);
+static constexpr uint64_t border_E_top_mask = segment_bit_2_mask(border_E_top);
+static constexpr uint64_t border_F_top_mask = segment_bit_2_mask(border_F_top);
+static constexpr uint64_t border_G_top_mask = segment_bit_2_mask(border_G_top);
+static constexpr uint64_t border_H_top_mask = segment_bit_2_mask(border_H_top);
+static constexpr uint64_t border_top_left_mask = segment_bit_2_mask(border_top_left);
+static constexpr uint64_t border_bottom_left_mask = segment_bit_2_mask(border_bottom_left);
+static constexpr uint64_t border_A_mask = segment_bit_2_mask(border_A);
+static constexpr uint64_t border_B_mask = segment_bit_2_mask(border_B);
+static constexpr uint64_t border_C_mask = segment_bit_2_mask(border_C);
+static constexpr uint64_t border_D_mask = segment_bit_2_mask(border_D);
+static constexpr uint64_t border_E_mask = segment_bit_2_mask(border_E);
+static constexpr uint64_t border_F_mask = segment_bit_2_mask(border_F);
+static constexpr uint64_t border_G_mask = segment_bit_2_mask(border_G);
+static constexpr uint64_t border_H_mask = segment_bit_2_mask(border_H);
+static constexpr uint64_t border_bottom_right_mask = segment_bit_2_mask(border_bottom_right);
+static constexpr uint64_t border_1_mask = segment_bit_2_mask(border_1);
+static constexpr uint64_t border_2_mask = segment_bit_2_mask(border_2);
+static constexpr uint64_t border_3_mask = segment_bit_2_mask(border_3);
+static constexpr uint64_t border_4_mask = segment_bit_2_mask(border_4);
+static constexpr uint64_t border_5_mask = segment_bit_2_mask(border_5);
+static constexpr uint64_t border_6_mask = segment_bit_2_mask(border_6);
+static constexpr uint64_t border_7_mask = segment_bit_2_mask(border_7);
+static constexpr uint64_t border_8_mask = segment_bit_2_mask(border_8);
+static constexpr uint64_t border_1_right_mask = segment_bit_2_mask(border_1_right);
+static constexpr uint64_t border_2_right_mask = segment_bit_2_mask(border_2_right);
+static constexpr uint64_t border_3_right_mask = segment_bit_2_mask(border_3_right);
+static constexpr uint64_t border_4_right_mask = segment_bit_2_mask(border_4_right);
+static constexpr uint64_t border_5_right_mask = segment_bit_2_mask(border_5_right);
+static constexpr uint64_t border_6_right_mask = segment_bit_2_mask(border_6_right);
+static constexpr uint64_t border_7_right_mask = segment_bit_2_mask(border_7_right);
+static constexpr uint64_t border_8_right_mask = segment_bit_2_mask(border_8_right);
+static constexpr uint64_t chessboard_bit_mask = segment_bit_2_mask(chessboard_bit);
+
+static constexpr uint64_t background_left_edge_mask = background_top_left_mask | background_left_mask | background_bottom_left_mask;
+static constexpr uint64_t background_top_edge_mask = background_top_left_mask | background_top_mask | background_top_right_mask;
+static constexpr uint64_t background_right_edge_mask = background_top_right_mask | background_right_mask | background_bottom_right_mask;
+static constexpr uint64_t background_bottom_edge_mask = background_bottom_left_mask | background_bottom_mask | background_bottom_right_mask;
+static constexpr uint64_t border_left_mask = border_1_mask | border_2_mask | border_3_mask | border_4_mask | border_5_mask | border_6_mask | border_7_mask | border_8_mask;
+static constexpr uint64_t border_left_edge_mask = background_top_mask | border_top_left_mask | border_left_mask | border_bottom_left_mask | background_bottom_mask;
+static constexpr uint64_t border_right_mask = border_1_right_mask | border_2_right_mask | border_3_right_mask | border_4_right_mask | border_5_right_mask | border_6_right_mask | border_7_right_mask | border_8_right_mask;
+static constexpr uint64_t border_right_edge_mask = background_top_mask | border_top_right_mask | border_right_mask | border_bottom_right_mask | background_bottom_mask;
+static constexpr uint64_t border_top_mask = border_A_top_mask | border_B_top_mask | border_C_top_mask | border_D_top_mask | border_E_top_mask | border_F_top_mask | border_G_top_mask | border_H_top_mask;
+static constexpr uint64_t border_top_edge_mask = background_left_mask | border_top_left_mask | border_top_mask | border_top_right_mask | background_right_mask;
+static constexpr uint64_t border_bottom_mask = border_A_mask | border_B_mask | border_C_mask | border_D_mask | border_E_mask | border_F_mask | border_G_mask | border_H_mask;
+static constexpr uint64_t border_bottom_edge_mask = background_left_mask | border_bottom_left_mask | border_bottom_mask | border_bottom_right_mask | background_right_mask;
+static constexpr uint64_t chessboard_vertical_mask = background_top_mask | border_top_mask | chessboard_bit_mask | border_bottom_mask | background_bottom_mask;
+static constexpr uint64_t chessboard_horizontal_mask = background_left_mask | border_left_mask | chessboard_bit_mask | border_right_mask | background_right_mask;
+static constexpr uint64_t everything_mask = background_left_edge_mask | border_left_mask | chessboard_vertical_mask | border_right_mask | background_right_edge_mask;
+
+static constexpr uint64_t background_right_edge_mask_and_to_the_right = background_right_edge_mask;
+static constexpr uint64_t border_right_mask_and_to_the_right = background_right_edge_mask_and_to_the_right | border_right_mask;
+static constexpr uint64_t chessboard_vertical_mask_and_to_the_right = border_right_mask_and_to_the_right | chessboard_vertical_mask;
+static constexpr uint64_t border_left_mask_and_to_the_right = chessboard_vertical_mask_and_to_the_right | border_left_mask;
+static constexpr uint64_t background_left_edge_mask_and_to_the_right = border_left_mask_and_to_the_right | background_left_edge_mask;
+
+static constexpr uint64_t background_bottom_edge_mask_and_below = background_bottom_edge_mask;
+static constexpr uint64_t border_bottom_mask_and_below = background_bottom_edge_mask_and_below | border_bottom_mask;
+static constexpr uint64_t chessboard_horizontal_mask_and_below = border_bottom_mask_and_below | chessboard_horizontal_mask;
+static constexpr uint64_t border_top_mask_and_below = chessboard_horizontal_mask_and_below | border_top_mask;
+static constexpr uint64_t background_top_edge_mask_and_below = border_top_mask_and_below | background_top_edge_mask;
+
+static constexpr uint64_t background_left_edge_mask_and_to_the_left = background_left_edge_mask;
+static constexpr uint64_t border_left_mask_and_to_the_left = border_left_mask | background_left_edge_mask_and_to_the_left;
+static constexpr uint64_t chessboard_vertical_mask_and_to_the_left = chessboard_vertical_mask | border_left_mask_and_to_the_left;
+static constexpr uint64_t border_right_mask_and_to_the_left = border_right_mask | chessboard_vertical_mask_and_to_the_left;
+static constexpr uint64_t background_right_edge_mask_and_to_the_left = background_right_edge_mask | border_right_mask_and_to_the_left;
+
+static constexpr uint64_t background_top_edge_mask_and_above = background_top_edge_mask;
+static constexpr uint64_t border_top_mask_and_above = border_top_mask | background_top_edge_mask_and_above;
+static constexpr uint64_t chessboard_horizontal_mask_and_above = chessboard_horizontal_mask | border_top_mask_and_above;
+static constexpr uint64_t border_bottom_mask_and_above = border_bottom_mask | chessboard_horizontal_mask_and_above;
+static constexpr uint64_t background_bottom_edge_mask_and_above = background_bottom_edge_mask | border_bottom_mask_and_above;
+
+// Convert x coordinate into a segment bitmask with bits set for every segment on or to the right of that x coordinate.
+uint64_t ChessboardWidget::x_to_segmentsOnAndToTheRight(int x) const
+{
+  if (x < top_left_edge_x())
+    return background_left_edge_mask_and_to_the_right;        // Everything.
+  if (x < top_left_board_x())
+    return border_left_mask_and_to_the_right;
+  if (x < bottom_right_board_x())
+    return chessboard_vertical_mask_and_to_the_right;
+  if (x < bottom_right_edge_x())
+    return border_right_mask_and_to_the_right;
+  return background_right_edge_mask_and_to_the_right;
+}
+
+// Convert y coordinate into a segment bitmask with bits set for every segment on or below that y coordinate.
+uint64_t ChessboardWidget::y_to_segmentsOnAndBelow(int y) const
+{
+  if (y < top_left_edge_y())
+    return background_top_edge_mask_and_below;
+  if (y < top_left_board_y())
+    return border_top_mask_and_below;
+  if (y < bottom_right_board_y())
+    return chessboard_horizontal_mask_and_below;
+  if (y < bottom_right_edge_y())
+    return border_bottom_mask_and_below;
+  return background_bottom_edge_mask_and_below;
+}
+
+// Convert x coordinate into a segment bitmask with bits set for every segment on or to the left of that x coordinate.
+uint64_t ChessboardWidget::x_to_segmentsOnAndToTheLeft(int x) const
+{
+  if (x < top_left_edge_x())
+    return background_left_edge_mask_and_to_the_left;
+  if (x < top_left_board_x())
+    return border_left_mask_and_to_the_left;
+  if (x < bottom_right_board_x())
+    return chessboard_vertical_mask_and_to_the_left;
+  if (x < bottom_right_edge_x())
+    return border_right_mask_and_to_the_left;
+  return background_right_edge_mask_and_to_the_left;
+}
+
+// Convert y coordinate into a segment bitmask with bits set for every segment on or above that y coordinate.
+uint64_t ChessboardWidget::y_to_segmentsOnAndAbove(int y) const
+{
+  if (y < top_left_edge_y())
+    return background_top_edge_mask_and_above;
+  if (y < top_left_board_y())
+    return border_top_mask_and_above;
+  if (y < bottom_right_board_y())
+    return chessboard_horizontal_mask_and_above;
+  if (y < bottom_right_edge_y())
+    return border_bottom_mask_and_above;
+  return background_bottom_edge_mask_and_above;
+}
+
+WidgetSegments ChessboardWidget::rect_to_segments(Cairo::Rectangle const& rect) const
+{
+  return {};
+}
 
 //------------------------------------------------------------------------------
 // Piece graphics functions.
@@ -120,6 +335,10 @@ void ChessboardWidget::redraw_pixmap(Cairo::RefPtr<Cairo::Context> const& cr)
   Gtk::Allocation allocation = get_allocation();
 
   Dout(dc::notice, "allocation = " << allocation);
+
+#if CW_CHESSBOARD_EXPOSE_DEBUG
+  m_buffer = Cairo::Surface::create(cr->get_target(), Cairo::CONTENT_COLOR_ALPHA, allocation.get_width(), allocation.get_height());
+#endif
 
   m_border_width = 0;
   // Since `m_total_size = squares * sside + 2 * ChessboardWidget::default_calc_board_border_width(sside)`, we can determine sside from m_total_size.
@@ -1992,6 +2211,7 @@ ChessboardWidget::ChessboardWidget() :
   m_resized(false),
 #ifdef CWDEBUG
   m_inside_on_draw(false),
+  m_show_buffer(false),
 #endif
   m_total_size(0),
   m_redraw_pixmap(false),
@@ -2250,7 +2470,11 @@ void ChessboardWidget::redraw_hud_layer(guint hud)
 
 bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
 {
+#if !CW_CHESSBOARD_EXPOSE_DEBUG
   DoutEntering(dc::widget, "ChessboardWidget::on_draw(cr)");
+#else
+  DoutEntering(dc::widget, "ChessboardWidget::on_draw(cr) [m_show_buffer = " << std::boolalpha << m_show_buffer << "]");
+#endif
   Debug(m_inside_on_draw = true);
 
   Gdk::Rectangle clip_rectangle;
@@ -2260,7 +2484,19 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   Gtk::Allocation allocation = get_allocation();
   Dout(dc::clip, "allocation = " << allocation);
 
-  if (m_resized)
+#if CW_CHESSBOARD_EXPOSE_DEBUG
+  if (m_show_buffer)
+  {
+    crmm->save();
+    crmm->set_source(m_buffer, 0.0, 0.0);
+    crmm->paint();
+    crmm->restore();
+    m_show_buffer = false;
+    return true;
+  }
+#endif
+
+//  if (m_resized)
   {
     Dout(dc::notice, "Invalidating everything because m_resized = true.");
     // Everything was invalidated (probably due to a spurious call to on_size_allocate).
@@ -2280,6 +2516,12 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
     m_redraw_pixmap = false;
   }
 
+#if CW_CHESSBOARD_EXPOSE_DEBUG
+  auto cr = Cairo::Context::create(m_buffer);
+#else
+  auto& cr = crmm;
+#endif
+
 #if 0
   // Last minute update of the HUD layers.
   for (guint hud = 0; hud < G_N_ELEMENTS(m_hud_need_redraw); ++hud)
@@ -2291,48 +2533,56 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   guint64 redraw_mask = 1;
   for (gint i = 0; i < 64; ++i, redraw_mask <<= 1)
     if (((m_need_redraw | m_need_redraw_invalidated) & redraw_mask))
-      redraw_square(crmm, i);             // This uses the HUD layer.
+      redraw_square(cr, i);             // This uses the HUD layer.
   m_need_redraw_invalidated = 0;
   m_need_redraw = 0;
 
   // Redraw border when the border was invalidated.
   if (m_border_invalidated)
-    draw_border(crmm);
+    draw_border(cr);
   else if (m_turn_indicators_invalidated)
   {
-    draw_turn_indicator(crmm, m_active_turn_indicator, true);
-    draw_turn_indicator(crmm, !m_active_turn_indicator, false);
+    draw_turn_indicator(cr, m_active_turn_indicator, true);
+    draw_turn_indicator(cr, !m_active_turn_indicator, false);
   }
   m_border_invalidated = false;
   m_turn_indicators_invalidated = false;
 
+#if CW_CHESSBOARD_EXPOSE_DEBUG
+  // Draw a green line around updated areas.
   {
-    crmm->save();
-    crmm->rectangle(m_bottom_or_right_background_rect.x, m_bottom_or_right_background_rect.y, m_bottom_or_right_background_rect.width, m_bottom_or_right_background_rect.height);
-    crmm->set_source_rgb(0.8, 0.2, 0.0);
-    crmm->fill();
-    crmm->restore();
+    Dout(dc::notice, "Clip rectangle list:");
+    std::vector<Cairo::Rectangle> rectangles;
+    crmm->copy_clip_rectangle_list(rectangles);
+    for (auto&& rect : rectangles)
+    {
+      Dout(dc::notice, "  rect = " << rect);
+      cr->save();
+      cr->set_line_width(1.0);
+      cr->rectangle(rect.x, rect.y, rect.width, rect.height);
+      cr->set_source_rgb(0.0, 1.0, 0.0);
+      cr->stroke();
+      cr->restore();
+    }
   }
+#endif
 
-#if CW_CHESSBOARD_FLOATING_PIECE_DOUBLE_BUFFER
-  // Draw any floating pieces to the pixbuf.
+  // Draw any floating pieces.
   if (m_number_of_floating_pieces)
   {
-    crmm->save();
-    crmm->rectangle(top_left_board_x(), top_left_board_y(),
-        squares * m_sside, squares * m_sside);
-    crmm->clip();
+    cr->save();
+//    cr->rectangle(top_left_board_x(), top_left_board_y(), squares * m_sside, squares * m_sside);
+//    cr->clip();
     for (gsize i = 0; i < m_number_of_floating_pieces; ++i)
       if (m_floating_piece[i].moved)
       {
-        crmm->set_source(
+        cr->set_source(
             m_piece_surface[convert_code2piece_index(m_floating_piece[i].code)].surface,
-            m_floating_piece[i].pixmap_x, m_floating_piece[i].pixmap_y);
-        crmm->paint();
+            m_floating_piece[i].x, m_floating_piece[i].y);
+        cr->paint();
       }
-    crmm->restore();
+    cr->restore();
   }
-#endif
 
   // Either top_left_edge_x or top_left_edge_y equals 0 (see redraw_pixmap).
   // The type of configuration depends on 'vertical':
@@ -2355,7 +2605,7 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   gboolean region_extends_outside_pixmap = FALSE;
   // However, if we resized -- or another window moved over the widget -- it could be true.
   Gdk::Rectangle clipbox;
-  Gdk::Cairo::get_clip_rectangle(crmm, clipbox);
+  Gdk::Cairo::get_clip_rectangle(cr, clipbox);
   Dout(dc::clip, "get_clip_rectangle returned " << clipbox);
   if (G_UNLIKELY(clipbox.get_y() < top_left_edge_y()))
     region_extends_outside_pixmap = vertical;
@@ -2379,60 +2629,18 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
     region_rect.width = clipbox.get_width();
     region_rect.height = clipbox.get_height();
     cairo_region_t* clip_region = cairo_region_create_rectangle(&region_rect);
-    if (CW_CHESSBOARD_EXPOSE_ALWAYS_CLEAR_BACKGROUND || m_redraw_background)
-    {
-      // If the widget was resized, there might be trash outside the pixmap. Erase that too.
-      cairo_region_t* outside_pixmap_region = cairo_region_copy(clip_region);
-      cairo_region_subtract(outside_pixmap_region, pixmap_region);
-#if 0
-      // FIXME: gdk_region_get_rectangles doesn't exist anymore.
-      GdkRectangle* outside_areas;
-      gint n_outside_areas;
-      gdk_region_get_rectangles(outside_pixmap_region, &outside_areas, &n_outside_areas);
-      cairo_rectangle_int_t const* outside_rect = outside_areas;
-      for (int i = 0; i < n_outside_areas; ++i, ++outside_rect)
-        gdk_window_clear_area(gtk_widget_get_window(widget), outside_rect->x, outside_rect->y, outside_rect->width, outside_rect->height);
-#if CW_CHESSBOARD_EXPOSE_DEBUG
-      // Draw a green rectangle around updated areas.
-      GdkGC* debug_gc = gdk_gc_new(m_pixmap);
-      GdkColor debug_green = { 0, 0, 65535, 0 };
-      gdk_colormap_alloc_color(gtk_widget_get_colormap(widget), &debug_green, FALSE, TRUE);
-      gdk_gc_set_foreground(debug_gc, &debug_green);
-      outside_rect = outside_areas;
-      for (int i = 0; i < n_outside_areas; ++i, ++outside_rect)
-        gdk_draw_rectangle(gtk_widget_get_window(widget), debug_gc, FALSE,
-            outside_rect->x, outside_rect->y, outside_rect->width - 1, outside_rect->height - 1);
-      g_object_unref(debug_gc);
-#endif
-#endif
-      cairo_region_destroy(outside_pixmap_region);
-      m_redraw_background = false;
-    }
     cairo_region_intersect(clip_region, pixmap_region);
     cairo_region_destroy(clip_region);
     cairo_region_destroy(pixmap_region);
   }
 
-#if !CW_CHESSBOARD_FLOATING_PIECE_DOUBLE_BUFFER
-  // Draw any floating pieces to the screen.
-  if (m_number_of_floating_pieces)
-  {
-#if !CW_CHESSBOARD_FLOATING_PIECE_INVALIDATE_TARGET
-    cairo_restore(dest);        // Remove clip region: we draw floating pieces outside the region!
-#endif
-    for (gsize i = 0; i < m_number_of_floating_pieces; ++i)
-      if (m_floating_piece[i].moved)
-      {
-        cairo_set_source_surface(dest,
-            m_piece_surface[convert_code2piece_index(m_floating_piece[i].code)].surface,
-            m_floating_piece[i].pixmap_x + top_left_edge_x(),
-            m_floating_piece[i].pixmap_y + top_left_edge_y());
-        cairo_paint(dest);
-      }
-  }
+  Debug(m_inside_on_draw = false);
+
+#if CW_CHESSBOARD_EXPOSE_DEBUG
+  m_show_buffer = true;
+  queue_draw();
 #endif
 
-  Debug(m_inside_on_draw = false);
   return true;
 }
 
@@ -2837,12 +3045,10 @@ void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
   // it is safe to use just sside at all times because pieces never extend
   // all the way to the border of a square: there is nothing drawn there,
   // so there is no reason to invalidate it.
-  Gdk::Rectangle rect(m_floating_piece[handle].pixmap_x + top_left_edge_x(),
-      m_floating_piece[handle].pixmap_y + top_left_edge_y(),
-      m_sside, m_sside);
+  Gdk::Rectangle rect(m_floating_piece[handle].x, m_floating_piece[handle].y, m_sside, m_sside);
   auto window = get_window();
   window->invalidate_rect(rect, false);
-#if CW_CHESSBOARD_FLOATING_PIECE_DOUBLE_BUFFER
+
   gint col = x2col(rect.get_x());
   gint row = y2row(rect.get_y());
   if (is_inside_board(col, row))
@@ -2872,7 +3078,7 @@ void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
     guint64 redraw_mask = 1;
     m_need_redraw |= (redraw_mask << index);
   }
-#endif
+
   Gtk::Allocation allocation = get_allocation();
   gboolean outside_window =
       rect.get_x() + rect.get_width() < 0 ||
@@ -2887,14 +3093,14 @@ void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
       rect.get_y() + rect.get_height() > bottom_right_edge_y();
   rect.set_x((gint)trunc(x - 0.5 * m_sside));
   rect.set_y((gint)trunc(y - 0.5 * m_sside));
-#if CW_CHESSBOARD_FLOATING_PIECE_INVALIDATE_TARGET || CW_CHESSBOARD_FLOATING_PIECE_DOUBLE_BUFFER
+
   window->invalidate_rect(rect, false);
   outside_window = outside_window &&
       (rect.get_x() + rect.get_width() < 0 ||
       rect.get_x() > allocation.get_x() ||
       rect.get_y() + rect.get_height() < 0 ||
       rect.get_y() > allocation.get_y());
-#endif
+
   if (outside_window && m_floating_piece[handle].pointer_device)
   {
     Dout(dc::motion_event, "FIXME: NOT Calling gdk_window_get_pointer()");
@@ -2902,8 +3108,8 @@ void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
     gdk_window_get_pointer(gtk_widget_get_window(widget), NULL, NULL, NULL);
 #endif
   }
-  m_floating_piece[handle].pixmap_x = rect.get_x() - top_left_edge_x();
-  m_floating_piece[handle].pixmap_y = rect.get_y() - top_left_edge_y();
+  m_floating_piece[handle].x = rect.get_x();
+  m_floating_piece[handle].y = rect.get_y();
   m_floating_piece[handle].moved = true;
 }
 
@@ -2921,8 +3127,8 @@ gint ChessboardWidget::add_floating_piece(CwChessboardCode code, gdouble x, gdou
     ++handle;
   Gdk::Rectangle rect((gint)std::trunc(x - 0.5 * m_sside), (gint)std::trunc(y - 0.5 * m_sside), m_sside, m_sside);
   m_floating_piece[handle].code = code & s_piece_color_mask;
-  m_floating_piece[handle].pixmap_x = rect.get_x() - top_left_edge_x();
-  m_floating_piece[handle].pixmap_y = rect.get_y() - top_left_edge_y();
+  m_floating_piece[handle].x = rect.get_x();
+  m_floating_piece[handle].y = rect.get_y();
   m_floating_piece[handle].moved = TRUE;
   if (m_floating_piece_handle != -1)
     pointer_device = false;     // Refuse to add two pointer devices at the same time.
@@ -2930,13 +3136,8 @@ gint ChessboardWidget::add_floating_piece(CwChessboardCode code, gdouble x, gdou
   if (pointer_device)
     m_floating_piece_handle = handle;
   auto window = get_window();
-#if CW_CHESSBOARD_FLOATING_PIECE_INVALIDATE_TARGET || CW_CHESSBOARD_FLOATING_PIECE_DOUBLE_BUFFER
   // See remark in cw_chessboard_move_floating_piece.
   window->invalidate_rect(rect, false);
-#else
-  // FIXME: schedule an expose event instead of this:
-  window->invalidate_rect(rect, false);
-#endif
 
   Dout(dc::widget, "number_of_floating_pieces = " << m_number_of_floating_pieces);
   Dout(dc::widget, "Allocated handle " << handle);
@@ -2952,12 +3153,10 @@ void ChessboardWidget::remove_floating_piece(gint handle)
   g_assert(!is_empty_square(m_floating_piece[handle].code));
 
   // See remark in cw_chessboard_move_floating_piece.
-  Gdk::Rectangle rect(m_floating_piece[handle].pixmap_x + top_left_edge_x(),
-      m_floating_piece[handle].pixmap_y + top_left_edge_y(),
-      m_sside, m_sside);
+  Gdk::Rectangle rect(m_floating_piece[handle].x, m_floating_piece[handle].y, m_sside, m_sside);
 
   get_window()->invalidate_rect(rect, false);
-#if CW_CHESSBOARD_FLOATING_PIECE_DOUBLE_BUFFER
+
   gint col = x2col(rect.get_x());
   gint row = y2row(rect.get_y());
   if (is_inside_board(col, row))
@@ -2987,7 +3186,7 @@ void ChessboardWidget::remove_floating_piece(gint handle)
     guint64 redraw_mask = 1;
     m_need_redraw |= (redraw_mask << index);
   }
-#endif
+
   // Redraw background of widget if the old place of the floating piece is outside the board.
   m_redraw_background = m_redraw_background ||
       rect.get_x() < top_left_edge_x() ||

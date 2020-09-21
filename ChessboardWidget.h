@@ -68,8 +68,8 @@ struct CairoColor
 // A piece that is not bound to a square.
 struct FloatingPiece
 {
-  gint pixmap_x;		// Current x position of the top-left of the piece, in pixmap coordinates.
-  gint pixmap_y;		// Current y position of the top-left of the piece, in pixmap coordinates.
+  gint x;		        // Current x position of the top-left of the piece, in pixmap coordinates.
+  gint y;		        // Current y position of the top-left of the piece, in pixmap coordinates.
   CwChessboardCode code;	// Which piece and which color.
   gboolean moved;		// Temporary set between a move and a redraw.
   gboolean pointer_device;	// Set if this is the pointer device.
@@ -96,161 +96,6 @@ struct Arrow
  * Array index type for chessboard square.
  */
 using BoardIndex = gint;
-
-//
-// The widget is devided into 108 segments (rectangles).
-//
-// Let the largest rectangle below be the 'Allocation' of the ChessboardWidget.
-//
-// The origin is in the top-left corner.
-// A chessboard square is sside x sside pixels.
-// The chessboard square encodings are given by convert_colrow2index:
-//  (col, row) = (0, 0) is the bottom-left most corner square (A1 when white is at the bottom).
-//
-//  O = (0, 0)                                __ background
-//   \                                       /
-//    O-------------------------------------/-------.
-//    |  |                                 /   |    |
-//    |  |               __ border        x    |    |
-//    |  |              /                      |    |
-//    |--E-------------/-----------------------+----|   E = (edge_x, edge_y)
-//    |  |  |   |   | x |   |   |   |   |   |  |    |
-//    |  |--B-------------------------------.--|    |   B = (board_x, board_y) = E + (border_width, border_width)
-//    |  |8 |0,7|           |            7,7|  |    |
-//    |  |--|---D           |  x            |--|    |   D = B + (sside, sside)
-//    |  |7 |               |   \           |  |    |
-//    |  |--|  64 squares   |    \__ chess  |--|    |
-//    |  |6 |               |        board  |  |    |
-//    |  |--|               |               |--|    |
-//    |  |5 |               |               |  |    |
-//    |  |--|---------------+---------------|--|    |
-//    |  |4 |               |               |  |    |
-//    |  |--|               |               |--|    |
-//    |  |3 |               |               |  |    |
-//    |  |--|               |               |--|    |
-//    |  |2 |               |               |  |    |
-//    |  |--|               |               |--|    |
-//    |  |1 |0,0            |            7,0|  |    |
-//    |  |--'-------------------------------C--|    |    C = B + (squares * sside, squares * sside)
-//    |  |  | A | B | C | D | E | F | G | H |  |    |
-//    |--'-------------------------------------F----|    F = E + (squares * sside + 2 * border_width, squares * sside + 2 * border_width)
-//    |  |                                     |    |
-//    |  |                                     |    |
-//    |  |                                     |    |
-//    '---------------------------------------------'
-//                                                  \__ (allocation.width, allocation.height)
-//
-// Represented by a bitmask, (col, row) = (0, 0) corresponds to the least significant bit (bit 0),
-// and so on up till (col, row) = (7, 7) corresponding to bit 63.
-//
-// The other 44 rectangles use bits encodings in a separate 64bit mask,
-// also starting at bit zero:
-
-enum widget_segment_bit
-{
-  background_top_left,    background_top,    background_top_right,
-  background_left,                           background_right,
-  background_bottom_left, background_bottom, background_bottom_right,
-
-  border_top_right,   border_A_top,   border_B_top,   border_C_top,   border_D_top,   border_E_top,   border_F_top,   border_G_top,   border_H_top,   border_top_left,
-  border_bottom_left, border_A,       border_B,       border_C,       border_D,       border_E,       border_F,       border_G,       border_H,       border_bottom_right,
-
-                      border_1,       border_2,       border_3,       border_4,       border_5,       border_6,       border_7,       border_8,
-                      border_1_right, border_2_right, border_3_right, border_4_right, border_5_right, border_6_right, border_7_right, border_8_right,
-
-  chessboard_bit
-};
-
-constexpr uint64_t segment_bit_2_mask(widget_segment_bit segment_bit)
-{
-  return uint64_t{1} << segment_bit;
-}
-
-static constexpr uint64_t background_top_left_mask = segment_bit_2_mask(background_top_left);
-static constexpr uint64_t background_top_mask = segment_bit_2_mask(background_top);
-static constexpr uint64_t background_top_right_mask = segment_bit_2_mask(background_top_right);
-static constexpr uint64_t background_left_mask = segment_bit_2_mask(background_left);
-static constexpr uint64_t background_right_mask = segment_bit_2_mask(background_right);
-static constexpr uint64_t background_bottom_left_mask = segment_bit_2_mask(background_bottom_left);
-static constexpr uint64_t background_bottom_mask = segment_bit_2_mask(background_bottom);
-static constexpr uint64_t background_bottom_right_mask = segment_bit_2_mask(background_bottom_right);
-static constexpr uint64_t border_top_right_mask = segment_bit_2_mask(border_top_right);
-static constexpr uint64_t border_A_top_mask = segment_bit_2_mask(border_A_top);
-static constexpr uint64_t border_B_top_mask = segment_bit_2_mask(border_B_top);
-static constexpr uint64_t border_C_top_mask = segment_bit_2_mask(border_C_top);
-static constexpr uint64_t border_D_top_mask = segment_bit_2_mask(border_D_top);
-static constexpr uint64_t border_E_top_mask = segment_bit_2_mask(border_E_top);
-static constexpr uint64_t border_F_top_mask = segment_bit_2_mask(border_F_top);
-static constexpr uint64_t border_G_top_mask = segment_bit_2_mask(border_G_top);
-static constexpr uint64_t border_H_top_mask = segment_bit_2_mask(border_H_top);
-static constexpr uint64_t border_top_left_mask = segment_bit_2_mask(border_top_left);
-static constexpr uint64_t border_bottom_left_mask = segment_bit_2_mask(border_bottom_left);
-static constexpr uint64_t border_A_mask = segment_bit_2_mask(border_A);
-static constexpr uint64_t border_B_mask = segment_bit_2_mask(border_B);
-static constexpr uint64_t border_C_mask = segment_bit_2_mask(border_C);
-static constexpr uint64_t border_D_mask = segment_bit_2_mask(border_D);
-static constexpr uint64_t border_E_mask = segment_bit_2_mask(border_E);
-static constexpr uint64_t border_F_mask = segment_bit_2_mask(border_F);
-static constexpr uint64_t border_G_mask = segment_bit_2_mask(border_G);
-static constexpr uint64_t border_H_mask = segment_bit_2_mask(border_H);
-static constexpr uint64_t border_bottom_right_mask = segment_bit_2_mask(border_bottom_right);
-static constexpr uint64_t border_1_mask = segment_bit_2_mask(border_1);
-static constexpr uint64_t border_2_mask = segment_bit_2_mask(border_2);
-static constexpr uint64_t border_3_mask = segment_bit_2_mask(border_3);
-static constexpr uint64_t border_4_mask = segment_bit_2_mask(border_4);
-static constexpr uint64_t border_5_mask = segment_bit_2_mask(border_5);
-static constexpr uint64_t border_6_mask = segment_bit_2_mask(border_6);
-static constexpr uint64_t border_7_mask = segment_bit_2_mask(border_7);
-static constexpr uint64_t border_8_mask = segment_bit_2_mask(border_8);
-static constexpr uint64_t border_1_right_mask = segment_bit_2_mask(border_1_right);
-static constexpr uint64_t border_2_right_mask = segment_bit_2_mask(border_2_right);
-static constexpr uint64_t border_3_right_mask = segment_bit_2_mask(border_3_right);
-static constexpr uint64_t border_4_right_mask = segment_bit_2_mask(border_4_right);
-static constexpr uint64_t border_5_right_mask = segment_bit_2_mask(border_5_right);
-static constexpr uint64_t border_6_right_mask = segment_bit_2_mask(border_6_right);
-static constexpr uint64_t border_7_right_mask = segment_bit_2_mask(border_7_right);
-static constexpr uint64_t border_8_right_mask = segment_bit_2_mask(border_8_right);
-static constexpr uint64_t chessboard_bit_mask = segment_bit_2_mask(chessboard_bit);
-
-static constexpr uint64_t background_left_edge_mask = background_top_left_mask | background_left_mask | background_bottom_left_mask;
-static constexpr uint64_t background_top_edge_mask = background_top_left_mask | background_top_mask | background_top_right_mask;
-static constexpr uint64_t background_right_edge_mask = background_top_right_mask | background_right_mask | background_bottom_right_mask;
-static constexpr uint64_t background_bottom_edge_mask = background_bottom_left_mask | background_bottom_mask | background_bottom_right_mask;
-static constexpr uint64_t border_left_mask = border_1_mask | border_2_mask | border_3_mask | border_4_mask | border_5_mask | border_6_mask | border_7_mask | border_8_mask;
-static constexpr uint64_t border_left_edge_mask = background_top_mask | border_top_left_mask | border_left_mask | border_bottom_left_mask | background_bottom_mask;
-static constexpr uint64_t border_right_mask = border_1_right_mask | border_2_right_mask | border_3_right_mask | border_4_right_mask | border_5_right_mask | border_6_right_mask | border_7_right_mask | border_8_right_mask;
-static constexpr uint64_t border_right_edge_mask = background_top_mask | border_top_right_mask | border_right_mask | border_bottom_right_mask | background_bottom_mask;
-static constexpr uint64_t border_top_mask = border_A_top_mask | border_B_top_mask | border_C_top_mask | border_D_top_mask | border_E_top_mask | border_F_top_mask | border_G_top_mask | border_H_top_mask;
-static constexpr uint64_t border_top_edge_mask = background_left_mask | border_top_left_mask | border_top_mask | border_top_right_mask | background_right_mask;
-static constexpr uint64_t border_bottom_mask = border_A_mask | border_B_mask | border_C_mask | border_D_mask | border_E_mask | border_F_mask | border_G_mask | border_H_mask;
-static constexpr uint64_t border_bottom_edge_mask = background_left_mask | border_bottom_left_mask | border_bottom_mask | border_bottom_right_mask | background_right_mask;
-static constexpr uint64_t chessboard_vertical_mask = background_top_mask | border_top_mask | chessboard_bit_mask | border_bottom_mask | background_bottom_mask;
-static constexpr uint64_t chessboard_horizontal_mask = background_left_mask | border_left_mask | chessboard_bit_mask | border_right_mask | background_right_mask;
-static constexpr uint64_t everything_mask = background_left_edge_mask | border_left_mask | chessboard_vertical_mask | border_right_mask | background_right_edge_mask;
-
-static constexpr uint64_t background_right_edge_mask_and_to_the_right = background_right_edge_mask;
-static constexpr uint64_t border_right_mask_and_to_the_right = background_right_edge_mask_and_to_the_right | border_right_mask;
-static constexpr uint64_t chessboard_vertical_mask_and_to_the_right = border_right_mask_and_to_the_right | chessboard_vertical_mask;
-static constexpr uint64_t border_left_mask_and_to_the_right = chessboard_vertical_mask_and_to_the_right | border_left_mask;
-static constexpr uint64_t background_left_edge_mask_and_to_the_right = border_left_mask_and_to_the_right | background_left_edge_mask;
-
-static constexpr uint64_t background_bottom_edge_mask_and_below = background_bottom_edge_mask;
-static constexpr uint64_t border_bottom_mask_and_below = background_bottom_edge_mask_and_below | border_bottom_mask;
-static constexpr uint64_t chessboard_horizontal_mask_and_below = border_bottom_mask_and_below | chessboard_horizontal_mask;
-static constexpr uint64_t border_top_mask_and_below = chessboard_horizontal_mask_and_below | border_top_mask;
-static constexpr uint64_t background_top_edge_mask_and_below = border_top_mask_and_below | background_top_edge_mask;
-
-static constexpr uint64_t background_left_edge_mask_and_to_the_left = background_left_edge_mask;
-static constexpr uint64_t border_left_mask_and_to_the_left = border_left_mask | background_left_edge_mask_and_to_the_left;
-static constexpr uint64_t chessboard_vertical_mask_and_to_the_left = chessboard_vertical_mask | border_left_mask_and_to_the_left;
-static constexpr uint64_t border_right_mask_and_to_the_left = border_right_mask | chessboard_vertical_mask_and_to_the_left;
-static constexpr uint64_t background_right_edge_mask_and_to_the_left = background_right_edge_mask | border_right_mask_and_to_the_left;
-
-static constexpr uint64_t background_top_edge_mask_and_above = background_top_edge_mask;
-static constexpr uint64_t border_top_mask_and_above = border_top_mask | background_top_edge_mask_and_above;
-static constexpr uint64_t chessboard_horizontal_mask_and_above = chessboard_horizontal_mask | border_top_mask_and_above;
-static constexpr uint64_t border_bottom_mask_and_above = border_bottom_mask | chessboard_horizontal_mask_and_above;
-static constexpr uint64_t background_bottom_edge_mask_and_above = background_bottom_edge_mask | border_bottom_mask_and_above;
 
 class WidgetSegments
 {
@@ -333,7 +178,9 @@ class ChessboardWidget : public Gtk::DrawingArea
   std::vector<Arrow*> m_arrows;		// Array with pointers to Arrow objects.
 
 #ifdef CWDEBUG
-  bool m_inside_on_draw;                // True when inside on_draw. Used for debugging.
+  bool m_inside_on_draw;                        // True when inside on_draw. Used for debugging.
+  bool m_show_buffer;                           // True when m_buffer must be copied to the screen.
+  Cairo::RefPtr<Cairo::Surface> m_buffer;       // Temporary buffer for debugging purposes.
 #endif
 
   gint m_total_size;                    // The size of the adjusted allocation.
@@ -398,61 +245,21 @@ class ChessboardWidget : public Gtk::DrawingArea
   void redraw_hud_layer(guint hud);
   void update_cursor_position(gdouble x, gdouble y, gboolean forced);
 
-  // Convert x coordinate into a segment bitmask with bits set for every segment on or to the right of that x coordinate.
-  uint64_t x_to_segmentsOnAndToTheRight(int x) const
+  uint64_t x_to_segmentsOnAndToTheRight(int x) const;
+  uint64_t y_to_segmentsOnAndBelow(int y) const;
+  uint64_t x_to_segmentsOnAndToTheLeft(int x) const;
+  uint64_t y_to_segmentsOnAndAbove(int y) const;
+
+  uint64_t rect_to_44segments(Cairo::Rectangle const& rect) const
   {
-    if (x < top_left_edge_x())
-      return background_left_edge_mask_and_to_the_right;        // Everything.
-    if (x < top_left_board_x())
-      return border_left_mask_and_to_the_right;
-    if (x < bottom_right_board_x())
-      return chessboard_vertical_mask_and_to_the_right;
-    if (x < bottom_right_edge_x())
-      return border_right_mask_and_to_the_right;
-    return background_right_edge_mask_and_to_the_right;
+    return
+      x_to_segmentsOnAndToTheRight(rect.x) &
+      x_to_segmentsOnAndToTheLeft(rect.x + rect.width) &
+      y_to_segmentsOnAndBelow(rect.y) &
+      y_to_segmentsOnAndAbove(rect.y + rect.height);
   }
 
-  // Convert y coordinate into a segment bitmask with bits set for every segment on or below that y coordinate.
-  uint64_t y_to_segmentsOnAndBelow(int y) const
-  {
-    if (y < top_left_edge_y())
-      return background_top_edge_mask_and_below;
-    if (y < top_left_board_y())
-      return border_top_mask_and_below;
-    if (y < bottom_right_board_y())
-      return chessboard_horizontal_mask_and_below;
-    if (y < bottom_right_edge_y())
-      return border_bottom_mask_and_below;
-    return background_bottom_edge_mask_and_below;
-  }
-
-  // Convert x coordinate into a segment bitmask with bits set for every segment on or to the left of that x coordinate.
-  uint64_t x_to_segmentsOnAndToTheLeft(int x) const
-  {
-    if (x < top_left_edge_x())
-      return background_left_edge_mask_and_to_the_left;
-    if (x < top_left_board_x())
-      return border_left_mask_and_to_the_left;
-    if (x < bottom_right_board_x())
-      return chessboard_vertical_mask_and_to_the_left;
-    if (x < bottom_right_edge_x())
-      return border_right_mask_and_to_the_left;
-    return background_right_edge_mask_and_to_the_left;
-  }
-
-  // Convert y coordinate into a segment bitmask with bits set for every segment on or above that y coordinate.
-  uint64_t y_to_segmentsOnAndAbove(int y) const
-  {
-    if (y < top_left_edge_y())
-      return background_top_edge_mask_and_above;
-    if (y < top_left_board_y())
-      return border_top_mask_and_above;
-    if (y < bottom_right_board_y())
-      return chessboard_horizontal_mask_and_above;
-    if (y < bottom_right_edge_y())
-      return border_bottom_mask_and_above;
-    return background_bottom_edge_mask_and_above;
-  }
+  WidgetSegments rect_to_segments(Cairo::Rectangle const& rect) const;
 
   /*
    * Convert a (column, row) pair (each running from 0 till 7) to a BoardIndex value.
@@ -752,18 +559,6 @@ class ChessboardWidget : public Gtk::DrawingArea
      */
     static gboolean is_inside_board(gint col, gint row)
 	{ return !((col | row) & ~0x7); }
-
-    // Convert x,y position into a segment bitmask with bits set for every segment on or to the bottom-right of that position.
-    uint64_t xy_to_segmentsOnAndToTheBottomRight(int x, int y) const
-    {
-      return x_to_segmentsOnAndToTheRight(x) & y_to_segmentsOnAndBelow(y);
-    }
-
-    // Convert x,y position into a segment bitmask with bits set for every segment on or to the top-left of that position.
-    uint64_t xy_to_segmentsOnAndToTheTopLeft(int x, int y) const
-    {
-      return x_to_segmentsOnAndToTheLeft(x) & y_to_segmentsOnAndAbove(y);
-    }
 
   //@}
 
