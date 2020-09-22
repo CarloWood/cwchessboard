@@ -249,6 +249,23 @@ std::ostream& operator<<(std::ostream& os, cairo_region_t const* region)
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os, Cairo::RefPtr<Cairo::Region> const& region)
+{
+  Cairo::RectangleInt rect;
+  int const numRects = region->get_num_rectangles();
+  os << "{ (numRects:" << numRects << ", rects:{";
+  for (int i = 0; i < numRects; ++i)
+  {
+    rect = region->get_rectangle(i);
+    if (i != 0)
+      os << ", ";
+    os << rect;
+  }
+  rect = region->get_extents();
+  os << "}, extents:" << rect << ") }";
+  return os;
+}
+
 std::ostream& operator<<(std::ostream& os, GdkEventExpose const* ee)
 {
   return os << "{ (" << ee->type << ", " << ee->window << ", send_event:" << (bool)ee->send_event <<

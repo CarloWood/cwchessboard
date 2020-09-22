@@ -31,8 +31,6 @@
 #endif
 
 // Fine tuning.
-#define CW_CHESSBOARD_FLOATING_PIECE_INVALIDATE_TARGET 0
-#define CW_CHESSBOARD_EXPOSE_ALWAYS_CLEAR_BACKGROUND 1          // Needed to erase things like menu's.
 #define CW_CHESSBOARD_EXPOSE_DEBUG 1
 
 namespace cwmm {
@@ -366,7 +364,6 @@ void ChessboardWidget::redraw_pixmap(Cairo::RefPtr<Cairo::Context> const& cr)
   m_need_redraw_invalidated = (guint64)-1;
   m_border_invalidated = true;
   m_turn_indicators_invalidated = true;
-  get_window()->invalidate_rect(allocation, false);
 
   // Cache the rectangular region where the chessboard resides as a Cairo::RefPtr<Cairo::Region>.
   Cairo::RectangleInt rect;
@@ -592,6 +589,7 @@ void ChessboardWidget::invalidate_border()
     Cairo::RefPtr<Cairo::Region> border_region = Cairo::Region::create(rect);
     border_region->subtract(m_chessboard_region);
     m_border_invalidated = true;
+    Dout(dc::notice, "ChessboardWidget::invalidate_border(): calling queue_draw_region(" << border_region << ")");
     queue_draw_region(border_region);
   }
 }
@@ -609,8 +607,8 @@ void ChessboardWidget::invalidate_turn_indicators()
     int const dx = (int)std::ceil((edge_width + 1) * factor);
 
     Cairo::RectangleInt top_indicator_rect, bottom_indicator_rect;
-    top_indicator_rect.x = top_left_edge_x() + top_left_board_x() + side + 1 - dx;
-    top_indicator_rect.y = top_left_edge_y() + top_left_board_y() - 1 - edge_width;
+    top_indicator_rect.x = top_left_board_x() + side + 1 - dx;
+    top_indicator_rect.y = top_left_board_y() - 1 - edge_width;
     top_indicator_rect.width = edge_width + dx;
     top_indicator_rect.height = edge_width;
     Cairo::RefPtr<Cairo::Region> indicator_region = Cairo::Region::create(top_indicator_rect);
@@ -630,6 +628,7 @@ void ChessboardWidget::invalidate_turn_indicators()
     bottom_indicator_rect.height = dx;
     indicator_region->do_union(bottom_indicator_rect);
     m_turn_indicators_invalidated = true;
+    Dout(dc::notice, "ChessboardWidget::invalidate_turn_indicators(): calling queue_draw_region(" << indicator_region << ")");
     queue_draw_region(indicator_region);
   }
 }
@@ -638,13 +637,14 @@ void ChessboardWidget::invalidate_square(gint col, gint row)
 {
   guint64 redraw_mask = 1;
   redraw_mask <<= convert_colrow2index(col, row);
-  // No need to call gdk_window_invalidate_rect again when need_redraw_invalidated is already set.
+  // No need to call queue_draw_area again when need_redraw_invalidated is already set.
   if (!(m_need_redraw_invalidated & redraw_mask))
   {
     if (get_realized())
     {
       int x, y;
       colrow2xy(col, row, x, y);
+      Dout(dc::notice, "ChessboardWidget::invalidate_square(" << col << ", " << row << "): calling queue_draw_area(" << x << ", " << y << ", " << m_sside << ", " << m_sside << ")");
       queue_draw_area(x, y, m_sside, m_sside);
       m_need_redraw_invalidated |= redraw_mask;
     }
@@ -657,6 +657,7 @@ void ChessboardWidget::invalidate_board()
 {
   if (get_realized())
   {
+    Dout(dc::notice, "ChessboardWidget::invalidate_board(): calling queue_draw_region(" << m_chessboard_region << ")");
     queue_draw_region(m_chessboard_region);
     m_need_redraw_invalidated = (guint64)-1;
   }
@@ -2112,68 +2113,6 @@ void ChessboardWidget::draw_knight(cairo_t* cr, gdouble x, gdouble y, gdouble sc
   cairo_restore(cr);
 }
 
-#if 0 // No longer exist, these are now direct virtual functions.
-void ChessboardWidget::S_draw_turn_indicator_hook(CwChessboard* chessboard, gboolean white, gboolean on)
-{
-  static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->draw_turn_indicator(white, on);
-}
-
-void ChessboardWidget::S_draw_border_hook(CwChessboard* chessboard)
-{
-  static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->draw_border();
-}
-
-void ChessboardWidget::S_draw_hud_layer_hook(CwChessboard* chessboard, cairo_t* cr, gint sside, guint hud)
-{
-  static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->draw_hud_layer(cr, sside, hud);
-}
-
-gboolean ChessboardWidget::S_draw_hud_square_hook(CwChessboard* chessboard, cairo_t* cr, gint col, gint row, gint sside, guint hud)
-{
-  return static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->draw_hud_square(cr, col, row, sside, hud);
-}
-
-void ChessboardWidget::S_draw_pawn_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-{
-  static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->draw_pawn(cr, x, y, sside, white);
-}
-
-void ChessboardWidget::S_draw_rook_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-{
-  static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->draw_rook(cr, x, y, sside, white);
-}
-
-void ChessboardWidget::S_draw_knight_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-{
-  static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->draw_knight(cr, x, y, sside, white);
-}
-
-void ChessboardWidget::S_draw_bishop_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-{
-  static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->draw_bishop(cr, x, y, sside, white);
-}
-
-void ChessboardWidget::S_draw_queen_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-{
-  static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->draw_queen(cr, x, y, sside, white);
-}
-
-void ChessboardWidget::S_draw_king_hook(CwChessboard* chessboard, cairo_t* cr, gdouble x, gdouble y, gdouble sside, gboolean white)
-{
-  static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->draw_king(cr, x, y, sside, white);
-}
-
-void ChessboardWidget::S_on_cursor_left_chessboard_hook(CwChessboard* chessboard, gint prev_col, gint prev_row)
-{
-  static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->on_cursor_left_chessboard(prev_col, prev_row);
-}
-
-void ChessboardWidget::S_on_cursor_entered_square_hook(CwChessboard* chessboard, gint prev_col, gint prev_row, gint col, gint row)
-{
-  static_cast<ChessboardWidget*>(chessboard->gtkmm_widget)->on_cursor_entered_square(prev_col, prev_row, col, row);
-}
-#endif
-
 ChessboardWidget::ChessboardWidget() :
   // Set default values for the colors used when drawing the pieces.
   m_white_piece_fill_color{ 1.0, 1.0, 1.0 },
@@ -2324,21 +2263,6 @@ ChessboardWidget::ChessboardWidget() :
 #ifndef GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED
   signal_button_press_event().connect(sigc::mem_fun(*this, &ChessboardWidget::on_button_press_event));
   signal_button_release_event().connect(sigc::mem_fun(*this, &ChessboardWidget::on_button_release_event));
-#endif
-
-#if 0 // These are now real virtual functions.
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->draw_turn_indicator = S_draw_turn_indicator_hook;
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->cursor_left_chessboard = S_on_cursor_left_chessboard_hook;
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->cursor_entered_square = S_on_cursor_entered_square_hook;
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->draw_border = S_draw_border_hook;
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->draw_hud_layer = S_draw_hud_layer_hook;
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->draw_hud_square = S_draw_hud_square_hook;
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->draw_piece[(::white_pawn >> 1) - 1] = S_draw_pawn_hook;
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->draw_piece[(::white_rook >> 1) - 1] = S_draw_rook_hook;
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->draw_piece[(::white_knight >> 1) - 1] = S_draw_knight_hook;
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->draw_piece[(::white_bishop >> 1) - 1] = S_draw_bishop_hook;
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->draw_piece[(::white_queen >> 1) - 1] = S_draw_queen_hook;
-  CW_CHESSBOARD_GET_CLASS(M_chessboard)->draw_piece[(::white_king >> 1) - 1] = S_draw_king_hook;
 #endif
 }
 
@@ -2506,10 +2430,6 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
     m_resized = false;
   }
 
-#if CW_CHESSBOARD_EXPOSE_DEBUG
-  //get_window()->clear();
-#endif
-
   if (m_redraw_pixmap)
   {
     redraw_pixmap(crmm);
@@ -2522,12 +2442,10 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   auto& cr = crmm;
 #endif
 
-#if 0
   // Last minute update of the HUD layers.
-  for (guint hud = 0; hud < G_N_ELEMENTS(m_hud_need_redraw); ++hud)
+  for (guint hud = 0; hud < number_of_hud_layers; ++hud)
     if (m_hud_need_redraw[hud])
       redraw_hud_layer(hud);
-#endif
 
   // Last minute update of pixmap.
   guint64 redraw_mask = 1;
@@ -3046,8 +2964,7 @@ void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
   // all the way to the border of a square: there is nothing drawn there,
   // so there is no reason to invalidate it.
   Gdk::Rectangle rect(m_floating_piece[handle].x, m_floating_piece[handle].y, m_sside, m_sside);
-  auto window = get_window();
-  window->invalidate_rect(rect, false);
+  queue_draw_area(rect.get_x(), rect.get_y(), rect.get_width(), rect.get_height());
 
   gint col = x2col(rect.get_x());
   gint row = y2row(rect.get_y());
@@ -3094,7 +3011,7 @@ void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
   rect.set_x((gint)trunc(x - 0.5 * m_sside));
   rect.set_y((gint)trunc(y - 0.5 * m_sside));
 
-  window->invalidate_rect(rect, false);
+  queue_draw_area(rect.get_x(), rect.get_y(), rect.get_width(), rect.get_height());
   outside_window = outside_window &&
       (rect.get_x() + rect.get_width() < 0 ||
       rect.get_x() > allocation.get_x() ||
@@ -3125,6 +3042,7 @@ gint ChessboardWidget::add_floating_piece(CwChessboardCode code, gdouble x, gdou
   gint handle = 0;
   while (m_floating_piece[handle].code != empty_square)
     ++handle;
+  // See remark in ChessboardWidget::move_floating_piece.
   Gdk::Rectangle rect((gint)std::trunc(x - 0.5 * m_sside), (gint)std::trunc(y - 0.5 * m_sside), m_sside, m_sside);
   m_floating_piece[handle].code = code & s_piece_color_mask;
   m_floating_piece[handle].x = rect.get_x();
@@ -3135,9 +3053,8 @@ gint ChessboardWidget::add_floating_piece(CwChessboardCode code, gdouble x, gdou
   m_floating_piece[handle].pointer_device = pointer_device;
   if (pointer_device)
     m_floating_piece_handle = handle;
-  auto window = get_window();
-  // See remark in cw_chessboard_move_floating_piece.
-  window->invalidate_rect(rect, false);
+  Dout(dc::notice, "ChessboardWidget::add_floating_piece(" << code << ", " << x << ", " << y << ", " << pointer_device << "): calling queue_draw_area(" << rect << ")");
+  queue_draw_area(rect.get_x(), rect.get_y(), rect.get_width(), rect.get_height());
 
   Dout(dc::widget, "number_of_floating_pieces = " << m_number_of_floating_pieces);
   Dout(dc::widget, "Allocated handle " << handle);
@@ -3152,10 +3069,11 @@ void ChessboardWidget::remove_floating_piece(gint handle)
   g_assert(handle >= 0 && (gsize)handle < G_N_ELEMENTS(m_floating_piece));
   g_assert(!is_empty_square(m_floating_piece[handle].code));
 
-  // See remark in cw_chessboard_move_floating_piece.
+  // See remark in ChessboardWidget::move_floating_piece.
   Gdk::Rectangle rect(m_floating_piece[handle].x, m_floating_piece[handle].y, m_sside, m_sside);
 
-  get_window()->invalidate_rect(rect, false);
+  Dout(dc::notice, "ChessboardWidget::remove_floating_piece(" << handle << "): calling queue_draw_area(" << rect << ")");
+  queue_draw_area(rect.get_x(), rect.get_y(), rect.get_width(), rect.get_height());
 
   gint col = x2col(rect.get_x());
   gint row = y2row(rect.get_y());

@@ -54,5 +54,6 @@ std::ostream& operator<<(std::ostream& os, cairo_region_t const* region);
 std::ostream& operator<<(std::ostream& os, GAction const* action);
 std::ostream& operator<<(std::ostream& os, GdkColor const& color);
 std::ostream& operator<<(std::ostream& os, Gtk::Allocation const& allocation);
+std::ostream& operator<<(std::ostream& os, Cairo::RefPtr<Cairo::Region> const& region);
 
 #endif // CWDEBUG
