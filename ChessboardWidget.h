@@ -102,6 +102,20 @@ class WidgetSegments
  private:
   uint64_t m_squares_mask;      // The 64 squares of the chessboard.
   uint64_t m_segments_mask;     // The remaining 44 segments.
+
+ public:
+  WidgetSegments() : m_squares_mask(0), m_segments_mask(0) { }
+  WidgetSegments(uint64_t squares_mask, uint64_t segments_mask) : m_squares_mask(squares_mask), m_segments_mask(segments_mask) { }
+
+  bool operator==(WidgetSegments const& ws) const { return m_squares_mask == ws.m_squares_mask && m_segments_mask == ws.m_segments_mask; }
+  operator bool() const { return m_squares_mask & m_segments_mask != 0; }
+  WidgetSegments& operator|=(WidgetSegments const& ws) { m_squares_mask |= ws.m_squares_mask; m_segments_mask |= ws.m_segments_mask; return *this; }
+  WidgetSegments& operator&=(WidgetSegments const& ws) { m_squares_mask &= ws.m_squares_mask; m_segments_mask &= ws.m_segments_mask; return *this; }
+  friend WidgetSegments operator|(WidgetSegments const& ws1, WidgetSegments const& ws2) { WidgetSegments result(ws1); result |= ws2; return result; }
+  friend WidgetSegments operator&(WidgetSegments const& ws1, WidgetSegments const& ws2) { WidgetSegments result(ws1); result &= ws2; return result; }
+#ifdef CWDEBUG
+  friend std::ostream& operator<<(std::ostream& os, WidgetSegments const& ws);
+#endif
 };
 
 /** @class ChessboardWidget
@@ -245,20 +259,10 @@ class ChessboardWidget : public Gtk::DrawingArea
   void redraw_hud_layer(guint hud);
   void update_cursor_position(gdouble x, gdouble y, gboolean forced);
 
-  uint64_t x_to_segmentsOnAndToTheRight(int x) const;
-  uint64_t y_to_segmentsOnAndBelow(int y) const;
-  uint64_t x_to_segmentsOnAndToTheLeft(int x) const;
-  uint64_t y_to_segmentsOnAndAbove(int y) const;
-
-  uint64_t rect_to_44segments(Cairo::Rectangle const& rect) const
-  {
-    return
-      x_to_segmentsOnAndToTheRight(rect.x) &
-      x_to_segmentsOnAndToTheLeft(rect.x + rect.width) &
-      y_to_segmentsOnAndBelow(rect.y) &
-      y_to_segmentsOnAndAbove(rect.y + rect.height);
-  }
-
+  WidgetSegments x_to_segmentsOnAndToTheRight(int x) const;
+  WidgetSegments y_to_segmentsOnAndBelow(int y) const;
+  WidgetSegments x_to_segmentsOnAndToTheLeft(int x) const;
+  WidgetSegments y_to_segmentsOnAndAbove(int y) const;
   WidgetSegments rect_to_segments(Cairo::Rectangle const& rect) const;
 
   /*
