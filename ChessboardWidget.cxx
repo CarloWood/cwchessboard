@@ -31,7 +31,7 @@
 #endif
 
 // Fine tuning.
-#define CW_CHESSBOARD_EXPOSE_DEBUG 1
+#define CW_CHESSBOARD_EXPOSE_DEBUG 0
 
 namespace cwmm {
 
@@ -142,12 +142,12 @@ struct PseudoSegmentCoordinates
                                                 // and 0 representing "entirely to the left of / below the board".
                                                 // 8 means "on or to the right / above the board".
 
-  PseudoSegmentCoordinates(gint x, gint y, Extent extent, ChessboardWidget const& widget);
+  PseudoSegmentCoordinates(double x, double y, Extent extent, ChessboardWidget const& widget);
 };
 
-PseudoSegmentCoordinates::PseudoSegmentCoordinates(gint x, gint y, Extent extent, ChessboardWidget const& widget) : m_extent(extent)
+PseudoSegmentCoordinates::PseudoSegmentCoordinates(double x, double y, Extent extent, ChessboardWidget const& widget) : m_extent(extent)
 {
-  std::array<gint, 2> coordinate = {{ x, y }};
+  std::array<gint, 2> coordinate = {{ static_cast<gint>(x), static_cast<gint>(y) }};
   for (int xy = 0; xy < 2; ++xy)
   {
     gint bottom_right_board = xy ? widget.bottom_right_board_y() : widget.bottom_right_board_x();
@@ -170,18 +170,10 @@ PseudoSegmentCoordinates::PseudoSegmentCoordinates(gint x, gint y, Extent extent
     {
       gint bottom_right_edge = xy ? widget.bottom_right_edge_y() : widget.bottom_right_edge_x();
       m_pseudo_coordinate[xy] = (coordinate[xy] < bottom_right_edge) ? 3 : 4;
-      m_border[xy] = 8;
+      m_border[xy] = 9;
     }
   }
 }
-
-// A collection of Pseudo Segments can be stored as a mask.
-struct PseudoSegmentsMask {
-  uint32_t m_pseudo_segments;                   // 25 bits for the 25 pseudo segments.
-  std::array<uint8_t, 2> m_border_mask;         // Two 8 bit masks for the horizontal and vertical border segments.
-
-  PseudoSegmentsMask(uint32_t pseudo_segments, std::array<uint8_t, 2> border_mask) : m_pseudo_segments(pseudo_segments), m_border_mask(border_mask) { }
-};
 
 // A PseudoSegmentCoordinates object can be converted to a PseudoSegmentsMask.
 PseudoSegmentsMask psc2psm(PseudoSegmentCoordinates psc)
@@ -208,323 +200,99 @@ PseudoSegmentsMask psc2psm(PseudoSegmentCoordinates psc)
     pseudo_segments = bottom_right[index];
   std::array<uint8_t, 2> border_mask;
   for (int xy = 0; xy < 2; ++xy)
-    border_mask[xy] = (psc.m_extent == ext_top_left) ?
-      (1 << psc.m_border[xy]) - 1 :                                     // Mask with m_border least significant bits set.
-      ((1 << psc.m_border[xy]) - 1) << (8 - psc.m_border[xy]);          // Mask with m_border most significant bits set.
+  {
+    // With white at the bottom, the least significant bit of m_squares_mask corresponds with A1, while
+    // the first eight (least significant) bits correspond with A1 through H1.
+    // This must map 1-on-1 into m_border_mask[0].
+    // The (x,y) coordinates have their origin in the top-left and to make this code simplest, we
+    // want symmetry in the y = x axis. Therefore m_border_mask[1] must have its least significant
+    // bit at the top row (row 8 of the chess board, with white on the bottom):
+    //
+    //        x
+    //  o------------>
+    //  |
+    //  |  E-------------------------------------+
+    //  |  |  |   |   |   |   |   |   |   |   |  |
+    // y|  |--B-------------------------------.--|  .---.
+    //  |  |8 |0,7                         7,7|  |  |LSB| <-- m_border_mask[1]
+    //  |  |--|                               |--|  |---|
+    //  v  |7 |                               |  |  |   |
+    //     |--|                               |--|  |---|
+    //     |6 |                               |  |  |   |
+    //     |--|                               |--|  |---|
+    //     |5 |                               |  |  |   |
+    //     |--|          64 squares           |--|  |---|
+    //     |4 |                               |  |  |   |
+    //     |--|                               |--|  |---|
+    //     |3 |                               |  |  |   |
+    //     |--|                               |--|  |---|
+    //     |2 |                               |  |  |   |
+    //     |--|                               |--|  |---|
+    //     |1 |0,0                         7,0|  |  |MSB|
+    //     |--'-------------------------------C--|  '---'
+    //     |  | A | B | C | D | E | F | G | H |  |
+    //     '-------------------------------------F
+    //        .-------------------------------.
+    //        |LSB|   |   |   |   |   |   |MSB| <-- m_border_mask[0]
+    //        '-------------------------------'
+    //   .--0   1   2   3   4   5   6   7   8   9
+    //   |
+    //   |    extension is top_left (left here; rotate 90 degrees clockwise for vertical orientation).
+    //   v
+    //   0:     0   0   0   0   0   0   0   0
+    //   1:     1   0   0   0   0   0   0   0
+    //   2:     1   1   0   0   0   0   0   0
+    //   .
+    //   7:     1   1   1   1   1   1   1   0
+    //   8:     1   1   1   1   1   1   1   1
+    //   9:     1   1   1   1   1   1   1   1
+    //
+    //        extension is bottom_right (right here; rotate 90 degrees clockwise for vertical orientation).
+    //
+    //   0:     1   1   1   1   1   1   1   1
+    //   1:     1   1   1   1   1   1   1   1
+    //   2:     0   1   1   1   1   1   1   1
+    //   .
+    //   7:     0   0   0   0   0   0   1   1
+    //   8:     0   0   0   0   0   0   0   1
+    //   9:     0   0   0   0   0   0   0   0
+
+    int pc = psc.m_border[xy];  // In the range [0, 9].
+    border_mask[xy] = (psc.m_extent == ext_top_left) ? ~(0xff << pc) : ~(0xff >> (9 - pc));
+  }
   return { pseudo_segments, border_mask };
 }
 
-enum widget_segment_bit
+WidgetSegments::WidgetSegments(PseudoSegmentsMask psm) :
+  m_squares_mask(0), m_pseudo_segments_mask(psm.m_pseudo_segments),
+  m_border{{ (psm.m_pseudo_segments & 0x80) ? psm.m_border_mask[0] : uint8_t{0},
+             (psm.m_pseudo_segments & 0x2000) ? psm.m_border_mask[1] : uint8_t{0},
+             (psm.m_pseudo_segments & 0x20000) ? psm.m_border_mask[0] : uint8_t{0},
+             (psm.m_pseudo_segments & 0x800) ? psm.m_border_mask[1] : uint8_t{0} }}
 {
-  background_top_left,    background_top,    background_top_right,
-  background_left,                           background_right,
-  background_bottom_left, background_bottom, background_bottom_right,
-
-  border_top_right,   border_A_top,   border_B_top,   border_C_top,   border_D_top,   border_E_top,   border_F_top,   border_G_top,   border_H_top,   border_top_left,
-  border_bottom_left, border_A,       border_B,       border_C,       border_D,       border_E,       border_F,       border_G,       border_H,       border_bottom_right,
-
-                      border_1,       border_2,       border_3,       border_4,       border_5,       border_6,       border_7,       border_8,
-                      border_1_right, border_2_right, border_3_right, border_4_right, border_5_right, border_6_right, border_7_right, border_8_right
-};
-
-constexpr uint64_t segment_bit_2_mask(widget_segment_bit segment_bit)
-{
-  return uint64_t{1} << segment_bit;
-}
-
-static constexpr uint64_t background_top_left_mask = segment_bit_2_mask(background_top_left);
-static constexpr uint64_t background_top_mask = segment_bit_2_mask(background_top);
-static constexpr uint64_t background_top_right_mask = segment_bit_2_mask(background_top_right);
-static constexpr uint64_t background_left_mask = segment_bit_2_mask(background_left);
-static constexpr uint64_t background_right_mask = segment_bit_2_mask(background_right);
-static constexpr uint64_t background_bottom_left_mask = segment_bit_2_mask(background_bottom_left);
-static constexpr uint64_t background_bottom_mask = segment_bit_2_mask(background_bottom);
-static constexpr uint64_t background_bottom_right_mask = segment_bit_2_mask(background_bottom_right);
-static constexpr uint64_t border_top_right_mask = segment_bit_2_mask(border_top_right);
-static constexpr uint64_t border_A_top_mask = segment_bit_2_mask(border_A_top);
-static constexpr uint64_t border_B_top_mask = segment_bit_2_mask(border_B_top);
-static constexpr uint64_t border_C_top_mask = segment_bit_2_mask(border_C_top);
-static constexpr uint64_t border_D_top_mask = segment_bit_2_mask(border_D_top);
-static constexpr uint64_t border_E_top_mask = segment_bit_2_mask(border_E_top);
-static constexpr uint64_t border_F_top_mask = segment_bit_2_mask(border_F_top);
-static constexpr uint64_t border_G_top_mask = segment_bit_2_mask(border_G_top);
-static constexpr uint64_t border_H_top_mask = segment_bit_2_mask(border_H_top);
-static constexpr uint64_t border_top_left_mask = segment_bit_2_mask(border_top_left);
-static constexpr uint64_t border_bottom_left_mask = segment_bit_2_mask(border_bottom_left);
-static constexpr uint64_t border_A_mask = segment_bit_2_mask(border_A);
-static constexpr uint64_t border_B_mask = segment_bit_2_mask(border_B);
-static constexpr uint64_t border_C_mask = segment_bit_2_mask(border_C);
-static constexpr uint64_t border_D_mask = segment_bit_2_mask(border_D);
-static constexpr uint64_t border_E_mask = segment_bit_2_mask(border_E);
-static constexpr uint64_t border_F_mask = segment_bit_2_mask(border_F);
-static constexpr uint64_t border_G_mask = segment_bit_2_mask(border_G);
-static constexpr uint64_t border_H_mask = segment_bit_2_mask(border_H);
-static constexpr uint64_t border_bottom_right_mask = segment_bit_2_mask(border_bottom_right);
-static constexpr uint64_t border_1_mask = segment_bit_2_mask(border_1);
-static constexpr uint64_t border_2_mask = segment_bit_2_mask(border_2);
-static constexpr uint64_t border_3_mask = segment_bit_2_mask(border_3);
-static constexpr uint64_t border_4_mask = segment_bit_2_mask(border_4);
-static constexpr uint64_t border_5_mask = segment_bit_2_mask(border_5);
-static constexpr uint64_t border_6_mask = segment_bit_2_mask(border_6);
-static constexpr uint64_t border_7_mask = segment_bit_2_mask(border_7);
-static constexpr uint64_t border_8_mask = segment_bit_2_mask(border_8);
-static constexpr uint64_t border_1_right_mask = segment_bit_2_mask(border_1_right);
-static constexpr uint64_t border_2_right_mask = segment_bit_2_mask(border_2_right);
-static constexpr uint64_t border_3_right_mask = segment_bit_2_mask(border_3_right);
-static constexpr uint64_t border_4_right_mask = segment_bit_2_mask(border_4_right);
-static constexpr uint64_t border_5_right_mask = segment_bit_2_mask(border_5_right);
-static constexpr uint64_t border_6_right_mask = segment_bit_2_mask(border_6_right);
-static constexpr uint64_t border_7_right_mask = segment_bit_2_mask(border_7_right);
-static constexpr uint64_t border_8_right_mask = segment_bit_2_mask(border_8_right);
-
-static constexpr uint64_t background_left_edge_mask = background_top_left_mask | background_left_mask | background_bottom_left_mask;
-static constexpr uint64_t background_top_edge_mask = background_top_left_mask | background_top_mask | background_top_right_mask;
-static constexpr uint64_t background_right_edge_mask = background_top_right_mask | background_right_mask | background_bottom_right_mask;
-static constexpr uint64_t background_bottom_edge_mask = background_bottom_left_mask | background_bottom_mask | background_bottom_right_mask;
-static constexpr uint64_t border_left_mask = border_1_mask | border_2_mask | border_3_mask | border_4_mask | border_5_mask | border_6_mask | border_7_mask | border_8_mask;
-static constexpr uint64_t border_left_edge_mask = background_top_mask | border_top_left_mask | border_left_mask | border_bottom_left_mask | background_bottom_mask;
-static constexpr uint64_t border_right_mask = border_1_right_mask | border_2_right_mask | border_3_right_mask | border_4_right_mask | border_5_right_mask | border_6_right_mask | border_7_right_mask | border_8_right_mask;
-static constexpr uint64_t border_right_edge_mask = background_top_mask | border_top_right_mask | border_right_mask | border_bottom_right_mask | background_bottom_mask;
-static constexpr uint64_t border_top_mask = border_A_top_mask | border_B_top_mask | border_C_top_mask | border_D_top_mask | border_E_top_mask | border_F_top_mask | border_G_top_mask | border_H_top_mask;
-static constexpr uint64_t border_top_edge_mask = background_left_mask | border_top_left_mask | border_top_mask | border_top_right_mask | background_right_mask;
-static constexpr uint64_t border_bottom_mask = border_A_mask | border_B_mask | border_C_mask | border_D_mask | border_E_mask | border_F_mask | border_G_mask | border_H_mask;
-static constexpr uint64_t border_bottom_edge_mask = background_left_mask | border_bottom_left_mask | border_bottom_mask | border_bottom_right_mask | background_right_mask;
-static constexpr uint64_t chessboard_vertical_mask = background_top_mask | border_top_mask | border_bottom_mask | background_bottom_mask;
-static constexpr uint64_t chessboard_horizontal_mask = background_left_mask | border_left_mask | border_right_mask | background_right_mask;
-static constexpr uint64_t everything_mask = background_left_edge_mask | border_left_mask | chessboard_vertical_mask | border_right_mask | background_right_edge_mask;
-
-static constexpr uint64_t background_right_edge_mask_and_to_the_right = background_right_edge_mask;
-static constexpr uint64_t border_right_mask_and_to_the_right = background_right_edge_mask_and_to_the_right | border_right_mask;
-static constexpr uint64_t chessboard_vertical_mask_and_to_the_right = border_right_mask_and_to_the_right | chessboard_vertical_mask;
-static constexpr uint64_t border_left_mask_and_to_the_right = chessboard_vertical_mask_and_to_the_right | border_left_mask;
-static constexpr uint64_t background_left_edge_mask_and_to_the_right = border_left_mask_and_to_the_right | background_left_edge_mask;
-
-static constexpr uint64_t background_bottom_edge_mask_and_below = background_bottom_edge_mask;
-static constexpr uint64_t border_bottom_mask_and_below = background_bottom_edge_mask_and_below | border_bottom_mask;
-static constexpr uint64_t chessboard_horizontal_mask_and_below = border_bottom_mask_and_below | chessboard_horizontal_mask;
-static constexpr uint64_t border_top_mask_and_below = chessboard_horizontal_mask_and_below | border_top_mask;
-static constexpr uint64_t background_top_edge_mask_and_below = border_top_mask_and_below | background_top_edge_mask;
-
-static constexpr uint64_t background_left_edge_mask_and_to_the_left = background_left_edge_mask;
-static constexpr uint64_t border_left_mask_and_to_the_left = border_left_mask | background_left_edge_mask_and_to_the_left;
-static constexpr uint64_t chessboard_vertical_mask_and_to_the_left = chessboard_vertical_mask | border_left_mask_and_to_the_left;
-static constexpr uint64_t border_right_mask_and_to_the_left = border_right_mask | chessboard_vertical_mask_and_to_the_left;
-static constexpr uint64_t background_right_edge_mask_and_to_the_left = background_right_edge_mask | border_right_mask_and_to_the_left;
-
-static constexpr uint64_t background_top_edge_mask_and_above = background_top_edge_mask;
-static constexpr uint64_t border_top_mask_and_above = border_top_mask | background_top_edge_mask_and_above;
-static constexpr uint64_t chessboard_horizontal_mask_and_above = chessboard_horizontal_mask | border_top_mask_and_above;
-static constexpr uint64_t border_bottom_mask_and_above = border_bottom_mask | chessboard_horizontal_mask_and_above;
-static constexpr uint64_t background_bottom_edge_mask_and_above = background_bottom_edge_mask | border_bottom_mask_and_above;
-
-// Convert x coordinate into a segment bitmask with bits set for every segment on or to the right of that x coordinate.
-WidgetSegments ChessboardWidget::x_to_segmentsOnAndToTheRight(int x) const
-{
-  DoutEntering(dc::notice|continued_cf, "ChessboardWidget::x_to_segmentsOnAndToTheRight(" << x << ") = ");
-
-  uint64_t squares_mask;
-  uint64_t segments_mask;
-  if (x < top_left_board_x())
-  {
-    squares_mask = 0;
-    if (x < top_left_edge_x())
-      segments_mask = background_left_edge_mask_and_to_the_right;        // Everything
-    else
-      segments_mask = border_left_mask_and_to_the_right;
-  }
-  else if (x < bottom_right_board_x())
-  {
-    // Here we need to convert colum to bitmask, where
-    //
-    //      56 57 58 59 60 61 62 63       7
-    //      48 ...                        6
-    //      .                             .
-    //      .                             .
-    //      .                             .
-    //      0  1  2  3  4  5  6  7  yrow= 0
-    //xcol= 0  1  2  3  4  5  6  7
-    //
-    // Thus, col=0 becomes: 0000000100000001000000010000000100000001000000010000000100000001
-    //       col=1 becomes: 0000001100000011000000110000001100000011000000110000001100000011
-    //       col=2 becomes: 0000011100000111000001110000011100000111000001110000011100000111
-    //         .
-    //         .
-    //       col=7 becomes: 1111111111111111111111111111111111111111111111111111111111111111
-    //
-    static uint64_t xcol2mask[8] = { 0x0101010101010101,
-                                     0x0303030303030303,
-                                     0x0707070707070707,
-                                     0x0f0f0f0f0f0f0f0f,
-                                     0x1f1f1f1f1f1f1f1f,
-                                     0x3f3f3f3f3f3f3f3f,
-                                     0x7f7f7f7f7f7f7f7f,
-                                     0xffffffffffffffff };
-    unsigned int xcol = std::floor((x - top_left_board_x()) / m_sside);
-    ASSERT(xcol < 8);
-    squares_mask = xcol2mask[xcol];
-    segments_mask = chessboard_vertical_mask_and_to_the_right;
-    Dout(dc::notice, "Set segments_mask to chessboard_vertical_mask_and_to_the_right = " << std::hex << chessboard_vertical_mask_and_to_the_right);
-  }
-  else
-  {
-    squares_mask = ~uint64_t{0};
-    if (x < bottom_right_edge_x())
-      segments_mask = border_right_mask_and_to_the_right;
-    else
-      segments_mask = background_right_edge_mask_and_to_the_right;
-  }
-
-  Dout(dc::finish, "{ " << std::hex << squares_mask << ", " << segments_mask << std::dec << " }");
-  return { squares_mask, segments_mask };
-}
-
-// Convert y coordinate into a segment bitmask with bits set for every segment on or below that y coordinate.
-WidgetSegments ChessboardWidget::y_to_segmentsOnAndBelow(int y) const
-{
-  uint64_t squares_mask;
-  uint64_t segments_mask;
-  if (y < top_left_board_y())
-  {
-    squares_mask = ~uint64_t{0};
-    if (y < top_left_edge_y())
-      segments_mask = background_top_edge_mask_and_below;
-    else
-      segments_mask = border_top_mask_and_below;
-  }
-  else if (y < bottom_right_board_y())
-  {
-    // Here we need to convert colum to bitmask, where
-    //
-    //      56 57 58 59 60 61 62 63       7
-    //      48 ...                        6
-    //      .                             .
-    //      .                             .
-    //      .                             .
-    //      0  1  2  3  4  5  6  7  yrow= 0
-    //xcol= 0  1  2  3  4  5  6  7
-    //
-    // Thus, row=0 becomes: 0000000000000000000000000000000000000000000000000000000011111111
-    //       row=1 becomes: 0000000000000000000000000000000000000000000000001111111111111111
-    //       row=2 becomes: 0000000000000000000000000000000000000000111111111111111111111111
-    //         .
-    //         .
-    //       row=7 becomes: 1111111111111111111111111111111111111111111111111111111111111111
-    //
-    static uint64_t yrow2mask[8] = { 0x00000000000000ff,
-                                     0x000000000000ffff,
-                                     0x0000000000ffffff,
-                                     0x00000000ffffffff,
-                                     0x000000ffffffffff,
-                                     0x0000ffffffffffff,
-                                     0x00ffffffffffffff,
-                                     0xffffffffffffffff };
-    unsigned int yrow = std::floor((y - top_left_board_y()) / m_sside);
-    ASSERT(yrow < 8);
-    squares_mask = yrow2mask[yrow];
-    segments_mask = chessboard_horizontal_mask_and_below;
-  }
-  else
-  {
-    squares_mask = 0;
-    if (y < bottom_right_edge_y())
-      segments_mask = border_bottom_mask_and_below;
-    else
-      segments_mask = background_bottom_edge_mask_and_below;
-  }
-  return { squares_mask, segments_mask };
-}
-
-// Convert x coordinate into a segment bitmask with bits set for every segment on or to the left of that x coordinate.
-WidgetSegments ChessboardWidget::x_to_segmentsOnAndToTheLeft(int x) const
-{
-  uint64_t squares_mask;
-  uint64_t segments_mask;
-  if (x < top_left_board_x())
-  {
-    squares_mask = ~uint64_t{0};
-    if (x < top_left_edge_x())
-      segments_mask = background_left_edge_mask_and_to_the_left;
-    else
-      segments_mask = border_left_mask_and_to_the_left;
-  }
-  else if (x < bottom_right_board_x())
-  {
-    static uint64_t xcol2mask[8] = { 0xffffffffffffffff,
-                                     0xfefefefefefefefe,
-                                     0xfcfcfcfcfcfcfcfc,
-                                     0xf8f8f8f8f8f8f8f8,
-                                     0xf0f0f0f0f0f0f0f0,
-                                     0xe0e0e0e0e0e0e0e0,
-                                     0xc0c0c0c0c0c0c0c0,
-                                     0x8080808080808080 };
-    unsigned int xcol = std::floor((x - top_left_board_x()) / m_sside);
-    ASSERT(xcol < 8);
-    squares_mask = xcol2mask[xcol];
-    segments_mask = chessboard_vertical_mask_and_to_the_left;
-  }
-  else
-  {
-    squares_mask = 0;
-    if (x < bottom_right_edge_x())
-      segments_mask = border_right_mask_and_to_the_left;
-    else
-      segments_mask = background_right_edge_mask_and_to_the_left;
-  }
-  return { squares_mask, segments_mask };
-}
-
-// Convert y coordinate into a segment bitmask with bits set for every segment on or above that y coordinate.
-WidgetSegments ChessboardWidget::y_to_segmentsOnAndAbove(int y) const
-{
-  uint64_t squares_mask;
-  uint64_t segments_mask;
-  if (y < top_left_board_y())
-  {
-    squares_mask = 0;
-    if (y < top_left_edge_y())
-      segments_mask = background_top_edge_mask_and_above;
-    else
-      segments_mask = border_top_mask_and_above;
-  }
-  else if (y < bottom_right_board_y())
-  {
-    static uint64_t yrow2mask[8] = { 0xffffffffffffffff,
-                                     0xffffffffffffff00,
-                                     0xffffffffffff0000,
-                                     0xffffffffff000000,
-                                     0xffffffff00000000,
-                                     0xffffff0000000000,
-                                     0xffff000000000000,
-                                     0xff00000000000000 };
-    unsigned int yrow = std::floor((y - top_left_board_y()) / m_sside);
-    ASSERT(yrow < 8);
-    squares_mask = yrow2mask[yrow];
-    segments_mask = chessboard_horizontal_mask_and_above;
-  }
-  else
-  {
-    squares_mask = ~uint64_t{0};
-    if (y < bottom_right_edge_y())
-      segments_mask = border_bottom_mask_and_above;
-    else
-      segments_mask = background_bottom_edge_mask_and_above;
-  }
-  return { squares_mask, segments_mask };
+  uint64_t row = psm.m_border_mask[0];
+  for (uint8_t row_mask = 0x80; row_mask; row_mask >>= 1, row <<= 8)
+    if ((psm.m_border_mask[1] & row_mask))
+      m_squares_mask |= row;
 }
 
 WidgetSegments ChessboardWidget::rect_to_segments(Cairo::Rectangle const& rect) const
 {
-  return
-    x_to_segmentsOnAndToTheRight(rect.x) &
-    x_to_segmentsOnAndToTheLeft(rect.x + rect.width) &
-    y_to_segmentsOnAndBelow(rect.y) &
-    y_to_segmentsOnAndAbove(rect.y + rect.height);
+  PseudoSegmentsMask bottom_right_segment = psc2psm({rect.x, rect.y, ext_bottom_right, *this});
+  PseudoSegmentsMask top_left_segment = psc2psm({rect.x + rect.width, rect.y + rect.height, ext_top_left, *this});
+
+  PseudoSegmentsMask segment = bottom_right_segment & top_left_segment;
+
+  // Now convert this to a WidgetSegments, which then can be easily combined to store multiple rectangles.
+  return segment;
 }
 
 std::ostream& operator<<(std::ostream& os, WidgetSegments const& ws)
 {
-  os << std::hex << ws.m_squares_mask << ", " << ws.m_segments_mask << std::dec;
-  return os;
+  os << std::hex << ws.m_squares_mask << ", " << ws.m_pseudo_segments_mask;
+  for (int b = 0; b < 4; ++b)
+    os << ", " << (int)ws.m_border[b];
+  return os << std::dec;
 }
 
 //------------------------------------------------------------------------------
@@ -920,7 +688,8 @@ void ChessboardWidget::invalidate_square(gint col, gint row)
       int x, y;
       colrow2xy(col, row, x, y);
       Dout(dc::notice, "ChessboardWidget::invalidate_square(" << col << ", " << row << "): calling queue_draw_area(" << x << ", " << y << ", " << m_sside << ", " << m_sside << ")");
-      queue_draw_area(x, y, m_sside, m_sside);
+      // Remove 0.1 pixels from all sides to make sure that round off errors won't include neighboring squares.
+      queue_draw_area(x + 0.1, y + 0.1, m_sside - 0.2, m_sside - 0.2);
       m_need_redraw_invalidated |= redraw_mask;
     }
     else
@@ -2601,7 +2370,7 @@ void ChessboardWidget::redraw_hud_layer(guint hud)
         if ((need_clear & bit))
         {
           cr->rectangle((m_flip_board ? 7 - col : col) * m_sside, (m_flip_board ? row : 7 - row) * m_sside, m_sside, m_sside);
-          invalidate_square(col, row);
+//          invalidate_square(col, row);
         }
     }
   cr->fill();
@@ -2676,10 +2445,6 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
 #endif
   Debug(m_inside_on_draw = true);
 
-  Gdk::Rectangle clip_rectangle;
-  Gdk::Cairo::get_clip_rectangle(crmm, clip_rectangle);
-  Dout(dc::clip, "clip_rectangle = " << clip_rectangle);
-
   Gtk::Allocation allocation = get_allocation();
   Dout(dc::clip, "allocation = " << allocation);
 
@@ -2695,7 +2460,8 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   }
 #endif
 
-//  if (m_resized)
+#if 0
+  if (m_resized)
   {
     Dout(dc::notice, "Invalidating everything because m_resized = true.");
     // Everything was invalidated (probably due to a spurious call to on_size_allocate).
@@ -2704,6 +2470,7 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
     m_turn_indicators_invalidated = true;
     m_resized = false;
   }
+#endif
 
   if (m_redraw_pixmap)
   {
@@ -2714,13 +2481,13 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   Dout(dc::notice, "Clip rectangle list:");
   std::vector<Cairo::Rectangle> rectangles;
   crmm->copy_clip_rectangle_list(rectangles);
-  WidgetSegments ws;
+  WidgetSegments need_redraw;
   for (auto&& rect : rectangles)
   {
     Dout(dc::notice, "  rect = " << rect);
-    ws |= rect_to_segments(rect);
+    need_redraw |= rect_to_segments(rect);
   }
-  Dout(dc::notice, "ws = " << ws);
+  Dout(dc::notice, "need_redraw = " << need_redraw);
 
 #if CW_CHESSBOARD_EXPOSE_DEBUG
   auto cr = Cairo::Context::create(m_buffer);
@@ -2736,14 +2503,14 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   // Last minute update of pixmap.
   guint64 redraw_mask = 1;
   for (gint i = 0; i < 64; ++i, redraw_mask <<= 1)
-    if (((m_need_redraw | m_need_redraw_invalidated) & redraw_mask))
+    if ((need_redraw & redraw_mask))
       redraw_square(cr, i);             // This uses the HUD layer.
   m_need_redraw_invalidated = 0;
   m_need_redraw = 0;
 
   // Redraw border when the border was invalidated.
-  if (m_border_invalidated)
-    draw_border(cr);
+  if (need_redraw.any_border())
+    draw_border(cr, need_redraw);
   else if (m_turn_indicators_invalidated)
   {
     draw_turn_indicator(cr, m_active_turn_indicator, true);
@@ -3291,7 +3058,7 @@ void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
   rect.set_x((gint)trunc(x - 0.5 * m_sside));
   rect.set_y((gint)trunc(y - 0.5 * m_sside));
 
-  queue_draw_area(rect.get_x(), rect.get_y(), rect.get_width(), rect.get_height());
+//  queue_draw_area(rect.get_x(), rect.get_y(), rect.get_width(), rect.get_height());
   outside_window = outside_window &&
       (rect.get_x() + rect.get_width() < 0 ||
       rect.get_x() > allocation.get_x() ||
@@ -3513,91 +3280,161 @@ gboolean ChessboardWidget::draw_hud_square(Cairo::RefPtr<Cairo::Context> const& 
   return true;
 }
 
-void ChessboardWidget::draw_border(Cairo::RefPtr<Cairo::Context> const& cr)
+void ChessboardWidget::draw_border(Cairo::RefPtr<Cairo::Context> const& cr, WidgetSegments const& need_redraw)
 {
   DoutEntering(dc::widget, "ChessboardWidget::draw_border(cr)");
   // Only call this function from on_draw().
   ASSERT(m_inside_on_draw);
 
-#if 0
-  // Fill the area around the board with the background color.
-  gint const pixmap_width = bottom_right_edge_x() - top_left_edge_x();
-  gint const pixmap_height = bottom_right_edge_y() - top_left_edge_y();
-  gint const side = squares * m_sside;
+  if (need_redraw.any_background())
+  {
+    // Fill the area around the board with the background color.
+    Gtk::Allocation allocation = get_allocation();
+    gint const side = squares * m_sside;
 
-  if (top_left_edge_x() != 0)
-    cairo_rectangle(cr, 0, 0, top_left_edge_x(), pixmap_height);
-  if (pixmap_width - top_left_board_x() - side != 0)
-    cairo_rectangle(cr, top_left_board_x() + side, 0,
-        pixmap_width - top_left_board_x() - side, pixmap_height);
-  if (top_left_board_y() != 0)
-    cairo_rectangle(cr, 0, 0, pixmap_width, top_left_board_y());
-  if (pixmap_height - top_left_board_y() - side != 0)
-    cairo_rectangle(cr, 0, top_left_board_y() + side,
-        pixmap_width, pixmap_height - top_left_board_y() - side);
-  cairo_set_source_rgb(cr, m_widget_background_color.red / 65535.0,
-      m_widget_background_color.green / 65535.0, m_widget_background_color.blue / 65535.0);
-  cairo_fill(cr);
-#endif
+    if (need_redraw.left_background())
+      cr->rectangle(0, 0, top_left_edge_x(), allocation.get_height());
+    if (need_redraw.right_background())
+      cr->rectangle(bottom_right_edge_x(), 0, allocation.get_width() - bottom_right_edge_x(), allocation.get_height());
+    if (need_redraw.top_background())
+      cr->rectangle(0, 0, allocation.get_width(), top_left_edge_y());
+    if (need_redraw.bottom_background())
+      cr->rectangle(0, bottom_right_edge_y(), allocation.get_width(), allocation.get_height() - bottom_right_edge_y());
+    cr->set_source_rgb(m_widget_background_color.red / 65535.0,
+        m_widget_background_color.green / 65535.0, m_widget_background_color.blue / 65535.0);
+    cr->fill();
+  }
 
-  gint const border_width = m_border_width;
   gint const border_shadow_width = 2;
-  gint const edge_width = border_width - border_shadow_width - 1;
+  gint const border_width = m_border_width;
+  gint const border_edge_width = border_width - border_shadow_width - 1;
   gint const side = squares * m_sside;
 
   cr->save();
   // We draw relative to the top-left of the border.
   cr->translate(top_left_board_x() - border_width, top_left_board_y() - border_width);
-  // Draw a black line around the board.
-  cr->set_source_rgb(0, 0, 0);
-  cr->set_line_width(1.0);
-  cr->set_source_rgb(m_board_border_color.red * 0.5, m_board_border_color.green * 0.5, m_board_border_color.blue * 0.5);
-  cr->move_to(side + border_width + 0.5, border_width - 0.5);
-  cr->line_to(border_width - 0.5, border_width - 0.5);
-  cr->line_to(border_width - 0.5, side + border_width + 0.5);
-  cr->stroke();
-  cr->set_source_rgb((1.0 + m_board_border_color.red) * 0.5, (1.0 + m_board_border_color.green) * 0.5, (1.0 + m_board_border_color.blue) * 0.5);
-  cr->move_to(border_width - 0.5, side + border_width + 0.5);
-  cr->line_to(side + border_width + 0.5, side + border_width + 0.5);
-  cr->line_to(side + border_width + 0.5, border_width - 0.5);
-  cr->stroke();
+
+  gint const right_edge_x = border_width + side + border_width;
+
   // Draw an edge around that that will contain the chessboard coordinates.
-  cr->set_source_rgb(m_board_border_color.red, m_board_border_color.green, m_board_border_color.blue);
-  cr->set_line_width(edge_width);
-  cr->rectangle(border_shadow_width + edge_width * 0.5, border_shadow_width + edge_width * 0.5, side + edge_width + 2, side + edge_width + 2);
-  cr->stroke();
-  // Draw the shadow around that.
-  cr->set_source_rgb((1.0 + m_board_border_color.red) * 0.5, (1.0 + m_board_border_color.green) * 0.5, (1.0 + m_board_border_color.blue) * 0.5);
-  cr->move_to(0, 0);
-  cr->line_to(0, side + 2 * border_width);
-  cr->rel_line_to(border_shadow_width, -border_shadow_width);
-  cr->rel_line_to(0, -(side + 2 + 2 * edge_width));
-  cr->rel_line_to(side + 2 + 2 * edge_width, 0);
-  cr->rel_line_to(border_shadow_width, -border_shadow_width);
-  cr->close_path();
-  cr->fill();
-  cr->set_source_rgb(m_board_border_color.red * 0.5, m_board_border_color.green * 0.5, m_board_border_color.blue * 0.5);
-  cr->move_to(side + 2 * border_width, side + 2 * border_width);
-  cr->line_to(side + 2 * border_width, 0);
-  cr->rel_line_to(-border_shadow_width, border_shadow_width);
-  cr->rel_line_to(0, side + 2 + 2 * edge_width);
-  cr->rel_line_to(-(side + 2 + 2 * edge_width), 0);
-  cr->rel_line_to(-border_shadow_width, border_shadow_width);
-  cr->close_path();
-  cr->fill();
+  int border_mask_bits[] = { 0x40, 0x80, 0x100, 0x2000, 0x40000, 0x20000, 0x10000, 0x800, 0x40 };
+  bool already_drawn = need_redraw.mask(0x800);
+  for (int i = 0; i < 8; i += 2)
+  {
+    double const light_color = (i == 0 || i == 6) ? 1.0 : 0.0;
+    bool const need_left_corner = need_redraw.mask(border_mask_bits[i]);
+    bool const need_right_corner = need_redraw.mask(border_mask_bits[i + 2]);
+    cr->set_source_rgb((light_color + m_board_border_color.red) * 0.5, (light_color + m_board_border_color.green) * 0.5, (light_color + m_board_border_color.blue) * 0.5);
+    if (need_redraw.mask(border_mask_bits[i + 1]))
+    {
+      // Draw the shadow around the border edge.
+      cr->move_to(need_left_corner ? 0 : border_width, 0);
+      cr->line_to(right_edge_x - (need_right_corner ? 0 : border_width), 0);
+      cr->line_to(right_edge_x - (need_right_corner ? border_shadow_width : border_width), border_shadow_width);
+      cr->line_to((need_left_corner ? border_shadow_width : border_width), border_shadow_width);
+      cr->close_path();
+      cr->fill();
+      // Draw the border edge.
+      int x_offset1 = (!already_drawn && need_left_corner) ? 0 : border_edge_width + 1;
+      int x_offset2 = need_right_corner ? 0 : border_edge_width + 1;
+      cr->set_source_rgb(m_board_border_color.red, m_board_border_color.green, m_board_border_color.blue);
+      cr->rectangle(border_shadow_width + x_offset1, border_shadow_width, side + 2 * (border_edge_width + 1) - x_offset1 - x_offset2, border_edge_width + 1);
+      cr->fill();
+    }
+    else
+    {
+      if (need_left_corner)
+      {
+        // Draw the shadow triangle.
+        cr->move_to(0, 0);
+        cr->line_to(border_width, 0);
+        cr->line_to(border_width, border_shadow_width);
+        cr->line_to(border_shadow_width, border_shadow_width);
+        cr->close_path();
+        cr->fill();
+        if (!already_drawn)
+        {
+          // Draw the border edge corner.
+          cr->set_source_rgb(m_board_border_color.red, m_board_border_color.green, m_board_border_color.blue);
+          cr->rectangle(border_shadow_width, border_shadow_width, border_edge_width + 1, border_edge_width + 1);
+          cr->fill();
+        }
+      }
+      if (need_right_corner)
+      {
+        // Draw the shadow triangle.
+        cr->move_to(right_edge_x, 0);
+        cr->line_to(right_edge_x - border_width, 0);
+        cr->line_to(right_edge_x - border_width, border_shadow_width);
+        cr->line_to(right_edge_x - border_shadow_width, border_shadow_width);
+        cr->close_path();
+        cr->fill();
+        // Draw the border edge corner.
+        cr->set_source_rgb(m_board_border_color.red, m_board_border_color.green, m_board_border_color.blue);
+        cr->rectangle(border_shadow_width + border_edge_width + 1 + side, border_shadow_width, border_edge_width + 1, border_edge_width + 1);
+        cr->fill();
+      }
+    }
+    already_drawn = need_right_corner;
+    int halfwidth = m_border_width + 4 * m_sside;
+    cr->translate(halfwidth, halfwidth);
+    cr->rotate(0.5 * M_PI);
+    cr->translate(-halfwidth, -halfwidth);
+  }
+
+  // Draw a thin, dark line at the top and left side of the board.
+  cr->set_line_width(1.0);
+  bool const need_redraw_top_border = need_redraw.mask(0x1c0);
+  bool const need_redraw_right_border = need_redraw.mask(0x10840);
+  if (need_redraw_top_border || need_redraw_right_border)
+  {
+    cr->set_source_rgb(m_board_border_color.red * 0.5, m_board_border_color.green * 0.5, m_board_border_color.blue * 0.5);
+
+    if (need_redraw_top_border)
+      cr->move_to(side + border_width + 0.5, border_width - 0.5);
+    else
+      cr->move_to(border_width - 0.5, side + border_width + 0.5);
+    cr->line_to(border_width - 0.5, border_width - 0.5);
+    if (need_redraw_top_border && need_redraw_right_border)
+      cr->line_to(border_width - 0.5, side + border_width + 0.5);
+
+    cr->stroke();
+  }
+
+  // Draw a thin, light line at the bottom and right side of the board.
+  bool const need_redraw_bottom_border = need_redraw.mask(0x70000);
+  bool const need_redraw_left_border = need_redraw.mask(0x42100);
+  if (need_redraw_bottom_border || need_redraw_left_border)
+  {
+    cr->set_source_rgb((1.0 + m_board_border_color.red) * 0.5, (1.0 + m_board_border_color.green) * 0.5, (1.0 + m_board_border_color.blue) * 0.5);
+
+    if (need_redraw_bottom_border)
+      cr->move_to(border_width - 0.5, side + border_width + 0.5);
+    else
+      cr->move_to(side + border_width + 0.5, border_width - 0.5);
+    cr->line_to(side + border_width + 0.5, side + border_width + 0.5);
+    if (need_redraw_bottom_border && need_redraw_left_border)
+      cr->line_to(side + border_width + 0.5, border_width - 0.5);
+
+    cr->stroke();
+  }
+
   // Draw the coordinates.
   cr->set_source_rgb(1.0, 1.0, 1.0);
+  if (need_redraw.mask(0x20800))
   {
     auto layout = Pango::Layout::create(cr);
     {
       Pango::FontDescription desc("Sans Bold 14");
-      int font_pixels = (edge_width > 14) ? std::max(14.0, edge_width * 0.66) : edge_width;
+      int font_pixels = (border_edge_width > 14) ? std::max(14.0, border_edge_width * 0.66) : border_edge_width;
       desc.set_absolute_size(std::max(font_pixels, 7) * PANGO_SCALE);
       layout->set_font_description(desc);
     }
     char c[2] = { 0, 0 };
     for (int col = 0; col < 8; ++col)
     {
+      if (!need_redraw.symbol(2, col))
+        continue;
       c[0] = 'A' + col;
       layout->set_text(c);
       int width, height;
@@ -3608,6 +3445,8 @@ void ChessboardWidget::draw_border(Cairo::RefPtr<Cairo::Context> const& cr)
     }
     for (int row = 0; row < 8; ++row)
     {
+      if (!need_redraw.symbol(3, 7 - row))
+        continue;
       c[0] = '1' + row;
       layout->set_text(c);
       int width, height;

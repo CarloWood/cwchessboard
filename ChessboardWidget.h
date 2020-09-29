@@ -97,20 +97,81 @@ struct Arrow
  */
 using BoardIndex = gint;
 
+// A collection of Pseudo Segments that form a rectangle can be stored as a PseudoSegmentsMask.
+struct PseudoSegmentsMask {
+  uint32_t m_pseudo_segments;                   // 25 bits for the 25 pseudo segments.
+  std::array<uint8_t, 2> m_border_mask;         // Two 8 bit masks for the horizontal and vertical border segments.
+
+  PseudoSegmentsMask(uint32_t pseudo_segments, std::array<uint8_t, 2> border_mask) : m_pseudo_segments(pseudo_segments), m_border_mask(border_mask) { }
+
+  PseudoSegmentsMask& operator&=(PseudoSegmentsMask psm)
+  {
+    m_pseudo_segments &= psm.m_pseudo_segments;
+    m_border_mask[0] &= psm.m_border_mask[0];
+    m_border_mask[1] &= psm.m_border_mask[1];
+    return *this;
+  }
+
+  friend PseudoSegmentsMask operator&(PseudoSegmentsMask psm1, PseudoSegmentsMask psm2) { PseudoSegmentsMask result{psm1}; result &= psm2; return result; }
+};
+
 class WidgetSegments
 {
  private:
-  uint64_t m_squares_mask;      // The 64 squares of the chessboard.
-  uint64_t m_segments_mask;     // The remaining 44 segments.
-
+  uint64_t m_squares_mask;              // The 64 squares of the chessboard.
+  uint32_t m_pseudo_segments_mask;      // 25 bits for the pseudo segments.
+  std::array<uint8_t, 4> m_border;      // Four times 8 bits for the border symbols.
+                                        // Index 0 : top border,
+                                        //       1 : right border,
+                                        //       2 : bottom border,
+                                        //       3 : left border.
  public:
-  WidgetSegments() : m_squares_mask(0), m_segments_mask(0) { }
-  WidgetSegments(uint64_t squares_mask, uint64_t segments_mask) : m_squares_mask(squares_mask), m_segments_mask(segments_mask) { }
+  WidgetSegments() : m_squares_mask(0), m_pseudo_segments_mask(0), m_border{{ 0, 0, 0, 0 }} { }
+  WidgetSegments(PseudoSegmentsMask psm);
 
-  bool operator==(WidgetSegments const& ws) const { return m_squares_mask == ws.m_squares_mask && m_segments_mask == ws.m_segments_mask; }
-  operator bool() const { return m_squares_mask & m_segments_mask != 0; }
-  WidgetSegments& operator|=(WidgetSegments const& ws) { m_squares_mask |= ws.m_squares_mask; m_segments_mask |= ws.m_segments_mask; return *this; }
-  WidgetSegments& operator&=(WidgetSegments const& ws) { m_squares_mask &= ws.m_squares_mask; m_segments_mask &= ws.m_segments_mask; return *this; }
+  bool operator==(WidgetSegments const& ws) const
+  {
+    return m_squares_mask == ws.m_squares_mask && m_pseudo_segments_mask == ws.m_pseudo_segments_mask && m_border == ws.m_border;
+  }
+
+  bool operator&(uint64_t squares_mask) const { return (m_squares_mask & squares_mask); }
+
+  // The 64 squares of the chessboard is pseudo segment (2,2) -> mask 2^(2 + 5*2) = 0x1000.
+  // This includes the background.
+  bool any_border() const { return (m_pseudo_segments_mask & ~0x1000); }
+
+  // Just the background segments:
+  bool any_background() const { return (m_pseudo_segments_mask & 0x1f8c63f); }
+
+  bool left_background() const { return (m_pseudo_segments_mask & 0x108421); }
+  bool right_background() const { return (m_pseudo_segments_mask & 0x1084210); }
+  bool top_background() const { return (m_pseudo_segments_mask & 0x1f); }
+  bool bottom_background() const { return (m_pseudo_segments_mask & 0x1f00000); }
+
+  bool symbol(int border, int sym) const { return (m_border[border] & (1 << sym)); }
+
+  bool mask(uint64_t pseudo_segments_mask) const { return (m_pseudo_segments_mask & pseudo_segments_mask); }
+
+//  operator bool() const { return m_squares_mask != 0 || m_pseudo_segments_mask != 0 || m_border ; }
+
+  WidgetSegments& operator|=(WidgetSegments const& ws)
+  {
+    m_squares_mask |= ws.m_squares_mask;
+    m_pseudo_segments_mask |= ws.m_pseudo_segments_mask;
+    for (int b = 0; b < 4; ++b)
+      m_border[b] |= ws.m_border[b];
+    return *this;
+  }
+
+  WidgetSegments& operator&=(WidgetSegments const& ws)
+  {
+    m_squares_mask &= ws.m_squares_mask;
+    m_pseudo_segments_mask &= ws.m_pseudo_segments_mask;
+    for (int b = 0; b < 4; ++b)
+      m_border[b] &= ws.m_border[b];
+    return *this;
+  }
+
   friend WidgetSegments operator|(WidgetSegments const& ws1, WidgetSegments const& ws2) { WidgetSegments result(ws1); result |= ws2; return result; }
   friend WidgetSegments operator&(WidgetSegments const& ws1, WidgetSegments const& ws2) { WidgetSegments result(ws1); result &= ws2; return result; }
 #ifdef CWDEBUG
@@ -259,10 +320,6 @@ class ChessboardWidget : public Gtk::DrawingArea
   void redraw_hud_layer(guint hud);
   void update_cursor_position(gdouble x, gdouble y, gboolean forced);
 
-  WidgetSegments x_to_segmentsOnAndToTheRight(int x) const;
-  WidgetSegments y_to_segmentsOnAndBelow(int y) const;
-  WidgetSegments x_to_segmentsOnAndToTheLeft(int x) const;
-  WidgetSegments y_to_segmentsOnAndAbove(int y) const;
   WidgetSegments rect_to_segments(Cairo::Rectangle const& rect) const;
 
   /*
@@ -441,7 +498,7 @@ class ChessboardWidget : public Gtk::DrawingArea
      *
      * @sa set_draw_border
      */
-    virtual void draw_border(Cairo::RefPtr<Cairo::Context> const& cr);
+    virtual void draw_border(Cairo::RefPtr<Cairo::Context> const& cr, WidgetSegments const& need_redraw);
 
     /** @brief Draw the indicator that indicates whose turn it is.
      *
