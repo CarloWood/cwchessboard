@@ -405,7 +405,6 @@ void ChessboardWidget::redraw_pixmap(Cairo::RefPtr<Cairo::Context> const& cr)
 
   // Invalidate everything.
   m_need_redraw_invalidated = (guint64)-1;
-  m_turn_indicators_invalidated = true;
 
   // Cache the rectangular region where the chessboard resides as a Cairo::RefPtr<Cairo::Region>.
   Cairo::RectangleInt rect;
@@ -668,7 +667,6 @@ void ChessboardWidget::invalidate_turn_indicators()
     bottom_indicator_rect.width = edge_width;
     bottom_indicator_rect.height = dx;
     indicator_region->do_union(bottom_indicator_rect);
-    m_turn_indicators_invalidated = true;
     Dout(dc::notice, "ChessboardWidget::invalidate_turn_indicators(): calling queue_draw_region(" << indicator_region << ")");
     queue_draw_region(indicator_region);
   }
@@ -2459,7 +2457,6 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
     Dout(dc::notice, "Invalidating everything because m_resized = true.");
     // Everything was invalidated (probably due to a spurious call to on_size_allocate).
     m_need_redraw_invalidated = (guint64)-1;
-    m_turn_indicators_invalidated = true;
     m_resized = false;
   }
 #endif
@@ -2502,12 +2499,6 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   // Redraw border when the border was invalidated.
   if (need_redraw.any_border())
     draw_border(cr, need_redraw);
-  else if (m_turn_indicators_invalidated)
-  {
-    draw_turn_indicator(cr, m_active_turn_indicator, true);
-    draw_turn_indicator(cr, !m_active_turn_indicator, false);
-  }
-  m_turn_indicators_invalidated = false;
 
 // Draw a green line around updated areas.
 #if CW_CHESSBOARD_EXPOSE_DEBUG
@@ -3247,7 +3238,7 @@ void ChessboardWidget::draw_border(Cairo::RefPtr<Cairo::Context> const& cr, Widg
   gint const right_edge_x = border_width + side + border_width;
 
   // Draw an edge around that that will contain the chessboard coordinates.
-  int border_mask_bits[] = { 0x40, 0x80, 0x100, 0x2000, 0x40000, 0x20000, 0x10000, 0x800, 0x40 };
+  static int const border_mask_bits[] = { 0x40, 0x80, 0x100, 0x2000, 0x40000, 0x20000, 0x10000, 0x800, 0x40 };
   bool already_drawn = need_redraw.mask(0x800);
   for (int i = 0; i < 8; i += 2)
   {
@@ -3391,51 +3382,43 @@ void ChessboardWidget::draw_border(Cairo::RefPtr<Cairo::Context> const& cr, Widg
 
   // Draw the turn indicator, if requested.
   if (m_draw_turn_indicators)
-    draw_turn_indicator(cr, m_active_turn_indicator, true);
-}
-
-void ChessboardWidget::draw_turn_indicator(Cairo::RefPtr<Cairo::Context> const& cr, gboolean white, gboolean on)
-{
-  DoutEntering(dc::widget, "ChessboardWidget::draw_turn_indicator(cr, " << std::boolalpha << white << ", " << on << ")");
-  // Only call this function from on_draw().
-  ASSERT(m_inside_on_draw);
-
-  gint const border_width = m_border_width;
-  gint const border_shadow_width = 2;
-  gint const edge_width = border_width - border_shadow_width - 1;
-  gint const side = squares * m_sside;
-  gboolean const top = (white == m_flip_board);
-  double const dir = top ? 1.0 : -1.0;
-  double const factor = 0.085786;       // (1/sqrt(2) − 0.5)/(1 + sqrt(2)).
-
-  cr->save();
-
-  // We draw relative to the top-left of a square of edge_width X edge_width.
-  cr->translate(
-      top_left_board_x() + side + 1,
-      top_left_board_y() - border_width + border_shadow_width + (top ? 0 : side + edge_width + 2));
-
-  cr->move_to(0, top ? edge_width : 0);
-  cr->rel_line_to(0, dir * ((edge_width + 1) * factor + 1));
-  cr->rel_line_to(edge_width, 0);
-  cr->line_to(edge_width, top ? 0 : edge_width);
-  cr->rel_line_to(-(edge_width + (edge_width + 1) * factor + 1), 0);
-  cr->rel_line_to(0, dir * edge_width);
-  cr->close_path();
-
-  cr->set_source_rgb(m_board_border_color.red, m_board_border_color.green, m_board_border_color.blue);
-  cr->fill();
-
-  if (on)
   {
-    double val = white ? 1.0 : 0.0;     // White or black color.
+    gint const border_width = m_border_width;
+    gint const border_shadow_width = 2;
+    gint const edge_width = border_width - border_shadow_width - 1;
+    gint const side = squares * m_sside;
+    bool const top = (m_active_turn_indicator == m_flip_board);
+//    double const dir = top ? 1.0 : -1.0;
+    double const factor = 0.085786;       // (1/sqrt(2) − 0.5)/(1 + sqrt(2)).
+
+    cr->save();
+
+    // We draw relative to the top-left of a square of edge_width X edge_width.
+    cr->translate(
+        top_left_board_x() + side + 1,
+        top_left_board_y() - border_width + border_shadow_width + (top ? 0 : side + edge_width + 2));
+
+#if 0
+    cr->move_to(0, top ? edge_width : 0);
+    cr->rel_line_to(0, dir * ((edge_width + 1) * factor + 1));
+    cr->rel_line_to(edge_width, 0);
+    cr->line_to(edge_width, top ? 0 : edge_width);
+    cr->rel_line_to(-(edge_width + (edge_width + 1) * factor + 1), 0);
+    cr->rel_line_to(0, dir * edge_width);
+    cr->close_path();
+
+    cr->set_source_rgb(m_board_border_color.red, m_board_border_color.green, m_board_border_color.blue);
+    cr->fill();
+#endif
+
+    double val = m_active_turn_indicator ? 1.0 : 0.0;     // White or black color.
     cr->set_source_rgb(val, val, val);
-    cr->arc(edge_width * 0.5 - MAX((edge_width + 1) * factor - 1, 0),
+    cr->arc(edge_width * 0.5 - std::max((edge_width + 1) * factor - 1, 0.0),
             edge_width * 0.5 - (edge_width + 1) * (top ? -factor : factor), edge_width * 0.5, 0, 2 * M_PI);
     cr->fill();
-  }
 
-  cr->restore();
+    cr->restore();
+  }
 }
 
 // Definitions of static constexpr masks.

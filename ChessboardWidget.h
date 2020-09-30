@@ -498,20 +498,6 @@ class ChessboardWidget : public Gtk::DrawingArea
      */
     virtual void draw_border(Cairo::RefPtr<Cairo::Context> const& cr, WidgetSegments const& need_redraw);
 
-    /** @brief Draw the indicator that indicates whose turn it is.
-     *
-     * This function is called every time the border is redrawn,
-     * as well as every time #set_draw_turn_indicators is called.
-     *
-     * @param white	True if the indicator of the white color has to be drawn.
-     * @param on	True if the indictor is on, false if it is off.
-     *
-     * The default calls #cw_chessboard_default_draw_turn_indicator.
-     *
-     * @sa set_draw_border, set_draw_turn_indicators
-     */
-    virtual void draw_turn_indicator(Cairo::RefPtr<Cairo::Context> const& cr, gboolean white, gboolean on);
-
   //@}
 
  public:
