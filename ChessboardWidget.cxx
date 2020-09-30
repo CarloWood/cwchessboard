@@ -405,7 +405,6 @@ void ChessboardWidget::redraw_pixmap(Cairo::RefPtr<Cairo::Context> const& cr)
 
   // Invalidate everything.
   m_need_redraw_invalidated = (guint64)-1;
-  m_border_invalidated = true;
   m_turn_indicators_invalidated = true;
 
   // Cache the rectangular region where the chessboard resides as a Cairo::RefPtr<Cairo::Region>.
@@ -631,7 +630,6 @@ void ChessboardWidget::invalidate_border()
     rect.height = bottom_right_edge_y() - top_left_edge_y();
     Cairo::RefPtr<Cairo::Region> border_region = Cairo::Region::create(rect);
     border_region->subtract(m_chessboard_region);
-    m_border_invalidated = true;
     Dout(dc::notice, "ChessboardWidget::invalidate_border(): calling queue_draw_region(" << border_region << ")");
     queue_draw_region(border_region);
   }
@@ -2466,7 +2464,6 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
     Dout(dc::notice, "Invalidating everything because m_resized = true.");
     // Everything was invalidated (probably due to a spurious call to on_size_allocate).
     m_need_redraw_invalidated = (guint64)-1;
-    m_border_invalidated = true;
     m_turn_indicators_invalidated = true;
     m_resized = false;
   }
@@ -2516,7 +2513,6 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
     draw_turn_indicator(cr, m_active_turn_indicator, true);
     draw_turn_indicator(cr, !m_active_turn_indicator, false);
   }
-  m_border_invalidated = false;
   m_turn_indicators_invalidated = false;
 
 // Draw a green line around updated areas.

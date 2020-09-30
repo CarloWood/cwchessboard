@@ -242,7 +242,6 @@ class ChessboardWidget : public Gtk::DrawingArea
   gint64 m_need_redraw_invalidated;	// Which squares are invalidated?
   gint64 m_need_redraw;			// Which squares need a redraw?
   bool m_turn_indicators_invalidated;   // Set when invalidate_turn_indicators was called.
-  bool m_border_invalidated;            // Set when invalidate_border was called.
 
   gsize m_number_of_floating_pieces;	// Current number of floating pieces.
   FloatingPiece m_floating_piece[32];	// Current floating pieces.
