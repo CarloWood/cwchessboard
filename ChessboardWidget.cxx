@@ -648,13 +648,13 @@ void ChessboardWidget::invalidate_turn_indicators()
     int const dx = (int)std::ceil((edge_width + 1) * factor);
 
     Cairo::RectangleInt top_indicator_rect, bottom_indicator_rect;
-    top_indicator_rect.x = top_left_board_x() + side + 1 - dx;
+    top_indicator_rect.x = bottom_right_board_x() + 1 - dx;
     top_indicator_rect.y = top_left_board_y() - 1 - edge_width;
     top_indicator_rect.width = edge_width + dx;
     top_indicator_rect.height = edge_width;
     Cairo::RefPtr<Cairo::Region> indicator_region = Cairo::Region::create(top_indicator_rect);
     bottom_indicator_rect.x = top_indicator_rect.x;
-    bottom_indicator_rect.y = top_indicator_rect.y + edge_width + side + 2;
+    bottom_indicator_rect.y = bottom_right_board_y() + 1;
     bottom_indicator_rect.width = edge_width + dx;
     bottom_indicator_rect.height = edge_width;
     indicator_region->do_union(bottom_indicator_rect);
@@ -690,8 +690,6 @@ void ChessboardWidget::invalidate_square(gint col, gint row)
       queue_draw_area(x + 0.1, y + 0.1, m_sside - 0.2, m_sside - 0.2);
       m_need_redraw_invalidated |= redraw_mask;
     }
-    else
-      m_need_redraw |= redraw_mask;
   }
 }
 
@@ -703,8 +701,6 @@ void ChessboardWidget::invalidate_board()
     queue_draw_region(m_chessboard_region);
     m_need_redraw_invalidated = (guint64)-1;
   }
-  else
-    m_need_redraw = (guint64)-1;
 }
 
 void ChessboardWidget::invalidate_markers()
@@ -2184,7 +2180,6 @@ ChessboardWidget::ChessboardWidget() :
   m_hatching_surface{},
   m_board_codes{},
   m_need_redraw_invalidated(0),
-  m_need_redraw((guint64)-1),
   m_number_of_floating_pieces(0),
   m_floating_piece{},
   m_floating_piece_handle(-1),
@@ -2503,7 +2498,6 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
     if ((need_redraw & redraw_mask))
       redraw_square(cr, i);             // This uses the HUD layer.
   m_need_redraw_invalidated = 0;
-  m_need_redraw = 0;
 
   // Redraw border when the border was invalidated.
   if (need_redraw.any_border())
@@ -3009,36 +3003,6 @@ void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
   Gdk::Rectangle rect(m_floating_piece[handle].x, m_floating_piece[handle].y, m_sside, m_sside);
   queue_draw_area(rect.get_x(), rect.get_y(), rect.get_width(), rect.get_height());
 
-  gint col = x2col(rect.get_x());
-  gint row = y2row(rect.get_y());
-  if (is_inside_board(col, row))
-  {
-    BoardIndex index = convert_colrow2index(col, row);
-    guint64 redraw_mask = 1;
-    m_need_redraw |= (redraw_mask << index);
-  }
-  col += m_flip_board ? -1 : 1;
-  if (is_inside_board(col, row))
-  {
-    BoardIndex index = convert_colrow2index(col, row);
-    guint64 redraw_mask = 1;
-    m_need_redraw |= (redraw_mask << index);
-  }
-  row += m_flip_board ? 1 : -1;
-  if (is_inside_board(col, row))
-  {
-    BoardIndex index = convert_colrow2index(col, row);
-    guint64 redraw_mask = 1;
-    m_need_redraw |= (redraw_mask << index);
-  }
-  col += m_flip_board ? 1 : -1;
-  if (is_inside_board(col, row))
-  {
-    BoardIndex index = convert_colrow2index(col, row);
-    guint64 redraw_mask = 1;
-    m_need_redraw |= (redraw_mask << index);
-  }
-
   Gtk::Allocation allocation = get_allocation();
   gboolean outside_window =
       rect.get_x() + rect.get_width() < 0 ||
@@ -3117,36 +3081,6 @@ void ChessboardWidget::remove_floating_piece(gint handle)
 
   Dout(dc::notice, "ChessboardWidget::remove_floating_piece(" << handle << "): calling queue_draw_area(" << rect << ")");
   queue_draw_area(rect.get_x(), rect.get_y(), rect.get_width(), rect.get_height());
-
-  gint col = x2col(rect.get_x());
-  gint row = y2row(rect.get_y());
-  if (is_inside_board(col, row))
-  {
-    BoardIndex index = convert_colrow2index(col, row);
-    guint64 redraw_mask = 1;
-    m_need_redraw |= (redraw_mask << index);
-  }
-  col += m_flip_board ? -1 : 1;
-  if (is_inside_board(col, row))
-  {
-    BoardIndex index = convert_colrow2index(col, row);
-    guint64 redraw_mask = 1;
-    m_need_redraw |= (redraw_mask << index);
-  }
-  row += m_flip_board ? 1 : -1;
-  if (is_inside_board(col, row))
-  {
-    BoardIndex index = convert_colrow2index(col, row);
-    guint64 redraw_mask = 1;
-    m_need_redraw |= (redraw_mask << index);
-  }
-  col += m_flip_board ? 1 : -1;
-  if (is_inside_board(col, row))
-  {
-    BoardIndex index = convert_colrow2index(col, row);
-    guint64 redraw_mask = 1;
-    m_need_redraw |= (redraw_mask << index);
-  }
 
   // Redraw background of widget if the old place of the floating piece is outside the board.
   m_redraw_background = m_redraw_background ||

@@ -240,7 +240,6 @@ class ChessboardWidget : public Gtk::DrawingArea
 
   CwChessboardCode m_board_codes[64];	// The chessboard, contains pieces and background colors.
   gint64 m_need_redraw_invalidated;	// Which squares are invalidated?
-  gint64 m_need_redraw;			// Which squares need a redraw?
   bool m_turn_indicators_invalidated;   // Set when invalidate_turn_indicators was called.
 
   gsize m_number_of_floating_pieces;	// Current number of floating pieces.
