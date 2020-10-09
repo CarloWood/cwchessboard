@@ -105,6 +105,13 @@ class LinuxChessMenuBar : public Gtk::MenuBar, public LinuxChessIconFactory
     menu_item_ptr->signal_activate().connect(sigc::mem_fun(*obj, cb));
   }
 
+  void append_separator(int top_entry)
+  {
+    Gtk::MenuItem* separator;
+    separator = Gtk::manage(new Gtk::SeparatorMenuItem);
+    m_submenus[top_entry]->append(*separator);
+  }
+
   struct MenuEntryKeyStub
   {
     TopEntries m_top_entry;

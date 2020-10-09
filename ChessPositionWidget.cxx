@@ -88,52 +88,52 @@ bool ChessPositionWidget::load_FEN(std::string const& FEN)
 bool ChessPositionWidget::popup_menu(GdkEventButton* event, int col, int row)
 {
   DoutEntering(dc::notice|dc::clipboard, "ChessPositionWidget::popup_menu(" << col << ", " << row << ")");
-  M_placepiece_index = cwchess::Index(col, row);
-  if (M_MenuPopup)
+  m_placepiece_index = cwchess::Index(col, row);
+  if (m_menuPopup)
   {
-#if 0 // FIXME: Doesn't compile yet.
-    M_refActionGroup->get_action("PlacepieceBlackPawn")->set_sensitive(row != 0 && row != 7);
-    M_refActionGroup->get_action("PlacepieceWhitePawn")->set_sensitive(row != 0 && row != 7);
-    M_refActionGroup->get_action("PlacepieceBlackKing")->set_sensitive(!all(cwchess::black_king).test());
-    M_refActionGroup->get_action("PlacepieceWhiteKing")->set_sensitive(!all(cwchess::white_king).test());
+    Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(m_refActionGroup->lookup_action("PlacepieceBlackPawn"))->set_enabled(row != 0 && row != 7);
+    Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(m_refActionGroup->lookup_action("PlacepieceWhitePawn"))->set_enabled(row != 0 && row != 7);
+    Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(m_refActionGroup->lookup_action("PlacepieceBlackKing"))->set_enabled(!all(cwchess::black_king).test());
+    Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(m_refActionGroup->lookup_action("PlacepieceWhiteKing"))->set_enabled(!all(cwchess::white_king).test());
     if (to_move().is_white())
-      M_refToMoveWhite_action->set_active(true);
+      m_refToMoveWhite_action->set_active(true);
     else
-      M_refToMoveBlack_action->set_active(true);
-    Piece const& piece(piece_at(M_placepiece_index));
-    M_refActionGroup->get_action("PlacepieceNothing")->set_visible(piece != nothing);
+      m_refToMoveBlack_action->set_active(true);
+    Piece const& piece(piece_at(m_placepiece_index));
+    m_PlacepieceNothing->set_visible(piece != nothing);
     bool can_be_taken_en_passant =
-        (piece == cwchess::white_pawn && M_placepiece_index.row() == 3 &&
-	    piece_at(M_placepiece_index + south.offset) == nothing &&
-	    piece_at(M_placepiece_index + 2 * south.offset) == nothing) ||
-        (piece == cwchess::black_pawn && M_placepiece_index.row() == 4 &&
-	    piece_at(M_placepiece_index + north.offset) == nothing &&
-	    piece_at(M_placepiece_index + 2 * north.offset) == nothing);
-    M_refActionGroup->get_action("AllowEnPassantCapture")->set_visible(can_be_taken_en_passant);
+        (piece == cwchess::white_pawn && m_placepiece_index.row() == 3 &&
+	    piece_at(m_placepiece_index + south.offset) == nothing &&
+	    piece_at(m_placepiece_index + 2 * south.offset) == nothing) ||
+        (piece == cwchess::black_pawn && m_placepiece_index.row() == 4 &&
+	    piece_at(m_placepiece_index + north.offset) == nothing &&
+	    piece_at(m_placepiece_index + 2 * north.offset) == nothing);
+    m_AllowEnPassantCapture->set_visible(can_be_taken_en_passant);
+#if 0
     if (can_be_taken_en_passant)
     {
       M_AllowEnPassantCapture_connection.block();
-      M_refAllowEnPassantCapture_action->set_active(en_passant().exists() && en_passant().pawn_index() == M_placepiece_index);
+      M_refAllowEnPassantCapture_action->set_active(en_passant().exists() && en_passant().pawn_index() == m_placepiece_index);
       M_AllowEnPassantCapture_connection.unblock();
     }
     bool is_castle_piece =
-        (piece == cwchess::white_king && M_placepiece_index == ie1) ||
-	(piece == cwchess::black_king && M_placepiece_index == ie8) ||
-	(piece == cwchess::white_rook && (M_placepiece_index == ia1 || M_placepiece_index == ih1)) ||
-	(piece == cwchess::black_rook && (M_placepiece_index == ia8 || M_placepiece_index == ih8));
-    M_refActionGroup->get_action("PieceHasMoved")->set_visible(is_castle_piece);
+        (piece == cwchess::white_king && m_placepiece_index == ie1) ||
+	(piece == cwchess::black_king && m_placepiece_index == ie8) ||
+	(piece == cwchess::white_rook && (m_placepiece_index == ia1 || m_placepiece_index == ih1)) ||
+	(piece == cwchess::black_rook && (m_placepiece_index == ia8 || m_placepiece_index == ih8));
+    m_refActionGroup->lookup_action("PieceHasMoved")->set_visible(is_castle_piece);
     if (is_castle_piece)
     {
       M_PieceHasMoved_connection.block();
-      M_refPieceHasMoved_action->set_active(has_moved(M_placepiece_index));
+      M_refPieceHasMoved_action->set_active(has_moved(m_placepiece_index));
       M_PieceHasMoved_connection.unblock();
     }
     update_paste_status();
-    M_MenuPopup->popup(event->button, event->time);
-#else
-    assert(false); // To be implemented.
 #endif
-    return true;	// Signal that popup() was called.
+    if (!m_menuPopup->get_attach_widget())
+      m_menuPopup->attach_to_widget(*this);
+    m_menuPopup->popup_at_pointer((GdkEvent*)event);
+    return true;	// Signal that popup_at_pointer() was called.
   }
   return false;
 }
@@ -141,90 +141,90 @@ bool ChessPositionWidget::popup_menu(GdkEventButton* event, int col, int row)
 void ChessPositionWidget::on_menu_placepiece_black_pawn()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_pawn()");
-  place(cwchess::black_pawn, M_placepiece_index);
+  place(cwchess::black_pawn, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_black_rook()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_rook()");
-  place(cwchess::black_rook, M_placepiece_index);
+  place(cwchess::black_rook, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_black_knight()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_knight()");
-  place(cwchess::black_knight, M_placepiece_index);
+  place(cwchess::black_knight, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_black_bishop()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_bishop()");
-  place(cwchess::black_bishop, M_placepiece_index);
+  place(cwchess::black_bishop, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_black_queen()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_queen()");
-  place(cwchess::black_queen, M_placepiece_index);
+  place(cwchess::black_queen, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_black_king()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_king()");
-  place(cwchess::black_king, M_placepiece_index);
+  place(cwchess::black_king, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_pawn()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_pawn()");
-  place(cwchess::white_pawn, M_placepiece_index);
+  place(cwchess::white_pawn, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_rook()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_rook()");
-  place(cwchess::white_rook, M_placepiece_index);
+  place(cwchess::white_rook, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_knight()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_knight()");
-  place(cwchess::white_knight, M_placepiece_index);
+  place(cwchess::white_knight, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_bishop()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_bishop()");
-  place(cwchess::white_bishop, M_placepiece_index);
+  place(cwchess::white_bishop, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_queen()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_queen()");
-  place(cwchess::white_queen, M_placepiece_index);
+  place(cwchess::white_queen, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_king()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_king()");
-  place(cwchess::white_king, M_placepiece_index);
+  place(cwchess::white_king, m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_placepiece_nothing()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_nothing()");
-  place(cwchess::Code(), M_placepiece_index);
+  place(cwchess::Code(), m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_allow_en_passant_capture()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_allow_en_passant_capture()");
-  bool en_passant_allowed = en_passant().exists() && en_passant().pawn_index() == M_placepiece_index;
+  bool en_passant_allowed = en_passant().exists() && en_passant().pawn_index() == m_placepiece_index;
   reset_en_passant();
   if (!en_passant_allowed)
   {
-    Index passed_square(M_placepiece_index);
-    if (piece_at(M_placepiece_index) == black)
+    Index passed_square(m_placepiece_index);
+    if (piece_at(m_placepiece_index) == black)
       passed_square += north.offset;
     else
       passed_square += south.offset;
@@ -235,10 +235,10 @@ void ChessPositionWidget::on_menu_allow_en_passant_capture()
 void ChessPositionWidget::on_menu_piece_has_moved()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_piece_has_moved()");
-  if (has_moved(M_placepiece_index))
-    clear_has_moved(M_placepiece_index);
+  if (has_moved(m_placepiece_index))
+    clear_has_moved(m_placepiece_index);
   else
-    set_has_moved(M_placepiece_index);
+    set_has_moved(m_placepiece_index);
 }
 
 void ChessPositionWidget::on_menu_copy_FEN()
@@ -307,7 +307,7 @@ void ChessPositionWidget::update_paste_status()
 {
   DoutEntering(dc::clipboard, "ChessPositionWidget::update_paste_status()");
 #if 0 // FIXME: Doesn't compile yet.
-  M_refActionGroup->get_action("PasteFEN")->set_sensitive(false);
+  m_refActionGroup->lookup_action("PasteFEN")->set_enabled(false);
 #else
   assert(false); // To be implemented.
 #endif
@@ -326,7 +326,7 @@ void ChessPositionWidget::on_clipboard_received_targets(Glib::StringArrayHandle 
   {
     Dout(dc::clipboard, "Target found; paste enabled.");
 #if 0 // FIXME: Doesn't compile yet.
-    M_refActionGroup->get_action("PasteFEN")->set_sensitive(true);
+    m_refActionGroup->lookup_action("PasteFEN")->set_enabled(true);
 #else
   assert(false); // To be implemented.
 #endif
@@ -429,115 +429,66 @@ void ChessPositionWidget::initialize_menu()
     while (type() != 8);
   }
 
-  M_refActionGroup = Gio::SimpleActionGroup::create();
-  // FIXME, how to port this??
-//  M_refActionGroup->add_action(Gtk::Action::create("PlacepieceMenu", "Placepiece Menu"));
-  M_refActionGroup->add_action("PlacepieceBlackPawn", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_pawn));
-  M_refActionGroup->add_action("PlacepieceBlackRook", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_rook));
-  M_refActionGroup->add_action("PlacepieceBlackKnight", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_knight));
-  M_refActionGroup->add_action("PlacepieceBlackBishop", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_bishop));
-  M_refActionGroup->add_action("PlacepieceBlackQueen", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_queen));
-  M_refActionGroup->add_action("PlacepieceBlackKing", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_king));
-  M_refActionGroup->add_action("PlacepieceWhitePawn", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_pawn));
-  M_refActionGroup->add_action("PlacepieceWhiteRook", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_rook));
-  M_refActionGroup->add_action("PlacepieceWhiteKnight", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_knight));
-  M_refActionGroup->add_action("PlacepieceWhiteBishop", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_bishop));
-  M_refActionGroup->add_action("PlacepieceWhiteQueen", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_queen));
-  M_refActionGroup->add_action("PlacepieceWhiteKing", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_king));
-  M_refActionGroup->add_action("PlacepieceNothing", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_nothing));
+  // Set up the popup menu.
+  m_refActionGroup = Gio::SimpleActionGroup::create();
+  insert_action_group("PlacepieceMenu", m_refActionGroup);
+  m_refActionGroup->add_action("PlacepieceBlackPawn", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_pawn));
+  m_refActionGroup->add_action("PlacepieceBlackRook", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_rook));
+  m_refActionGroup->add_action("PlacepieceBlackKnight", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_knight));
+  m_refActionGroup->add_action("PlacepieceBlackBishop", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_bishop));
+  m_refActionGroup->add_action("PlacepieceBlackQueen", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_queen));
+  m_refActionGroup->add_action("PlacepieceBlackKing", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_black_king));
+  m_refActionGroup->add_action("PlacepieceWhitePawn", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_pawn));
+  m_refActionGroup->add_action("PlacepieceWhiteRook", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_rook));
+  m_refActionGroup->add_action("PlacepieceWhiteKnight", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_knight));
+  m_refActionGroup->add_action("PlacepieceWhiteBishop", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_bishop));
+  m_refActionGroup->add_action("PlacepieceWhiteQueen", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_queen));
+  m_refActionGroup->add_action("PlacepieceWhiteKing", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_white_king));
+  m_refActionGroup->add_action("PlacepieceNothing", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_placepiece_nothing));
+
 #if 0
-  M_refAllowEnPassantCapture_action = Gtk::ToggleAction::create("AllowEnPassantCapture", "Allow e.p. capture");
-  M_refActionGroup->add(M_refAllowEnPassantCapture_action);
+  m_refAllowEnPassantCapture_action = Gtk::ToggleAction::create("AllowEnPassantCapture", "Allow e.p. capture");
+  m_refActionGroup->add(M_refAllowEnPassantCapture_action);
   M_AllowEnPassantCapture_connection =
       M_refAllowEnPassantCapture_action->signal_toggled().connect(sigc::mem_fun(*this, &ChessPositionWidget::on_menu_allow_en_passant_capture));
   M_refPieceHasMoved_action = Gtk::ToggleAction::create("PieceHasMoved", "Has moved");
-  M_refActionGroup->add(M_refPieceHasMoved_action);
+  m_refActionGroup->add(M_refPieceHasMoved_action);
   M_PieceHasMoved_connection =
       M_refPieceHasMoved_action->signal_toggled().connect(sigc::mem_fun(*this, &ChessPositionWidget::on_menu_piece_has_moved));
-  M_refActionGroup->add(Gtk::Action::create("CopyFEN", Gtk::Stock::COPY, "Copy FEN"),
+  m_refActionGroup->add(Gtk::Action::create("CopyFEN", Gtk::Stock::COPY, "Copy FEN"),
       sigc::mem_fun(*this, &ChessPositionWidget::on_menu_copy_FEN));
-  M_refActionGroup->add(Gtk::Action::create("PasteFEN", Gtk::Stock::PASTE, "Paste FEN"),
+  m_refActionGroup->add(Gtk::Action::create("PasteFEN", Gtk::Stock::PASTE, "Paste FEN"),
       sigc::mem_fun(*this, &ChessPositionWidget::on_menu_paste_FEN));
-  M_refActionGroup->add(Gtk::Action::create("SwapColors", "Swap colors"),
+  m_refActionGroup->add(Gtk::Action::create("SwapColors", "Swap colors"),
       sigc::mem_fun(*this, &ChessPositionWidget::on_menu_swap_colors));
-  M_refActionGroup->add(Gtk::Action::create("InitialPosition", "Initial position"),
-      sigc::mem_fun(*this, &ChessPositionWidget::on_menu_initial_position));
-  M_refActionGroup->add(Gtk::Action::create("ClearBoard", "Clear board"),
-      sigc::mem_fun(*this, &ChessPositionWidget::on_menu_clear_board));
-  Gtk::RadioAction::Group group_to_move;
-  M_refToMoveWhite_action = Gtk::RadioAction::create(group_to_move, "ToMoveWhite", "White to play");
-  M_refActionGroup->add(M_refToMoveWhite_action,
-      sigc::mem_fun(*this, &ChessPositionWidget::on_menu_to_move_white));
-  M_refToMoveBlack_action = Gtk::RadioAction::create(group_to_move, "ToMoveBlack", "Black to play");
-  M_refActionGroup->add(M_refToMoveBlack_action,
-      sigc::mem_fun(*this, &ChessPositionWidget::on_menu_to_move_black));
 #endif
+  m_refActionGroup->add_action("InitialPosition", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_initial_position));
+  m_refActionGroup->add_action("ClearBoard", sigc::mem_fun(*this, &ChessPositionWidget::on_menu_clear_board));
+  Gtk::RadioAction::Group group_to_move;
+  m_refToMoveWhite_action = Gtk::RadioAction::create(group_to_move, "ToMoveWhite", "White to play");
+//  m_refActionGroup->add_action(m_refToMoveWhite_action, sigc::mem_fun(*this, &ChessPositionWidget::on_menu_to_move_white));
+  m_refToMoveBlack_action = Gtk::RadioAction::create(group_to_move, "ToMoveBlack", "Black to play");
+//  m_refActionGroup->add_action(m_refToMoveBlack_action, sigc::mem_fun(*this, &ChessPositionWidget::on_menu_to_move_black));
 
-#if 0 // FIXME : doesn't compile yet.
-  M_refUIManager = Gtk::UIManager::create();
-  M_refUIManager->insert_action_group(M_refActionGroup);
-
-  //add_accel_group(M_refUIManager->get_accel_group());
-
-  //Layout the actions in a menubar and toolbar:
-  Glib::ustring ui_info =
-        "<ui>"
-        "  <popup name='PopupMenu'>"
-        "    <menuitem action='PlacepieceWhitePawn'/>"
-        "    <menuitem action='PlacepieceWhiteRook'/>"
-        "    <menuitem action='PlacepieceWhiteKnight'/>"
-        "    <menuitem action='PlacepieceWhiteBishop'/>"
-        "    <menuitem action='PlacepieceWhiteQueen'/>"
-        "    <menuitem action='PlacepieceWhiteKing'/>"
-	"    <separator/>"
-        "    <menuitem action='PlacepieceBlackPawn'/>"
-        "    <menuitem action='PlacepieceBlackRook'/>"
-        "    <menuitem action='PlacepieceBlackKnight'/>"
-        "    <menuitem action='PlacepieceBlackBishop'/>"
-        "    <menuitem action='PlacepieceBlackQueen'/>"
-        "    <menuitem action='PlacepieceBlackKing'/>"
-	"    <separator/>"
-	"    <menuitem action='AllowEnPassantCapture'/>"
-	"    <menuitem action='PieceHasMoved'/>"
-        "    <menuitem action='PlacepieceNothing'/>"
-	"    <separator/>"
-	"    <menuitem action='ToMoveWhite'/>"
-	"    <menuitem action='ToMoveBlack'/>"
-	"    <separator/>"
-	"    <menuitem action='CopyFEN'/>"
-	"    <menuitem action='PasteFEN'/>"
-	"    <menuitem action='SwapColors'/>"
-	"    <menuitem action='InitialPosition'/>"
-	"    <menuitem action='ClearBoard'/>"
-        "  </popup>"
-        "</ui>";
-#ifdef GLIBMM_EXCEPTIONS_ENABLED
+  m_refBuilder = Gtk::Builder::create();
   try
   {
-    M_refUIManager->add_ui_from_string(ui_info);
+    Dout(dc::notice, "Loading PlacePiece.glade");
+    m_refBuilder->add_from_file("/home/carlo/projects/cwchessboard/PlacePiece.glade");
   }
-  catch(const Glib::Error& ex)
+  catch (Glib::Error const& error)
   {
-    std::cerr << "building menus failed: " <<  ex.what();
+    DoutFatal(dc::core, "building menus failed: " <<  error.what());
   }
-#else
-  std::auto_ptr<Glib::Error> ex;
-  M_refUIManager->add_ui_from_string(ui_info, ex);
-  if(ex.get())
-  {
-    std::cerr << "building menus failed: " <<  ex->what();
-  }
-#endif //GLIBMM_EXCEPTIONS_ENABLED
 
   // Get the menu:
-  M_MenuPopup = dynamic_cast<Gtk::Menu*>(M_refUIManager->get_widget("/PopupMenu"));
-  if (!M_MenuPopup)
-    g_warning("menu not found");
-  else
-    M_MenuPopup->signal_deactivate().connect(sigc::mem_fun(this, &ChessPositionWidget::popup_deactivated));
-#else
-  //assert(false); // To be implemented.
-#endif
+  m_menuPopup = nullptr;
+  m_refBuilder->get_widget<Gtk::Menu>("PlacePiece", m_menuPopup);
+  // Get certain menu items:
+  m_PlacepieceNothing = nullptr;
+  m_refBuilder->get_widget<Gtk::MenuItem>("PlacepieceNothing", m_PlacepieceNothing);
+  m_AllowEnPassantCapture = nullptr;
+  m_refBuilder->get_widget<Gtk::MenuItem>("AllowEnPassantCapture", m_AllowEnPassantCapture);
 
   initial_position();
 }

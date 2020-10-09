@@ -30,6 +30,7 @@ void LinuxChessboardWidget::append_menu_entries(LinuxChessMenuBar* menubar)
 #define ADD_RADIO(top, entry) \
   menubar->append_radio_menu_entry(show, {top, entry},   this, &LinuxChessboardWidget::on_menu_##top##_##entry)
 
+  menubar->append_separator(Mode);
   ADD_RADIO(Mode, ShowCandidates);
   ADD_RADIO(Mode, ShowReachables);
   ADD_RADIO(Mode, ShowAttacked);
@@ -37,7 +38,7 @@ void LinuxChessboardWidget::append_menu_entries(LinuxChessMenuBar* menubar)
   ADD_RADIO(Mode, ShowDefendedBlack);
   ADD_RADIO(Mode, ShowDefendedWhite);
   ADD_RADIO(Mode, ShowMoves);
-  ADD(Mode, PlacePieces);
+  ADD_RADIO(Mode, PlacePieces);
 
   // This wasn't called for some reason.
   on_menu_Mode_ShowCandidates();
@@ -82,7 +83,7 @@ bool LinuxChessboardWidget::on_button_press(gint col, gint row, GdkEventButton c
     if (col != -1)
     {
       show_cursor();
-      // Marker the start square.
+      // Mark the start square.
       set_marker_color(col, row, 1);
       M_arrow_begin_col = col;
       M_arrow_begin_row = row;
@@ -184,20 +185,6 @@ void LinuxChessboardWidget::initialize_menu()
 {
   DoutEntering(dc::notice, "LinuxChessboardWidget::initialize_menu()");
   ChessPositionWidget::initialize_menu();
-
-#if 0
-  // Set up menu.
-  m_refActionGroup->add_action("ModeShowCandidates", sigc::mem_fun(*this, &LinuxChessboardWidget::on_menu_mode_showcandidates));
-  m_refActionGroup->add_action("ModeShowReachables", sigc::mem_fun(*this, &LinuxChessboardWidget::on_menu_mode_showreachables));
-  m_refActionGroup->add_action("ModeShowAttacked", sigc::mem_fun(*this, &LinuxChessboardWidget::on_menu_mode_showattacked));
-  m_refActionGroup->add_action("ModeShowDefendables", sigc::mem_fun(*this, &LinuxChessboardWidget::on_menu_mode_showdefendables));
-  m_refActionGroup->add_action("ModeShowDefendedBlack", sigc::mem_fun(*this, &LinuxChessboardWidget::on_menu_mode_showdefended_black));
-  m_refActionGroup->add_action("ModeShowDefendedWhite", sigc::mem_fun(*this, &LinuxChessboardWidget::on_menu_mode_showdefended_white));
-  m_refActionGroup->add_action("ModeShowMoves", sigc::mem_fun(*this, &LinuxChessboardWidget::on_menu_mode_showmoves));
-  m_refActionGroup->add_action("ModePlacePieces", sigc::mem_fun(*this, &LinuxChessboardWidget::on_menu_mode_placepieces));
-
-  M_window->insert_action_group("chessboard", m_refActionGroup);
-#endif
 }
 
 struct rgb_t { gdouble red; gdouble green; gdouble blue; };

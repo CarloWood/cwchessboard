@@ -30,10 +30,11 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <giomm/simpleactiongroup.h>
 #include <gtkmm/menu.h>
-#include <gtkmm/uimanager.h>
+#include <gtkmm/builder.h>
 #include <gtkmm/iconfactory.h>
 #include <gtkmm/window.h>
 #include <gtkmm/toggleaction.h>
+#include <gtkmm/radioaction.h>
 #pragma GCC diagnostic pop
 #include <boost/shared_ptr.hpp>
 
@@ -141,25 +142,29 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
 
   protected:
     //! The square that a new piece is being placed on with the popup menu, in 'Edit Position' mode.
-    cwchess::Index M_placepiece_index;
+    cwchess::Index m_placepiece_index;
     //! A pointer to the window that contains this widget and our menu. Used for its colormap (for the icons in the popup menu) and to add other menu items to..
     Gtk::Window* M_window;
     //! An instance of the popup menu to place new pieces.
-    Gtk::Menu* M_MenuPopup;
-    //! Reference to a UIManager.
-    Glib::RefPtr<Gtk::UIManager> M_refUIManager;
+    Gtk::Menu* m_menuPopup;
+    //! A reference to the 'Empty square' entry of the Placepiece popup menu.
+    Gtk::MenuItem* m_PlacepieceNothing;
+    //! A reference to the 'Allow e.p. Capture' entry of the Placepiece popup menu.
+    Gtk::MenuItem* m_AllowEnPassantCapture;
+    //! Reference to the popup menu builder.
+    Glib::RefPtr<Gtk::Builder> m_refBuilder;
     //! Reference to a ActionGroup.
-    Glib::RefPtr<Gio::SimpleActionGroup> M_refActionGroup;
+    Glib::RefPtr<Gio::SimpleActionGroup> m_refActionGroup;
     //! Reference to a IconFactory.
     Glib::RefPtr<Gtk::IconFactory> M_refIconFactory;
     //! Reference to RadioAction for ToMoveWhite.
-    Glib::RefPtr<Gio::SimpleAction> M_refToMoveWhite_action;
+    Glib::RefPtr<Gtk::RadioAction> m_refToMoveWhite_action;
     //! Reference to RadioAction for ToMoveBlack.
-    Glib::RefPtr<Gio::SimpleAction> M_refToMoveBlack_action;
+    Glib::RefPtr<Gtk::RadioAction> m_refToMoveBlack_action;
     //! Reference to ToggleAction for PieceHasMoved.
     Glib::RefPtr<Gtk::ToggleAction> M_refPieceHasMoved_action;
     //! Reference to ToggleAction for AllowEnPassantCapture.
-    Glib::RefPtr<Gtk::ToggleAction> M_refAllowEnPassantCapture_action;
+    Glib::RefPtr<Gtk::ToggleAction> m_refAllowEnPassantCapture_action;
     //! The HasMoved ToggleAction connection.
     sigc::connection M_PieceHasMoved_connection;
     //! The AllowEnPassantCapture ToggleAction connection.
@@ -177,7 +182,7 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
      * @param promotion : An object derived from Promotion that handles pawn promotions.
      */
     ChessPositionWidget(Gtk::Window* window, Glib::RefPtr<cwchess::Promotion> promotion = Glib::RefPtr<cwchess::Promotion>(new cwchess::Promotion)) :
-        M_floating_piece_handle(-1), M_widget_mode(mode_edit_position), M_promotion(promotion), M_MenuPopup(NULL), M_window(window), M_trying_primary(false)
+        M_floating_piece_handle(-1), M_widget_mode(mode_edit_position), M_promotion(promotion), m_menuPopup(nullptr), M_window(window), M_trying_primary(false)
     {
       // Continue initialization when realized.
       window->signal_realize().connect(sigc::mem_fun(this, &ChessPositionWidget::initialize_menu));

@@ -684,8 +684,7 @@ void ChessboardWidget::invalidate_square(gint col, gint row)
       int x, y;
       colrow2xy(col, row, x, y);
       Dout(dc::notice, "ChessboardWidget::invalidate_square(" << col << ", " << row << "): calling queue_draw_area(" << x << ", " << y << ", " << m_sside << ", " << m_sside << ")");
-      // Remove 0.1 pixels from all sides to make sure that round off errors won't include neighboring squares.
-      queue_draw_area(x + 0.1, y + 0.1, m_sside - 0.2, m_sside - 0.2);
+      queue_draw_area(x, y, m_sside, m_sside);
       m_need_redraw_invalidated |= redraw_mask;
     }
   }

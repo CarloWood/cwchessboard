@@ -54,15 +54,5 @@ class LinuxChessWindow : public Gtk::Window
   LinuxChessMenuBar* m_menubar;
   LinuxChessboardWidget m_chessboard_widget;
 
-#if 0
-  // Menu and tool bar stuff.
-  Glib::RefPtr<Gtk::UIManager> m_refUIManager;
-  Glib::RefPtr<Gtk::Action> m_refActionGroup;
-  Glib::RefPtr<Gtk::RadioAction> M_ModePlacePieces_action;
-  Glib::RefPtr<Gtk::RadioAction> M_ModeEditPosition_action;
-#endif
-
-  //Glib::RefPtr<Gtk::Builder> m_refBuilder;
-
   std::stack<cwchess::ChessPosition> M_history;
 };
