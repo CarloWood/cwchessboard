@@ -26,6 +26,7 @@
 #include "CwChessboardCodes.h"
 #include "debug.h"
 #include <gdkmm/seat.h>
+#include <gtkmm.h>
 #ifdef CWDEBUG
 #include "debug_ostream_operators_gtkmm.h"
 #endif
@@ -35,7 +36,9 @@
 
 namespace cwmm {
 
+#ifdef CWDEBUG
 using ::operator<<;
+#endif
 
 //
 // The widget is devided into 108 segments (rectangles).
@@ -287,6 +290,7 @@ WidgetSegments ChessboardWidget::rect_to_segments(Cairo::Rectangle const& rect) 
   return segment;
 }
 
+#ifdef CWDEBUG
 std::ostream& operator<<(std::ostream& os, WidgetSegments const& ws)
 {
   os << std::hex << ws.m_squares_mask << ", " << ws.m_pseudo_segments_mask;
@@ -294,6 +298,7 @@ std::ostream& operator<<(std::ostream& os, WidgetSegments const& ws)
     os << ", " << (int)ws.m_border[b];
   return os << std::dec;
 }
+#endif
 
 //------------------------------------------------------------------------------
 // Piece graphics functions.
@@ -3125,6 +3130,7 @@ void ChessboardWidget::remove_arrow(gpointer ptr)
   // Only call remove_arrow for an arrow that was added before with add_arrow.
   ASSERT(std::find(m_arrows.begin(), m_arrows.end(), arrow) != m_arrows.end());
   m_arrows.erase(std::remove(m_arrows.begin(), m_arrows.end(), arrow), m_arrows.end());
+  invalidate_arrow(arrow->begin_col, arrow->begin_row, arrow->end_col, arrow->end_row);
   m_hud_need_redraw[0] |= arrow->has_content[0];
   m_hud_need_redraw[1] |= arrow->has_content[1];
   g_free(ptr);
