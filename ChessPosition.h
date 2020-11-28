@@ -276,11 +276,12 @@ public:
 
     /** @brief Return the offset into the candidates_table for type \a type.
      *
-     * The type may not be a pawn (there is no candidates_table entry for a pawn).
+     * The type may not be a pawn (there is no candidates_table entry for a pawn), or nothing.
      */
     int candidates_table_offset(Type const& type) const
     {
       int n = type();
+      ASSERT(n >= knight_bits);
       n -= (n > 4) ? 3 : 2;
       n <<= 6;
       return n;
@@ -304,7 +305,7 @@ public:
 	data.M_bitmask = (flags << 50) | (flags << 40);
 	data.M_bitmask &= CW_MASK_T_CONST(0xe0400000000000);
 	data.M_bitmask >>= 62 - index();
-        return BitBoard(data);
+        return { data };
       }
       else if (piece == white_pawn)
       {
@@ -313,7 +314,12 @@ public:
 	data.M_bitmask = flags | (flags << 6);
 	data.M_bitmask &= 0x1038;
 	data.M_bitmask <<= index() + 4;
-        return BitBoard(data);
+        return { data };
+      }
+      else if (piece == nothing)
+      {
+        BitBoard nothing(0);
+        return nothing;
       }
       return BitBoard(candidates_table[candidates_table_offset(piece.type()) + index()]);
     }

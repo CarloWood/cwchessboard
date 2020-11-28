@@ -81,7 +81,10 @@ bool ChessPositionWidget::load_FEN(std::string const& FEN)
   cwchess::ChessPosition tmp(*static_cast<ChessPosition*>(this));
   bool result = tmp.load_FEN(FEN);
   if (result)
+  {
     set_position(tmp);
+    M_signal_position_editted.emit();
+  }
   return result;
 }
 
@@ -141,79 +144,92 @@ bool ChessPositionWidget::popup_menu(GdkEventButton* event, int col, int row)
 void ChessPositionWidget::on_menu_placepiece_black_pawn()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_pawn()");
-  place(cwchess::black_pawn, m_placepiece_index);
+  if (place(cwchess::black_pawn, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_black_rook()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_rook()");
-  place(cwchess::black_rook, m_placepiece_index);
+  if (place(cwchess::black_rook, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_black_knight()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_knight()");
-  place(cwchess::black_knight, m_placepiece_index);
+  if (place(cwchess::black_knight, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_black_bishop()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_bishop()");
-  place(cwchess::black_bishop, m_placepiece_index);
+  if (place(cwchess::black_bishop, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_black_queen()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_queen()");
-  place(cwchess::black_queen, m_placepiece_index);
+  if (place(cwchess::black_queen, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_black_king()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_black_king()");
-  place(cwchess::black_king, m_placepiece_index);
+  if (place(cwchess::black_king, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_pawn()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_pawn()");
-  place(cwchess::white_pawn, m_placepiece_index);
+  if (place(cwchess::white_pawn, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_rook()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_rook()");
-  place(cwchess::white_rook, m_placepiece_index);
+  if (place(cwchess::white_rook, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_knight()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_knight()");
-  place(cwchess::white_knight, m_placepiece_index);
+  if (place(cwchess::white_knight, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_bishop()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_bishop()");
-  place(cwchess::white_bishop, m_placepiece_index);
+  if (place(cwchess::white_bishop, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_queen()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_queen()");
-  place(cwchess::white_queen, m_placepiece_index);
+  if (place(cwchess::white_queen, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_white_king()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_white_king()");
-  place(cwchess::white_king, m_placepiece_index);
+  if (place(cwchess::white_king, m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_placepiece_nothing()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_placepiece_nothing()");
-  place(cwchess::Code(), m_placepiece_index);
+  if (place(cwchess::Code(), m_placepiece_index))
+    M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_allow_en_passant_capture()
@@ -265,6 +281,7 @@ void ChessPositionWidget::on_menu_paste_FEN()
   DoutEntering(dc::clipboard, "ChessPositionWidget::on_menu_paste_FEN");
   Glib::RefPtr<Gtk::Clipboard> refClipboard = Gtk::Clipboard::get();
   refClipboard->request_text(sigc::mem_fun(*this, &ChessPositionWidget::on_clipboard_received));
+  M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_clipboard_get(Gtk::SelectionData& selection_data, guint)
@@ -337,18 +354,21 @@ void ChessPositionWidget::on_menu_swap_colors()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_swap_colors()");
   swap_colors();
+  M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_initial_position()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_initial_position()");
   initial_position();
+  M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_clear_board()
 {
   DoutEntering(dc::notice, "ChessPositionWidget::on_menu_clear_board()");
   clear();
+  M_signal_position_editted.emit();
 }
 
 void ChessPositionWidget::on_menu_to_move_white()
@@ -484,6 +504,7 @@ void ChessPositionWidget::initialize_menu()
   // Get the menu:
   m_menuPopup = nullptr;
   m_refBuilder->get_widget<Gtk::Menu>("PlacePiece", m_menuPopup);
+  m_menuPopup->signal_deactivate().connect(sigc::mem_fun(*this, &ChessPositionWidget::popup_deactivated));
   // Get certain menu items:
   m_PlacepieceNothing = nullptr;
   m_refBuilder->get_widget<Gtk::MenuItem>("PlacepieceNothing", m_PlacepieceNothing);
@@ -562,6 +583,8 @@ bool ChessPositionWidget::on_button_press_event(GdkEventButton* event)
 	double fraction = hsside - (gint)hsside;
 	M_floating_piece_handle = add_floating_piece(code, event->x - fraction, event->y - fraction, TRUE);
 	M_signal_picked_up.emit(M_move_from, *this);
+        if (M_widget_mode == mode_edit_position)
+          M_signal_position_editted.emit();
 	// We picked up a piece; the event was handled.
         return true;
       }
@@ -595,15 +618,18 @@ bool ChessPositionWidget::on_button_release_event(GdkEventButton* event)
   // Inform the user that a button press event occured.
   if (!is_inside_board(col, row))
     col = row = -1;
+
+  bool handled = false;
+
   if (on_button_release(col, row, event))
-    return true;
+    handled = true;
 
   // If the edit mode isn't one of the builtin modes, then we're done.
-  if (M_widget_mode != mode_edit_position && M_widget_mode != mode_edit_game)
-    return false;
+  else if (M_widget_mode != mode_edit_position && M_widget_mode != mode_edit_game)
+    handled = false;
 
   // Handle dropping a piece.
-  if (event->button == 1 && M_floating_piece_handle != -1)
+  else if (event->button == 1 && M_floating_piece_handle != -1)
   {
     if (M_widget_mode == mode_edit_game || col != -1)
     {
@@ -650,11 +676,13 @@ bool ChessPositionWidget::on_button_release_event(GdkEventButton* event)
     remove_floating_piece(M_floating_piece_handle);
     M_floating_piece_handle = -1;
     M_signal_dropped.emit(col, row, *this);
+    if (M_widget_mode == mode_edit_position)
+      M_signal_position_editted.emit();
     // We just dropped the piece; the event was handled.
-    return true;
+    handled = true;
   }
 
-  return false;
+  return handled;
 }
 
 } // namespace cwmm

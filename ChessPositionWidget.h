@@ -116,6 +116,8 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
     sigc::signal<void, cwchess::Index const&, cwchess::ChessPosition const&> M_signal_picked_up;
     //! The signal generator for 'piece drop' events.
     sigc::signal<void, gint, gint, cwchess::ChessPosition const&> M_signal_dropped;
+    //! The signal generator for 'position editted' events.
+    sigc::signal<void> M_signal_position_editted;
     //! The handle of the floating piece under the mouse pointer, if any.
     gint M_floating_piece_handle;
     //! Temporary storage for copied positions.
@@ -581,13 +583,13 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
      *
      * The default does nothing.
      */
-    virtual void on_cursor_left_chessboard(gint prev_col, gint prev_row) override { }
+    //void on_cursor_left_chessboard(gint prev_col, gint prev_row) override { }
 
     /** @brief Called when the mouse pointer entered a new square.
      *
      * The default does nothing.
      */
-    virtual void on_cursor_entered_square(gint prev_col, gint prev_row, gint col, gint row) override { }
+    //void on_cursor_entered_square(gint prev_col, gint prev_row, gint col, gint row) override { }
 
   //@}
 
@@ -613,6 +615,14 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
      * picking up a piece.
      */
     sigc::signal<void, gint, gint, cwchess::ChessPosition const&>& signal_dropped() { return M_signal_dropped; }
+
+    /** @brief Return handler for events signaling that the user changed the position.
+     *
+     * This signal is generated in Edit Position mode whenever the position is changed.
+     * It can be used to check if the current position is illegal or not and set the
+     * sensitivity of the Edit Game menu item accordingly.
+     */
+    sigc::signal<void>& signal_position_editted() { return M_signal_position_editted; }
 
     /** @brief Return handler for events signaling that the user did a (legal) chess move.
      *

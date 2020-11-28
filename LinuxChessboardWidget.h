@@ -5,6 +5,7 @@
 class LinuxChessMenuBar;
 
 enum mode_type {
+  mode_show_nothing,
   mode_show_candidates,
   mode_show_reachables,
   mode_show_attacked,
@@ -25,6 +26,7 @@ class LinuxChessboardWidget : public cwmm::ChessPositionWidget
   gpointer M_en_passant_arrow;
   cwchess::Index M_en_passant_arrow_index;
   mode_type M_mode;
+  bool m_showing;
 
   //Glib::RefPtr<Gio::SimpleActionGroup> m_refActionGroup;
 
@@ -33,6 +35,8 @@ class LinuxChessboardWidget : public cwmm::ChessPositionWidget
   bool on_button_press(gint col, gint row, GdkEventButton const* event) override;
   bool on_button_release(gint col, gint row, GdkEventButton const* event) override;
   void initialize_menu() override;
+  void on_cursor_entered_square(gint prev_col, gint prev_row, gint col, gint row) override;
+  void on_cursor_left_chessboard(gint prev_col, gint prev_row) override;
 
  public:
   void picked_up(cwchess::Index const& index, cwchess::ChessPosition const& chess_position);
@@ -54,7 +58,7 @@ class LinuxChessboardWidget : public cwmm::ChessPositionWidget
   void on_menu_Mode_ShowDefendedBlack() { DoutEntering(dc::notice, "LinuxChessboardWidget::on_menu_Mode_ShowDefendedBlack()"); M_mode = mode_show_defended_black; }
   void on_menu_Mode_ShowDefendedWhite() { DoutEntering(dc::notice, "LinuxChessboardWidget::on_menu_Mode_ShowDefendedWhite()"); M_mode = mode_show_defended_white; }
   void on_menu_Mode_ShowMoves() { DoutEntering(dc::notice, "LinuxChessboardWidget::on_menu_Mode_ShowMoves()"); M_mode = mode_show_moves; }
-  void on_menu_Mode_PlacePieces() { DoutEntering(dc::notice, "LinuxChessboardWidget::on_menu_Mode_PlacePieces()"); M_mode = mode_popup_menu; }
+  void on_menu_Mode_PlacePieces();
 
  private:
   void show_reachables(int col, int row, mode_type mode);

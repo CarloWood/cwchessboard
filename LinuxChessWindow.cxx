@@ -32,11 +32,12 @@ LinuxChessWindow::LinuxChessWindow(LinuxChessApplication* application) : m_chess
 
   // Just show that we can catch this event too.
   m_chessboard_widget.signal_illegal().connect(sigc::mem_fun(m_chessboard_widget, &LinuxChessboardWidget::illegal));
+#endif
 
   // Show cursor, reachables and pinning as function of whether we picked up a piece or not.
   m_chessboard_widget.signal_picked_up().connect(sigc::mem_fun(m_chessboard_widget, &LinuxChessboardWidget::picked_up));
   m_chessboard_widget.signal_dropped().connect(sigc::mem_fun(m_chessboard_widget, &LinuxChessboardWidget::dropped));
-#endif
+  m_chessboard_widget.signal_position_editted().connect(sigc::mem_fun(this, &LinuxChessWindow::position_editted));
 }
 
 LinuxChessWindow::~LinuxChessWindow()
@@ -51,6 +52,10 @@ void LinuxChessWindow::append_menu_entries(LinuxChessMenuBar* menubar)
 #define ADD(top, entry) \
   menubar->append_menu_entry({top, entry},   this, &LinuxChessWindow::on_menu_##top##_##entry)
 
+  Gtk::RadioButtonGroup mode;
+#define ADD_RADIO(top, entry) \
+  menubar->append_radio_menu_entry(mode, {top, entry},   this, &LinuxChessWindow::on_menu_##top##_##entry)
+
   ADD(File, OPEN);
   ADD(File, SAVE);
   ADD(Game, NEW);
@@ -58,8 +63,8 @@ void LinuxChessWindow::append_menu_entries(LinuxChessMenuBar* menubar)
   ADD(Game, Export);
   ADD(Game, UNDO);
   ADD(Game, Flip);
-  ADD(Mode, EditPosition);
-  ADD(Mode, EditGame);
+  ADD_RADIO(Mode, EditPosition);
+  ADD_RADIO(Mode, EditGame);
 }
 
 void LinuxChessWindow::moved(cwchess::Move const& move, cwchess::ChessPosition const& previous_position, cwchess::ChessPosition const& current_position)
@@ -99,4 +104,50 @@ void LinuxChessWindow::on_menu_Game_UNDO()
 void LinuxChessWindow::on_menu_Game_Flip()
 {
   DoutEntering(dc::notice, "LinuxChessWindow::on_menu_Game_Flip()");
+}
+
+void LinuxChessWindow::on_menu_Mode_EditPosition()
+{
+  DoutEntering(dc::notice, "LinuxChessWindow::on_menu_Mode_EditPosition()");
+  if (m_chessboard_widget.get_widget_mode() != cwmm::ChessPositionWidget::mode_edit_position)
+    m_chessboard_widget.set_widget_mode(cwmm::ChessPositionWidget::mode_edit_position);
+  //M_ModePlacePieces_action->set_active(true);
+}
+
+void LinuxChessWindow::on_menu_Mode_EditGame()
+{
+  DoutEntering(dc::notice, "LinuxChessWindow::on_menu_Mode_EditGame()");
+  if (m_chessboard_widget.get_widget_mode() != cwmm::ChessPositionWidget::mode_edit_game)
+  {
+    if (m_chessboard_widget.check(m_chessboard_widget.to_move().opposite()))
+    {
+      // Refuse to switch when both sides are in check.
+      if (m_chessboard_widget.check(m_chessboard_widget.to_move()))
+      {
+        using namespace menu_keys;
+        m_menubar->activate({Mode, EditPosition});
+        return;
+      }
+      m_chessboard_widget.to_move(m_chessboard_widget.to_move().opposite());
+    }
+    m_chessboard_widget.set_widget_mode(cwmm::ChessPositionWidget::mode_edit_game);
+  }
+}
+
+void LinuxChessWindow::position_editted()
+{
+  DoutEntering(dc::notice, "LinuxChessWindow::position_editted()");
+  using namespace cwchess;
+  using namespace cwmm;
+  // We get here while in Edit Position mode and something was changed.
+  // This function is meant to gray out switching to Edit Game when
+  // the current position is illegal.
+  if (m_chessboard_widget.get_widget_mode() == ChessPositionWidget::mode_edit_position)
+  {
+    using namespace menu_keys;
+    bool illegal_position = m_chessboard_widget.index_of_king(black) == index_end ||                    // Missing black king.
+                            m_chessboard_widget.index_of_king(white) == index_end ||                    // Missing white king.
+                            (m_chessboard_widget.check(black) && m_chessboard_widget.check(white));     // Both kings are in check.
+    m_menubar->set_sensitive(!illegal_position, {Mode, EditGame});
+  }
 }

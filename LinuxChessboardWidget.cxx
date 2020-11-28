@@ -40,8 +40,8 @@ void LinuxChessboardWidget::append_menu_entries(LinuxChessMenuBar* menubar)
   ADD_RADIO(Mode, ShowMoves);
   ADD_RADIO(Mode, PlacePieces);
 
-  // This wasn't called for some reason.
-  on_menu_Mode_ShowCandidates();
+  // Start with ShowMoves selected.
+  on_menu_Mode_ShowMoves();
 }
 
 void LinuxChessboardWidget::draw_hud_layer(Cairo::RefPtr<Cairo::Context> const& cr, gint sside, guint hud)
@@ -105,7 +105,8 @@ bool LinuxChessboardWidget::on_button_press(gint col, gint row, GdkEventButton c
         case mode_show_moves:
           show_reachables(col, row, M_mode);
 	  show_cursor();
-	  return true;		// Don't show the popup menu.
+          m_showing = true;     // Cause on_cursor_entered_square to call show_reachables.
+	  return true;	        // Don't show the popup menu.
 	case mode_popup_menu:
 	  // The default of ChessPositionWidget already does this.
           break;
@@ -125,6 +126,7 @@ bool LinuxChessboardWidget::on_button_release(gint col, gint row, GdkEventButton
 {
   DoutEntering(dc::notice, "LinuxChessboardWidget::on_button_release(" << col << ", " << row << ", " << event << ")");
 
+  m_showing = false;
   hide_cursor();
   if (event->button == 2)
   {
@@ -154,6 +156,18 @@ void LinuxChessboardWidget::picked_up(cwchess::Index const& index, cwchess::Ches
     show_pinning();
 }
 
+void LinuxChessboardWidget::on_cursor_entered_square(gint prev_col, gint prev_row, gint col, gint row)
+{
+  if (m_showing)
+    show_reachables(col, row, M_mode);
+}
+
+void LinuxChessboardWidget::on_cursor_left_chessboard(gint prev_col, gint prev_row)
+{
+  if (m_showing)
+    show_reachables(-1, -1, mode_show_nothing);
+}
+
 void LinuxChessboardWidget::dropped(gint col, gint row, cwchess::ChessPosition const& chess_position)
 {
   DoutEntering(dc::notice, "LinuxChessboardWidget::dropped(" << col << ", " << row << ", ...)");
@@ -174,7 +188,8 @@ void LinuxChessboardWidget::illegal(cwchess::Move const& move, cwchess::ChessPos
   DoutEntering(dc::notice, "LinuxChessboardWidget::illegal(" << cwchess::ChessNotation(*this, move) << ", ...)");
 }
 
-LinuxChessboardWidget::LinuxChessboardWidget(Gtk::Window* window, Glib::RefPtr<cwchess::Promotion> promotion) : cwmm::ChessPositionWidget(window, promotion), M_en_passant_arrow(nullptr)
+LinuxChessboardWidget::LinuxChessboardWidget(Gtk::Window* window, Glib::RefPtr<cwchess::Promotion> promotion) :
+  cwmm::ChessPositionWidget(window, promotion), M_en_passant_arrow(nullptr), m_showing(false)
 {
   DoutEntering(dc::notice, "LinuxChessboardWidget::LinuxChessboardWidget()");
   init_colors();
@@ -303,6 +318,9 @@ void LinuxChessboardWidget::show_reachables(int col, int row, mode_type mode)
       }
       break;
     }
+    case mode_show_nothing:
+      bb.reset();
+      break;
     default:
     {
       Color color(to_move());
@@ -371,4 +389,10 @@ void LinuxChessboardWidget::show_pinning()
     else if (bb1.test(index) && bb2.test(index))
       handles[index()] = get_color_handle(index(), brown);
   set_background_colors(handles);
+}
+
+void LinuxChessboardWidget::on_menu_Mode_PlacePieces()
+{
+  DoutEntering(dc::notice, "LinuxChessboardWidget::on_menu_Mode_PlacePieces()");
+  M_mode = mode_popup_menu;
 }

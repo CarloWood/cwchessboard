@@ -35,19 +35,10 @@ class LinuxChessWindow : public Gtk::Window
   void on_menu_Game_Export();
   void on_menu_Game_UNDO();
   void on_menu_Game_Flip();
-  void on_menu_Mode_EditPosition()
-  {
-    DoutEntering(dc::notice, "LinuxChessWindow::on_menu_Mode_EditPosition()");
-    if (m_chessboard_widget.get_widget_mode() != cwmm::ChessPositionWidget::mode_edit_position)
-      m_chessboard_widget.set_widget_mode(cwmm::ChessPositionWidget::mode_edit_position);
-    //M_ModePlacePieces_action->set_active(true);
-  }
-  void on_menu_Mode_EditGame()
-  {
-    DoutEntering(dc::notice, "LinuxChessWindow::on_menu_Mode_EditGame()");
-    if (m_chessboard_widget.get_widget_mode() != cwmm::ChessPositionWidget::mode_edit_game)
-      m_chessboard_widget.set_widget_mode(cwmm::ChessPositionWidget::mode_edit_game);
-  }
+  void on_menu_Mode_EditPosition();
+  void on_menu_Mode_EditGame();
+
+  void position_editted();
 
   // Child widgets.
   Gtk::Grid m_grid;

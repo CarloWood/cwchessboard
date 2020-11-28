@@ -2290,16 +2290,12 @@ ChessboardWidget::ChessboardWidget() :
 
   //*static_cast<Gtk::DrawingArea*>(this) = std::move(*Glib::wrap(&M_chessboard->parent));
 
-#if 0 // No longer needed.
-  // Initialize casting pointer.
-  M_chessboard->gtkmm_widget = static_cast<void*>(this);
-#endif
-
   // Set the mask for signals that we want to receive.
-  set_events(Gdk::EXPOSURE_MASK | Gdk::BUTTON1_MOTION_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
+  set_events(Gdk::EXPOSURE_MASK | Gdk::BUTTON_MOTION_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
 
   // Connect the events to our virtual functions.
 #ifndef GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED
+  // This code was not tested (GLIBMM_DEFAULT_SIGNAL_HANDLERS_ENABLED is defined on my machine).
   signal_button_press_event().connect(sigc::mem_fun(*this, &ChessboardWidget::on_button_press_event));
   signal_button_release_event().connect(sigc::mem_fun(*this, &ChessboardWidget::on_button_release_event));
 #endif
@@ -2605,6 +2601,8 @@ bool ChessboardWidget::on_motion_notify_event(GdkEventMotion* motion_event)
     move_floating_piece(m_floating_piece_handle, motion_event->x - fraction, motion_event->y - fraction);
     return true;
   }
+
+  update_cursor_position(motion_event->x, motion_event->y, false);
 
   return false;
 }

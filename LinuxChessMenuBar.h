@@ -134,6 +134,20 @@ class LinuxChessMenuBar : public Gtk::MenuBar, public LinuxChessIconFactory
     menu_item_ptr->signal_activate().connect(sigc::mem_fun(*obj, cb));
   }
 
+  void activate(MenuEntryKey menu_entry_key)
+  {
+    auto item = m_menu_items.find(menu_entry_key);
+    if (item != m_menu_items.end())
+      item->second->activate();
+  }
+
+  void set_sensitive(bool sensitive, MenuEntryKey menu_entry_key)
+  {
+    auto item = m_menu_items.find(menu_entry_key);
+    if (item != m_menu_items.end())
+      item->second->set_sensitive(sensitive);
+  }
+
  private:
   static char const* top_entry_label(TopEntries top_entry);
 };
