@@ -6,3 +6,7 @@
 	path = cwds
 	url = https://github.com/CarloWood/cwds.git
 	branch = master
+[submodule "utils"]
+	path = utils
+	url = https://github.com/CarloWood/ai-utils.git
+	branch = master

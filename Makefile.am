@@ -63,7 +63,7 @@ testsuite_CXXFLAGS = @LIBCWD_R_FLAGS@ $(CPPUNIT_CFLAGS)
 testsuite_LDADD = cwds/libcwds_r.la $(CPPUNIT_LIBS)
 
 tstbenchmark_SOURCES = $(TSTBENCHMARK_SRC)
-tstbenchmark_CXXFLAGS = -std=c++11 -DLIBCWD_THREAD_SAFE=0 @LIBCWD_FLAGS@
+tstbenchmark_CXXFLAGS = -std=c++20 -DLIBCWD_THREAD_SAFE=0 @LIBCWD_FLAGS@
 tstbenchmark_LDADD = cwds/libcwds.la
 
 tstpgnread_SOURCES = $(TSTPGNREAD_SRC)

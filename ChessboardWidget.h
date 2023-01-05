@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "CwChessboard.h"
+//#include "CwChessboard.h"
 #include "debug.h"
 
 #pragma GCC diagnostic push
@@ -54,6 +54,24 @@ static int const knight = 2;
 static int const bishop = 3;
 static int const queen = 4;
 static int const king = 5;
+
+using CwChessboardCode = uint16_t;
+
+/** @typedef CwChessboardColorHandle
+ *  @brief A color handle used for background markers.
+ *
+ *  The five least significant bits determine the color
+ *  from a user defined color palet, used by the background squares
+ *  and markers. A value of zero meaning the default background value
+ *  for that square, or no marker - respectively.
+ *
+ *  @sa cw_chessboard_allocate_color_handle_rgb, cw_chessboard_allocate_color_handle, cw_chessboard_free_color_handle,
+ *      cw_chessboard_set_background_color, cw_chessboard_get_background_color,
+ *      cw_chessboard_set_background_colors, cw_chessboard_get_background_colors,
+ *      cw_chessboard_set_marker_color, cw_chessboard_get_marker_color
+ */
+using CwChessboardColorHandle = unsigned char;
+
 
 /*
  * An RGB color as used by cairo.
@@ -246,7 +264,6 @@ class ChessboardWidget : public Gtk::DrawingArea
   FloatingPiece m_floating_piece[32];	// Current floating pieces.
   gint m_floating_piece_handle;		// The handle of the floating piece under the pointer device, or -1.
   gboolean m_redraw_background;		// Set when the window was recently resized (reset in the expose function).
-  bool m_resized;                       // Set when on_size_allocate was called. Reset when handled in on_draw.
 
   std::vector<Arrow*> m_arrows;		// Array with pointers to Arrow objects.
 

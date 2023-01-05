@@ -1,6 +1,7 @@
 #include "sys.h"
 #include "LinuxChessWindow.h"
 #include "LinuxChessMenuBar.h"
+#include "ChessNotation.h"
 
 LinuxChessWindow::LinuxChessWindow(LinuxChessApplication* application) : m_chessboard_widget(this), m_application(application)
 {
@@ -23,7 +24,6 @@ LinuxChessWindow::LinuxChessWindow(LinuxChessApplication* application) : m_chess
 
   show_all_children();
 
-#if 0
   // Record moves.
   m_chessboard_widget.signal_moved().connect(sigc::mem_fun(this, &LinuxChessWindow::moved));
 
@@ -32,7 +32,6 @@ LinuxChessWindow::LinuxChessWindow(LinuxChessApplication* application) : m_chess
 
   // Just show that we can catch this event too.
   m_chessboard_widget.signal_illegal().connect(sigc::mem_fun(m_chessboard_widget, &LinuxChessboardWidget::illegal));
-#endif
 
   // Show cursor, reachables and pinning as function of whether we picked up a piece or not.
   m_chessboard_widget.signal_picked_up().connect(sigc::mem_fun(m_chessboard_widget, &LinuxChessboardWidget::picked_up));
@@ -69,6 +68,7 @@ void LinuxChessWindow::append_menu_entries(LinuxChessMenuBar* menubar)
 
 void LinuxChessWindow::moved(cwchess::Move const& move, cwchess::ChessPosition const& previous_position, cwchess::ChessPosition const& current_position)
 {
+  Dout(dc::notice, "LinuxChessWindow::moved(" << cwchess::ChessNotation(current_position, move) << ", ...");
 }
 
 void LinuxChessWindow::on_menu_File_OPEN()

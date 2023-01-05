@@ -824,17 +824,6 @@ void ChessboardWidget::update_cursor_position(gdouble x, gdouble y, gboolean for
     m_cursor_col = col;
     m_cursor_row = row;
   }
-  if (m_show_cursor && !m_need_redraw_invalidated)
-  {
-    // Make sure we'll get more motion events.
-    Dout(dc::motion_event, "FIXME: NOT Calling gdk_window_get_device_position()");
-#if 0 // Is this still needed?
-    GdkDisplay* display = gdk_display_get_default();
-    GdkSeat* seat = gdk_display_get_default_seat(display);
-    GdkDevice* pointer = gdk_seat_get_pointer(seat);
-    gdk_window_get_device_position(gtk_widget_get_window(GTK_WIDGET(chessboard)), pointer, NULL, NULL, NULL);
-#endif
-  }
 }
 
 // Draw pawn.
@@ -2186,7 +2175,6 @@ ChessboardWidget::ChessboardWidget() :
   m_floating_piece{},
   m_floating_piece_handle(-1),
   m_redraw_background(true),
-  m_resized(false),
 #ifdef CWDEBUG
   m_inside_on_draw(false),
   m_show_buffer(false),
@@ -2219,23 +2207,9 @@ ChessboardWidget::ChessboardWidget() :
     dark_square_color.red = (gushort)((1.0 - x) * dark_square_red);
     dark_square_color.green = (gushort)((1.0 - x) * dark_square_green);
     dark_square_color.blue = (gushort)((1.0 - x) * dark_square_blue);
-#if 0 // No longer needed?
-    if (!gdk_colormap_alloc_color(colormap, &dark_square_color, FALSE, TRUE))
-      DoutFatal(dc::fatal, "gdk_colormap_alloc_color failed to allocate dark_square_color (" <<
-          dark_square_color.red << ", " <<
-          dark_square_color.green << ", " <<
-          dark_square_color.blue << ")");
-#endif
     light_square_color.red = light_square_red + (gushort)(x * (65535 - light_square_red));
     light_square_color.green = light_square_green + (gushort)(x * (65535 - light_square_green));
     light_square_color.blue = light_square_blue + (gushort)(x * (65535 - light_square_blue));
-#if 0 // No longer needed?
-    if (!gdk_colormap_alloc_color(colormap, &light_square_color, FALSE, TRUE))
-      DoutFatal(dc::fatal, "gdk_colormap_alloc_color failed to allocate light_square_color (" <<
-          light_square_color.red << ", " <<
-          light_square_color.green << ", " <<
-          light_square_color.blue << ")");
-#endif
 
     if (dark_square_color.red != light_square_color.red ||
         dark_square_color.green != light_square_color.green ||
@@ -2451,16 +2425,6 @@ bool ChessboardWidget::on_draw(Cairo::RefPtr<Cairo::Context> const& crmm)
   }
 #endif
 
-#if 0
-  if (m_resized)
-  {
-    Dout(dc::notice, "Invalidating everything because m_resized = true.");
-    // Everything was invalidated (probably due to a spurious call to on_size_allocate).
-    m_need_redraw_invalidated = (guint64)-1;
-    m_resized = false;
-  }
-#endif
-
   if (m_redraw_pixmap)
   {
     redraw_pixmap(crmm);
@@ -2635,23 +2599,7 @@ void ChessboardWidget::on_size_allocate(Gtk::Allocation& allocation)
   DoutEntering(dc::widget, "ChessboardWidget::on_size_allocate(" << allocation << ")");
   // We were resized.
   int const total_size = std::min(allocation.get_width(), allocation.get_height());
-#if 0
-  // Calculate the size and place of the chessboard widget, including border
-  // and use that as the adjusted allocation.
-  // Calculate the adjusted allocation such that it becomes a centered square with side `total_size`.
-  allocation.set_x(allocation.get_x() + (allocation.get_width() - total_size) / 2);
-  allocation.set_y(allocation.get_y() + (allocation.get_height() - total_size) / 2);
-  allocation.set_width(total_size);
-  allocation.set_height(total_size);
-//  Gtk::Allocation old_allocation = get_allocation();
-#endif
   m_redraw_background = true;
-  m_resized = true;
-#if 0
-  // on_size_allocate turns out to be called too often, also when nothing changed.
-  if (allocation == old_allocation)
-    return;
-#endif
   m_total_size = total_size;
   set_allocation(allocation);
   // Redraw everything.
@@ -2965,7 +2913,6 @@ void ChessboardWidget::show_cursor()
   if (m_show_cursor)
     return;
   m_show_cursor = true;
-  Dout(dc::widget, "Calling gdk_window_get_pointer()");
   auto display = Gdk::Display::get_default();
   auto seat = display->get_default_seat();
   auto pointer = seat->get_pointer();
@@ -3018,13 +2965,6 @@ void ChessboardWidget::move_floating_piece(gint handle, gdouble x, gdouble y)
       rect.get_y() + rect.get_height() < 0 ||
       rect.get_y() > allocation.get_y());
 
-  if (outside_window && m_floating_piece[handle].pointer_device)
-  {
-    Dout(dc::motion_event, "FIXME: NOT Calling gdk_window_get_pointer()");
-#if 0 // Do still need this?
-    gdk_window_get_pointer(gtk_widget_get_window(widget), NULL, NULL, NULL);
-#endif
-  }
   m_floating_piece[handle].x = rect.get_x();
   m_floating_piece[handle].y = rect.get_y();
   m_floating_piece[handle].moved = true;
@@ -3400,19 +3340,6 @@ void ChessboardWidget::draw_border(Cairo::RefPtr<Cairo::Context> const& cr, Widg
     cr->translate(
         top_left_board_x() + side + 1,
         top_left_board_y() - border_width + border_shadow_width + (top ? 0 : side + edge_width + 2));
-
-#if 0
-    cr->move_to(0, top ? edge_width : 0);
-    cr->rel_line_to(0, dir * ((edge_width + 1) * factor + 1));
-    cr->rel_line_to(edge_width, 0);
-    cr->line_to(edge_width, top ? 0 : edge_width);
-    cr->rel_line_to(-(edge_width + (edge_width + 1) * factor + 1), 0);
-    cr->rel_line_to(0, dir * edge_width);
-    cr->close_path();
-
-    cr->set_source_rgb(m_board_border_color.red, m_board_border_color.green, m_board_border_color.blue);
-    cr->fill();
-#endif
 
     double val = m_active_turn_indicator ? 1.0 : 0.0;     // White or black color.
     cr->set_source_rgb(val, val, val);

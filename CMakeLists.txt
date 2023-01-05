@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.14...3.17)
 
+# Compile all subdirectories with the same standard.
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 project(cwchessboard
         LANGUAGES CXX C
         DESCRIPTION "C++ chess widget, using vector graphics, and chess board utilities.")
@@ -24,9 +29,6 @@ list(APPEND CMAKE_MODULE_PATH
      "${CMAKE_CURRENT_SOURCE_DIR}/cwm4/cmake" )
 
 include(AICxxProject)
-
-# The whole project requires at least C++11.
-set(CMAKE_CXX_STANDARD 11)
 
 # Generate config files.
 configure_file("sys.h.in" "sys.h" @ONLY)
@@ -114,7 +116,6 @@ set_property(
 # The list of source files.
 target_sources(positionwidget_ObjLib
   PRIVATE
-    "CwChessboard.cxx"
     "ChessboardWidget.cxx"
     "ChessPositionWidget.cxx"
     "Referenceable.cxx"

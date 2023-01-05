@@ -159,14 +159,12 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
     Glib::RefPtr<Gio::SimpleActionGroup> m_refActionGroup;
     //! Reference to a IconFactory.
     Glib::RefPtr<Gtk::IconFactory> M_refIconFactory;
-    //! Reference to RadioAction for ToMoveWhite.
-    Glib::RefPtr<Gtk::RadioAction> m_refToMoveWhite_action;
-    //! Reference to RadioAction for ToMoveBlack.
-    Glib::RefPtr<Gtk::RadioAction> m_refToMoveBlack_action;
+    //! Reference to SimpleAction for the ToMoveWhite and ToMoveBlack radio buttons.
+    Glib::RefPtr<Gio::SimpleAction> m_refToMove_action;
     //! Reference to ToggleAction for PieceHasMoved.
-    Glib::RefPtr<Gtk::ToggleAction> M_refPieceHasMoved_action;
+//    Glib::RefPtr<Gtk::ToggleAction> M_refPieceHasMoved_action;
     //! Reference to ToggleAction for AllowEnPassantCapture.
-    Glib::RefPtr<Gtk::ToggleAction> m_refAllowEnPassantCapture_action;
+//    Glib::RefPtr<Gtk::ToggleAction> m_refAllowEnPassantCapture_action;
     //! The HasMoved ToggleAction connection.
     sigc::connection M_PieceHasMoved_connection;
     //! The AllowEnPassantCapture ToggleAction connection.
@@ -221,8 +219,7 @@ class ChessPositionWidget : protected cwchess::ChessPosition, public cwmm::Chess
     virtual void on_menu_swap_colors();
     virtual void on_menu_initial_position();
     virtual void on_menu_clear_board();
-    virtual void on_menu_to_move_white();
-    virtual void on_menu_to_move_black();
+    virtual void on_menu_to_move(Glib::ustring const& parameter);
     virtual void on_clipboard_get(Gtk::SelectionData& selection_data, guint info);
     virtual void on_clipboard_clear();
     virtual void on_clipboard_received(Glib::ustring const& text);

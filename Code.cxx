@@ -68,7 +68,7 @@ CwChessboardCode Code::Code_to_CwChessboardCode[16] = {
   ::black_pawn,   /* black_pawn = 1 */
   ::black_knight, /* black_knight = 2 */
   ::black_king,   /* black_king = 3 */
-  0,    	  /* unused (4) */
+  0,              /* unused (4) */
   ::black_bishop, /* black_bishop = 5 */
   ::black_rook,   /* black_rook = 6 */
   ::black_queen,  /* black_queen = 7 */
