@@ -53,12 +53,6 @@ pkg_check_modules(cppunit REQUIRED IMPORTED_TARGET cppunit)
 # Create the chess position OBJECT-library, used by the main project.
 add_library(position_ObjLib OBJECT)
 
-# Set SOURCE_DIR to the current directory.
-set_property(
-  TARGET position_ObjLib
-  PROPERTY SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
-)
-
 # The list of source files.
 target_sources(position_ObjLib
   PRIVATE
@@ -106,12 +100,6 @@ add_library(CWChessboard::position ALIAS position_ObjLib)
 #------------------------------------------------------------------------------
 # Create the chess position_widget OBJECT-library, used by the main project.
 add_library(positionwidget_ObjLib OBJECT)
-
-# Set SOURCE_DIR to the current directory.
-set_property(
-  TARGET positionwidget_ObjLib
-  PROPERTY SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
-)
 
 # The list of source files.
 target_sources(positionwidget_ObjLib

@@ -12,6 +12,7 @@ depcomp
 install-sh
 ltmain.sh
 missing
+build
 CwChessboard-CONST.h
 gen.cpp
 PgnGrammar.h
