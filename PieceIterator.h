@@ -35,7 +35,14 @@ class ChessPosition;
  * This iterator iterates over bits in a given BitBoard, passed during creation,
  * and returns the Piece at the given position when dereferenced.
  */
-class PieceIterator : public std::iterator<std::bidirectional_iterator_tag, Piece> {
+class PieceIterator {
+  public:
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type        = Piece;
+    using difference_type   = std::ptrdiff_t;
+    using pointer           = Piece*;
+    using reference         = Piece&;
+
   protected:
     ChessPosition const* M_chess_position;	//!< The underlaying chess position.
     BitBoard M_pieces;				//!< The pieces that the iterator will iterate over.

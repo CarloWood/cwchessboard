@@ -51,7 +51,14 @@ class ChessPosition;
  * }
  * \endcode
  */
-class MoveIterator : public std::iterator<std::bidirectional_iterator_tag, Move> {
+class MoveIterator {
+  public:
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type        = Move;
+    using difference_type   = std::ptrdiff_t;
+    using pointer           = Move*;
+    using reference         = Move&;
+
   protected:
     ChessPosition const* M_chess_position;	//!< The underlaying chess position.
     BitBoard M_targets;				//!< The targets that this piece can move to.
