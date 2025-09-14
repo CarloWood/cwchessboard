@@ -43,8 +43,6 @@ namespace cwchess {
  */
 typedef uint64_t mask_t;
 
-#define CW_MASK_T_CONST(k) k
-
 /** @brief Convert Index to a mask_t. */
 inline mask_t index2mask(Index index)
 {
