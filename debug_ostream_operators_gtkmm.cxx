@@ -172,10 +172,12 @@ std::ostream& operator<<(std::ostream& os, GtkAllocation const* al)
   return os << "{ (x:" << al->x << ", y:" << al->y << ", width:" << al->width << ", height:" << al->height << ") }";
 }
 
-std::ostream& operator<<(std::ostream& os, Gtk::Allocation const& allocation)
+namespace Gdk {
+std::ostream& operator<<(std::ostream& os, Rectangle const& rectangle)
 {
-  return os << "{x:" << allocation.get_x() << ", y:" << allocation.get_y() << ", width:" << allocation.get_width() << ", height:" << allocation.get_height() << "}";
+  return os << "{x:" << rectangle.get_x() << ", y:" << rectangle.get_y() << ", width:" << rectangle.get_width() << ", height:" << rectangle.get_height() << "}";
 }
+} // namespace Gdk
 
 std::ostream& operator<<(std::ostream& os, GdkWindow const* window)
 {
@@ -249,7 +251,8 @@ std::ostream& operator<<(std::ostream& os, cairo_region_t const* region)
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, Cairo::RefPtr<Cairo::Region> const& region)
+namespace Cairo {
+std::ostream& operator<<(std::ostream& os, RefPtr<Cairo::Region> const& region)
 {
   Cairo::RectangleInt rect;
   int const numRects = region->get_num_rectangles();
@@ -265,6 +268,7 @@ std::ostream& operator<<(std::ostream& os, Cairo::RefPtr<Cairo::Region> const& r
   os << "}, extents:" << rect << ") }";
   return os;
 }
+} // namespace Cairo
 
 std::ostream& operator<<(std::ostream& os, GdkEventExpose const* ee)
 {
